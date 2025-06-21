@@ -1,11 +1,8 @@
-<<<<<<< Updated upstream
+"use client";
 import FeaturesSection from "@/components/FeaturesSection";
 import HelpSection from "@/components/HelpSection";
 import HeroSection from "@/components/HeroSection";
-=======
-"use client";
 
->>>>>>> Stashed changes
 import React from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -19,12 +16,6 @@ import "swiper/css/autoplay"; // ✅ optional, autoplay animation
 
 const Home = () => {
   return (
-<<<<<<< Updated upstream
-    <div>
-      <HeroSection />
-      <FeaturesSection />
-      <HelpSection />
-=======
     <div className="w-full mt-10 mb-10">
       {/* SECTION 1: HERO */}
       <section className="flex flex-col md:flex-row w-full">
@@ -215,7 +206,6 @@ const Home = () => {
           ))}
         </Swiper>
       </section>
->>>>>>> Stashed changes
     </div>
   );
 };

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
 import "./globals.css";
-<<<<<<< Updated upstream
+
 import { Toaster } from "sonner";
-=======
+
 import "@fortawesome/fontawesome-free/css/all.min.css";
->>>>>>> Stashed changes
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
