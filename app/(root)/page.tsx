@@ -1,7 +1,4 @@
 "use client";
-import FeaturesSection from "@/components/FeaturesSection";
-import HelpSection from "@/components/HelpSection";
-import HeroSection from "@/components/HeroSection";
 
 import React from "react";
 import Image from "next/image";

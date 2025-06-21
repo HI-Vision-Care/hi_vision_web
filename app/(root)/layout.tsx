@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 
