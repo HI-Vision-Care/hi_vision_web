@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -205,6 +206,8 @@ const Home = () => {
       </section>
     </div>
   );
+
+
 };
 
 export default Home;
