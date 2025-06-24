@@ -4,10 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import styles from "@/components/Header/Header.module.css";
+import { desktopNav, mobileNav } from "@/constants";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   return (
@@ -25,17 +25,17 @@ export default function Header() {
 
       {/* Desktop Menu */}
       <div className="hidden md:flex gap-6 items-center">
-        {["Home", "About", "Services", "Contact"].map((item, index) => (
+        {desktopNav.map((item) => (
           <Link
-            key={index}
-            href="/"
+            key={item.href}
+            href={item.href}
             className={`${styles.customUnderline} custom-btn py-2 px-3`}
           >
-            <h3>{item}</h3>
+            <h3>{item.label}</h3>
           </Link>
         ))}
         <Link
-          href="/"
+          href="/sign-in"
           className="custom-btn bg-blue-400 py-2 px-5 rounded-xl text-white hover:bg-blue-500"
         >
           <h2>Login</h2>
@@ -50,20 +50,19 @@ export default function Header() {
       {/* Mobile Dropdown */}
       {menuOpen && (
         <div className="absolute top-full left-0 w-full bg-white flex flex-col items-center gap-4 py-4 shadow-md z-10 md:hidden">
-          {["About", "Services", "Contact"].map((item, index) => (
+          {mobileNav.map((item) => (
             <Link
-              key={index}
-              href="/"
+              key={item.href}
+              href={item.href}
               className="w-full text-center py-2 hover:bg-blue-50"
               onClick={() => setMenuOpen(false)}
             >
-              <h3>{item}</h3>
+              <h3>{item.label}</h3>
             </Link>
           ))}
           <Link
-            href="/"
+            href="/sign-in"
             className="bg-blue-400 text-white py-2 px-5 rounded-xl hover:bg-blue-500"
-            onClick={() => setMenuOpen(false)}
           >
             <h2>Login</h2>
           </Link>
