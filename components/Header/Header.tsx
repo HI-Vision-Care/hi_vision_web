@@ -25,17 +25,22 @@ export default function Header() {
 
       {/* Desktop Menu */}
       <div className="hidden md:flex gap-6 items-center">
-        {["Home", "About", "Services", "Contact"].map((item, index) => (
+        {[
+          { title: "Home", link: "/" },
+          { title: "About", link: "/about-us" },
+          { title: "Services", link: "service" },
+          { title: "Contact", link: "/contact" },
+        ].map((item, index) => (
           <Link
             key={index}
-            href="/"
+            href={item.link}
             className={`${styles.customUnderline} custom-btn py-2 px-3`}
           >
-            <h3>{item}</h3>
+            <h3>{item.title}</h3>
           </Link>
         ))}
         <Link
-          href="/"
+          href="/sign-in"
           className="custom-btn bg-blue-400 py-2 px-5 rounded-xl text-white hover:bg-blue-500"
         >
           <h2>Login</h2>
