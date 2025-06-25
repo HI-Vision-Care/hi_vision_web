@@ -1,3 +1,19 @@
+import { Heart, Lightbulb, Users, Award, Target, Globe } from "lucide-react";
+
+//Routes
+export const desktopNav = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about-us" },
+  { label: "Services", href: "/services" },
+  { label: "Contact", href: "/contact" },
+];
+
+export const mobileNav = [
+  { label: "About", href: "/about-us" },
+  { label: "Services", href: "/services" },
+  { label: "Contact", href: "/contact" },
+];
+
 // Dummy data
 export const FEATURED_PRODUCTS = [
   {
@@ -64,3 +80,111 @@ export const MORE_PRODUCTS = [
     desc: "Lorem ipsum amet dolor, elit tu",
   },
 ];
+
+export const HERO_DATA = {
+  badge: "About Hi-Vision",
+  title: "We’re building the future of business",
+  description:
+    "Founded in 2020, Hi-Vision has been at the forefront of digital transformation, helping businesses worldwide unlock their potential through innovative technology solutions.",
+};
+
+export const MISSION_VISION = {
+  mission: {
+    icon: Target,
+    title: "Our Mission",
+    text: "To empower businesses of all sizes with cutting-edge technology solutions that drive growth, efficiency, and innovation. We believe that every organization deserves access to enterprise-level tools that can transform their operations and unlock their full potential.",
+  },
+  vision: {
+    icon: Lightbulb,
+    title: "Our Vision",
+    text: "To create a world where technology seamlessly integrates with human creativity and ambition, enabling businesses to achieve extraordinary results while maintaining their core values and human-centered approach.",
+  },
+};
+
+export const CORE_VALUES = [
+  {
+    icon: Heart,
+    title: "Customer First",
+    description:
+      "Every decision we make starts with our customers' success in mind.",
+    color: "from-red-400 to-pink-500",
+  },
+  {
+    icon: Lightbulb,
+    title: "Innovation",
+    description:
+      "We constantly push boundaries to deliver cutting-edge solutions.",
+    color: "from-yellow-400 to-orange-500",
+  },
+  {
+    icon: Users,
+    title: "Collaboration",
+    description:
+      "We believe the best results come from working together as a team.",
+    color: "from-blue-400 to-purple-500",
+  },
+  {
+    icon: Award,
+    title: "Excellence",
+    description:
+      "We strive for excellence in everything we do, no matter how small.",
+    color: "from-green-400 to-blue-500",
+  },
+];
+
+export const TEAM_MEMBERS = [
+  {
+    name: "Sarah Chen",
+    role: "CEO & Founder",
+    bio: "Former VP of Engineering at Google with 15+ years in tech leadership.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+  {
+    name: "Michael Rodriguez",
+    role: "CTO",
+    bio: "Ex-Amazon architect specializing in scalable cloud infrastructure.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+  {
+    name: "Emily Johnson",
+    role: "Head of Product",
+    bio: "Product strategy expert with a track record of launching successful SaaS products.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+  {
+    name: "David Kim",
+    role: "Head of Design",
+    bio: "Award-winning designer focused on creating intuitive user experiences.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+  {
+    name: "Lisa Thompson",
+    role: "VP of Sales",
+    bio: "Sales leader with expertise in helping businesses scale and grow.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+  {
+    name: "James Wilson",
+    role: "Head of Customer Success",
+    bio: "Customer advocate ensuring our clients achieve their goals with our platform.",
+    image: "/placeholder.svg?height=300&width=300",
+    linkedin: "#",
+  },
+];
+
+export const COMPANY_STATS = [
+  { icon: Users, number: "10M+", label: "Happy Customers" },
+  { icon: Globe, number: "150+", label: "Countries Served" },
+  { icon: Award, number: "99.9%", label: "Uptime Guarantee" },
+  { icon: Target, number: "5 Years", label: "Industry Experience" },
+];
+
+export const CTA_BUTTONS = {
+  primary: { text: "Start Your Journey", href: "/" },
+  secondary: { text: "View Careers", variant: "outline" },
+};
