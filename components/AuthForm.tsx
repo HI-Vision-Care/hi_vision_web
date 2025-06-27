@@ -30,16 +30,31 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLogin, useRegister } from "@/services/auth/hooks";
 
 export type FormType = "sign-in" | "sign-up";
 
+// const signInSchema = z.object({
+//   username: z.string().min(1, "Username is required"),
+//   password: z.string().min(6, "Password must be at least 6 characters"),
+// });
+
+// const signUpSchema = z.object({
+//   username: z.string().min(3, "Username must be at least 3 characters"),
+//   email: z.string().email("Please enter a valid email"),
+//   password: z.string().min(6, "Password must be at least 6 characters"),
+// });
+
 const authFormSchema = (type: FormType) =>
   z.object({
-    name:
+    username:
       type === "sign-up"
-        ? z.string().min(3, "Name must be at least 3 characters")
+        ? z.string().min(3, "Username must be at least 3 characters")
+        : z.string().min(1, "Username is required"),
+    email:
+      type === "sign-up"
+        ? z.string().email("Invalid email")
         : z.string().optional(),
-    email: z.string().email("Please enter a valid email"),
     password: z.string().min(6, "Password must be at least 6 characters"),
   });
 
@@ -47,51 +62,54 @@ const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
   const isSignIn = type === "sign-in";
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // React Query mutations
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+  const isSubmitting = isSignIn
+    ? loginMutation.status === "pending"
+    : registerMutation.status === "pending";
+
+  // Initialize form without defaultValues to avoid TS conflicts
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { username: "", email: "", password: "" },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
-    try {
-      if (!isSignIn) {
-        const { name, email, password } = data;
-        const res = await fetch("/api/auth/sign-up", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          toast.error(result.message || "Sign up failed.");
-          return;
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    if (isSignIn) {
+      loginMutation.mutate(
+        { username: data.username, password: data.password },
+        {
+          onSuccess: () => {
+            toast.success("Signed in successfully.");
+            router.push("/");
+          },
+          onError: (err: any) =>
+            toast.error(
+              err.response?.data?.message || err.message || "Sign in failed."
+            ),
         }
-        toast.success("Account created successfully. Please sign in.");
-        router.push("/sign-in");
-      } else {
-        const { email, password } = data;
-        const res = await fetch("/api/auth/sign-in", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const result = await res.json();
-        if (!result.success) {
-          toast.error(result.message || "Sign in failed.");
-          return;
+      );
+    } else {
+      // include phone as empty string for required payload
+      registerMutation.mutate(
+        {
+          username: data.username,
+          email: data.email ?? "",
+          password: data.password,
+          phone: "",
+        },
+        {
+          onSuccess: () => {
+            toast.success("Account created. Please sign in.");
+            router.push("/sign-in");
+          },
+          onError: (err: any) => toast.error(err.message || "Sign up failed."),
         }
-        toast.success("Signed in successfully.");
-        router.push("/");
-      }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(`There was an error: ${err.message || err}`);
-    } finally {
-      setIsLoading(false);
+      );
     }
   };
 
@@ -190,20 +208,50 @@ const AuthForm = ({ type }: { type: FormType }) => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
+                {/* Username field */}
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700 font-medium">
+                        Username
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                          <Input
+                            placeholder={
+                              isSignIn
+                                ? "Enter your username"
+                                : "Choose a username"
+                            }
+                            className="pl-10 bg-white/80 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20 shadow-sm"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Email field for sign-up */}
                 {!isSignIn && (
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-slate-700 font-medium">
-                          Full Name
+                          Email Address
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                             <Input
-                              placeholder="Enter your full name"
+                              type="email"
+                              placeholder="Enter your email"
                               className="pl-10 bg-white/80 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20 shadow-sm"
                               {...field}
                             />
@@ -215,30 +263,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                   />
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-700 font-medium">
-                        Email Address
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                          <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            className="pl-10 bg-white/80 border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20 shadow-sm"
-                            {...field}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+                {/* Password field */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -259,7 +284,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                           >
                             {showPassword ? (
                               <EyeOff className="w-5 h-5" />
@@ -287,10 +312,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
                 <Button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       Processing...
