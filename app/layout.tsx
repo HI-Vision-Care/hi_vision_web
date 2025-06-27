@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Providers } from "./providers";
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
@@ -24,8 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${monaSans.className} antialiased pattern`}>
-        {children}
-        <Toaster />
+        <Providers>
+          {children}
+
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
