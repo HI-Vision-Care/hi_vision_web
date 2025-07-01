@@ -8,7 +8,7 @@ const HeroSection = () => {
       <div className="grid lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
           <Badge
-            variant="secondary"
+            fontVariant="secondary"
             className="bg-white/80 text-gray-700 px-4 py-2"
           >
             <Heart className="w-4 h-4 mr-2 text-red-500" />
