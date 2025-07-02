@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
 import "./globals.css";
-
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
+import ChatWidget from "@/components/Chatbot/Gemini"; // nếu có
 import { AuthProvider } from "@/components/auth/AuthContext";
 
 const monaSans = Mona_Sans({
@@ -30,6 +30,7 @@ export default function RootLayout({
           <Providers>
             {children}
             <Toaster />
+            <ChatWidget />
           </Providers>
         </AuthProvider>
       </body>
