@@ -32,7 +32,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin, useRegister } from "@/services/auth/hooks";
-import { setAuth } from "@/utils/Auth";
 import Cookies from "js-cookie";
 
 export type FormType = "sign-in" | "sign-up";
@@ -81,14 +80,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
           onSuccess: (res: any) => {
             console.log("Đăng nhập thành công:", res);
             const token = res.token;
-            const user = res.username;
             const role = res.role;
 
-            if (token && user && role) {
+            if (token && role) {
               // ✅ Lưu token vào cookie để middleware có thể đọc được
               Cookies.set("token", token, { expires: 7 }); // lưu trong 7 ngày
               Cookies.set("role", role, { expires: 7 });
-              Cookies.set("user", JSON.stringify(user), { expires: 7 });
               toast.success("Signed in successfully.");
 
               // ✅ Điều hướng theo role

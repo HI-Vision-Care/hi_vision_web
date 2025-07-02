@@ -1,4 +1,4 @@
-import axiosInstance from "../../config/axios";
+import axiosInstance from "@/config/axios";
 import type {
   DoctorResponse,
   LoginPayload,
@@ -43,7 +43,10 @@ export async function createPatient(payload: Partial<PatientResponse>) {
   return axiosInstance.post("/patient", payload);
 }
 
-export async function updatePatient(accountId: string, payload: Partial<PatientResponse>) {
+export async function updatePatient(
+  accountId: string,
+  payload: Partial<PatientResponse>
+) {
   return axiosInstance.put(`/patient/update-profile/${accountId}`, payload);
 }
 
