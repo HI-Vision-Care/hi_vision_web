@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +22,11 @@ import {
   TestTube,
   Trash2,
 } from "lucide-react";
-import { getAllPatients, updatePatient } from "@/services/auth/api";
-import type { PatientUI } from "@/services/auth/types";
 import PatientFormModal from "@/components/partials/PatientFormModal";
 import ConfirmDeleteModal from "@/components/partials/ConfirmDeleteModal";
+import Header from "@/components/admin/header";
+import { getAllPatients, updatePatient } from "@/services/patient/api";
+import { PatientUI } from "@/services/patient/types";
 
 export default function Patients() {
   const [searchTerm, setSearchTerm] = useState("");

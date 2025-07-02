@@ -1,8 +1,11 @@
-import Link from "next/link";
-import React from "react";
+import { FeaturesSection } from "@/components/home";
 
 const Home = () => {
-  return <div>HIme</div>;
+  return (
+    <div>
+      <FeaturesSection />
+    </div>
+  );
 };
 
 export default Home;

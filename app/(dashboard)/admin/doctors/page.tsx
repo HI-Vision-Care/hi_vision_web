@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
+import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,21 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  UserCheck,
-  Search,
-  Filter,
-  Plus,
-  Edit,
-  Eye,
-  Calendar,
-  BarChart3,
-  Trash2,
-  Phone,
-  Mail,
-} from "lucide-react";
-import { getAllDoctor } from "@/services/auth/api";
-import type { DoctorResponse } from "@/services/auth/types";
+import { UserCheck, Search, Filter, Plus } from "lucide-react";
+import Header from "@/components/admin/header";
+import { DoctorResponse } from "@/services/doctor/types";
+import { getAllDoctor } from "@/services/doctor/api";
 
 export default function ManageDoctors() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,13 +61,6 @@ export default function ManageDoctors() {
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
-  };
-
-  const getExperienceColor = (experience: string) => {
-    const years = Number.parseInt(experience);
-    if (years >= 10) return "text-green-600";
-    if (years >= 5) return "text-blue-600";
-    return "text-orange-600";
   };
 
   return (

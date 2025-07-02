@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,55 +15,10 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
+import Header from "@/components/admin/header";
+import { backupHistory, systemStats } from "@/constants";
 
 export default function DataManagement() {
-  const backupHistory = [
-    {
-      id: 1,
-      type: "Full Backup",
-      date: "2024-01-15 02:00:00",
-      size: "2.4 GB",
-      status: "completed",
-      duration: "45 minutes",
-    },
-    {
-      id: 2,
-      type: "Incremental Backup",
-      date: "2024-01-14 02:00:00",
-      size: "156 MB",
-      status: "completed",
-      duration: "8 minutes",
-    },
-    {
-      id: 3,
-      type: "Full Backup",
-      date: "2024-01-13 02:00:00",
-      size: "2.3 GB",
-      status: "completed",
-      duration: "42 minutes",
-    },
-    {
-      id: 4,
-      type: "Incremental Backup",
-      date: "2024-01-12 02:00:00",
-      size: "89 MB",
-      status: "failed",
-      duration: "N/A",
-    },
-  ];
-
-  const systemStats = [
-    { label: "Database Size", value: "2.4 GB", icon: Database, color: "blue" },
-    { label: "Total Records", value: "15,847", icon: FileText, color: "green" },
-    {
-      label: "Last Backup",
-      value: "2 hours ago",
-      icon: Clock,
-      color: "purple",
-    },
-    { label: "Storage Used", value: "68%", icon: HardDrive, color: "orange" },
-  ];
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":

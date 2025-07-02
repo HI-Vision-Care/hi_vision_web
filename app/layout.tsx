@@ -5,7 +5,7 @@ import "./globals.css";
 
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
-import { AuthProvider } from "@/components/AuthContext"; // nếu có
+import { AuthProvider } from "@/components/auth/AuthContext";
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",

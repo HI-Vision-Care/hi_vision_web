@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,110 +23,13 @@ import {
   Info,
   User,
 } from "lucide-react";
+import { Header } from "@/components/admin";
+import { auditLogs } from "@/constants";
 
 export default function AuditLogs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [userFilter, setUserFilter] = useState("all");
-
-  const auditLogs = [
-    {
-      id: 1,
-      timestamp: "2024-01-15 14:30:25",
-      user: "admin@hivcenter.com",
-      userRole: "Administrator",
-      action: "USER_LOGIN",
-      resource: "System",
-      details: "Successful login from IP 192.168.1.100",
-      severity: "info",
-      ipAddress: "192.168.1.100",
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    },
-    {
-      id: 2,
-      timestamp: "2024-01-15 14:25:12",
-      user: "dr.johnson@hivcenter.com",
-      userRole: "Doctor",
-      action: "PATIENT_UPDATE",
-      resource: "Patient Record (P001)",
-      details: "Updated ARV regimen for patient John Anderson",
-      severity: "info",
-      ipAddress: "192.168.1.105",
-      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-    },
-    {
-      id: 3,
-      timestamp: "2024-01-15 14:20:45",
-      user: "admin@hivcenter.com",
-      userRole: "Administrator",
-      action: "DOCTOR_CREATE",
-      resource: "Doctor Record (D005)",
-      details: "Created new doctor account for Dr. Amanda Lee",
-      severity: "warning",
-      ipAddress: "192.168.1.100",
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    },
-    {
-      id: 4,
-      timestamp: "2024-01-15 14:15:33",
-      user: "system@hivcenter.com",
-      userRole: "System",
-      action: "BACKUP_COMPLETE",
-      resource: "Database",
-      details: "Automatic database backup completed successfully (2.4 GB)",
-      severity: "success",
-      ipAddress: "127.0.0.1",
-      userAgent: "System Process",
-    },
-    {
-      id: 5,
-      timestamp: "2024-01-15 14:10:18",
-      user: "dr.chen@hivcenter.com",
-      userRole: "Doctor",
-      action: "APPOINTMENT_CREATE",
-      resource: "Appointment (A156)",
-      details: "Scheduled appointment for patient Maria Rodriguez",
-      severity: "info",
-      ipAddress: "192.168.1.108",
-      userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
-    },
-    {
-      id: 6,
-      timestamp: "2024-01-15 14:05:22",
-      user: "unknown@external.com",
-      userRole: "Unknown",
-      action: "LOGIN_FAILED",
-      resource: "System",
-      details: "Failed login attempt - invalid credentials",
-      severity: "error",
-      ipAddress: "203.45.67.89",
-      userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
-    },
-    {
-      id: 7,
-      timestamp: "2024-01-15 14:00:15",
-      user: "admin@hivcenter.com",
-      userRole: "Administrator",
-      action: "SETTINGS_UPDATE",
-      resource: "System Settings",
-      details: "Updated notification settings - enabled SMS alerts",
-      severity: "warning",
-      ipAddress: "192.168.1.100",
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    },
-    {
-      id: 8,
-      timestamp: "2024-01-15 13:55:40",
-      user: "dr.davis@hivcenter.com",
-      userRole: "Doctor",
-      action: "REPORT_EXPORT",
-      resource: "Patient Reports",
-      details: "Exported monthly treatment report (PDF, 45 pages)",
-      severity: "info",
-      ipAddress: "192.168.1.112",
-      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-    },
-  ];
 
   const filteredLogs = auditLogs.filter((log) => {
     const matchesSearch =

@@ -2,7 +2,7 @@
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { AuthProvider } from "@/components/AuthContext";
+import { AuthProvider } from "@/components/auth/AuthContext";
 
 const queryClient = new QueryClient();
 

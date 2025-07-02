@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
-import { Card, CardContent } from "./ui/card";
 import { FEATURED_PRODUCTS, MORE_PRODUCTS } from "@/constants";
+import { Card, CardContent } from "../ui/card";
 
 const HelpSection = () => {
   return (

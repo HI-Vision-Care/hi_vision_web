@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
+import Header from "@/components/home/HeaderHome";
+import Footer from "@/components/home/Footer";
 
 // import { isAuthenticated } from "@/lib/actions/auth.action";
 

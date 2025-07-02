@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
+import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,92 +23,13 @@ import {
   Clock,
   UserCheck,
 } from "lucide-react";
+import Header from "@/components/admin/header";
+import { appointments, appointmentStats } from "@/constants";
 
 export default function Appointments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
-
-  const appointments = [
-    {
-      id: 1,
-      patientId: "P001",
-      patientName: "John Anderson",
-      doctorName: "Dr. Sarah Johnson",
-      date: "2024-01-15",
-      time: "09:00",
-      type: "Follow-up",
-      status: "confirmed",
-      priority: "normal",
-      duration: 30,
-      notes: "Regular check-up and medication review",
-    },
-    {
-      id: 2,
-      patientId: "P002",
-      patientName: "Maria Rodriguez",
-      doctorName: "Dr. Michael Chen",
-      date: "2024-01-15",
-      time: "10:30",
-      type: "Consultation",
-      status: "pending",
-      priority: "high",
-      duration: 45,
-      notes: "New patient consultation",
-    },
-    {
-      id: 3,
-      patientId: "P003",
-      patientName: "David Kim",
-      doctorName: "Dr. Emily Davis",
-      date: "2024-01-15",
-      time: "14:00",
-      type: "Lab Review",
-      status: "completed",
-      priority: "normal",
-      duration: 20,
-      notes: "Review recent lab results",
-    },
-    {
-      id: 4,
-      patientId: "P004",
-      patientName: "Sarah Wilson",
-      doctorName: "Dr. Sarah Johnson",
-      date: "2024-01-15",
-      time: "15:30",
-      type: "Treatment",
-      status: "confirmed",
-      priority: "normal",
-      duration: 60,
-      notes: "ARV therapy adjustment",
-    },
-    {
-      id: 5,
-      patientId: "P005",
-      patientName: "Robert Brown",
-      doctorName: "Dr. Robert Wilson",
-      date: "2024-01-15",
-      time: "16:00",
-      type: "Emergency",
-      status: "urgent",
-      priority: "urgent",
-      duration: 30,
-      notes: "Urgent consultation required",
-    },
-    {
-      id: 6,
-      patientId: "P006",
-      patientName: "Lisa Chen",
-      doctorName: "Dr. Amanda Lee",
-      date: "2024-01-16",
-      time: "09:30",
-      type: "Pediatric",
-      status: "confirmed",
-      priority: "normal",
-      duration: 40,
-      notes: "Pediatric HIV follow-up",
-    },
-  ];
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
@@ -178,29 +98,6 @@ export default function Appointments() {
         );
     }
   };
-
-  const appointmentStats = [
-    {
-      label: "Today's Appointments",
-      value: appointments.filter((a) => a.date === "2024-01-15").length,
-      color: "blue",
-    },
-    {
-      label: "Confirmed",
-      value: appointments.filter((a) => a.status === "confirmed").length,
-      color: "green",
-    },
-    {
-      label: "Pending",
-      value: appointments.filter((a) => a.status === "pending").length,
-      color: "yellow",
-    },
-    {
-      label: "Urgent",
-      value: appointments.filter((a) => a.status === "urgent").length,
-      color: "red",
-    },
-  ];
 
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">

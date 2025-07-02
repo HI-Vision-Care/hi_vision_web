@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,65 +19,17 @@ import {
   FileText,
   PieChart,
 } from "lucide-react";
+import Header from "@/components/admin/header";
+import {
+  arvRegimensUsage,
+  chartData,
+  reportData,
+  treatmentOutcomes,
+} from "@/constants";
 
 export default function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedReport, setSelectedReport] = useState("overview");
-
-  const reportData = {
-    overview: {
-      totalPatients: 234,
-      activePatients: 198,
-      newPatients: 12,
-      adherenceRate: 94.2,
-      viralSuppressionRate: 89.5,
-      appointmentAttendance: 87.3,
-    },
-    monthly: {
-      appointments: 156,
-      completedTreatments: 142,
-      missedAppointments: 14,
-      newRegistrations: 8,
-      emergencyCases: 3,
-    },
-  };
-
-  const chartData = [
-    { month: "Jan", patients: 45, adherence: 92 },
-    { month: "Feb", patients: 52, adherence: 94 },
-    { month: "Mar", patients: 48, adherence: 91 },
-    { month: "Apr", patients: 61, adherence: 95 },
-    { month: "May", patients: 58, adherence: 93 },
-    { month: "Jun", patients: 67, adherence: 96 },
-  ];
-
-  const treatmentOutcomes = [
-    {
-      category: "Complete Viral Suppression",
-      count: 176,
-      percentage: 89.5,
-      color: "bg-green-500",
-    },
-    {
-      category: "Partial Viral Suppression",
-      count: 15,
-      percentage: 7.6,
-      color: "bg-yellow-500",
-    },
-    {
-      category: "No Viral Suppression",
-      count: 6,
-      percentage: 3.0,
-      color: "bg-red-500",
-    },
-  ];
-
-  const arvRegimensUsage = [
-    { regimen: "TDF + 3TC + DTG", count: 89, percentage: 45.2 },
-    { regimen: "ABC + 3TC + DTG", count: 67, percentage: 34.0 },
-    { regimen: "TDF + FTC + EFV", count: 28, percentage: 14.2 },
-    { regimen: "Other", count: 13, percentage: 6.6 },
-  ];
 
   return (
     <>
