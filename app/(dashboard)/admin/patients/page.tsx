@@ -12,20 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Users,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Calendar,
-  TestTube,
-  Trash2,
-} from "lucide-react";
+import { Users, Search, Filter, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+import Header from "@/components/admin/header";
 import PatientFormModal from "@/components/partials/PatientFormModal";
 import ConfirmDeleteModal from "@/components/partials/ConfirmDeleteModal";
-import Header from "@/components/admin/header";
-import { getAllPatients, updatePatient } from "@/services/patient/api";
+import {
+  getAllPatients,
+  updatePatient,
+  deletePatient,
+} from "@/services/patient/api";
 import { PatientUI } from "@/services/patient/types";
 
 export default function Patients() {
@@ -42,23 +39,20 @@ export default function Patients() {
     const fetchPatients = async () => {
       try {
         const data = await getAllPatients();
-        const mapped = data
-          .filter((p) => p.patientID && p.name && p.dob)
-          .map(
-            (p): PatientUI => ({
-              id: p.patientID,
-              name: p.name,
-              age: calculateAge(p.dob),
-              gender: p.gender ?? "Unknown",
-              phone: p.medNo || "N/A",
-              lastVisit: p.medDate || "2024-01-01",
-              nextAppointment: "2024-01-20",
-              status: "active",
-              arvRegimen: "TDF + 3TC + DTG",
-              cd4Count: 500,
-              viralLoad: "Undetectable",
-            })
-          );
+        const mapped = data.map(
+          (p): PatientUI => ({
+            id: p.patientID,
+            name: p.name,
+            age: calculateAge(p.dob),
+            gender: p.gender ?? "Unknown",
+            phone: p.medNo || "N/A",
+            lastVisit: p.medDate || "",
+            status: "active",
+            dob: p.dob,
+            medDate: p.medDate,
+            medFac: p.medFac || "",
+          })
+        );
         setPatients(mapped);
       } catch (err) {
         console.error("Failed to load patients", err);
@@ -69,7 +63,7 @@ export default function Patients() {
 
   const calculateAge = (dob: string) => {
     const birthDate = new Date(dob);
-    if (isNaN(birthDate.getTime())) return 0;
+    if (!dob || isNaN(birthDate.getTime())) return 0;
     const ageDifMs = Date.now() - birthDate.getTime();
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -91,11 +85,9 @@ export default function Patients() {
       case "active":
         return (
           <Badge variant="default" className="bg-green-100 text-green-800">
-            Active Treatment
+            Active
           </Badge>
         );
-      case "needs_attention":
-        return <Badge variant="destructive">Needs Attention</Badge>;
       case "inactive":
         return <Badge variant="secondary">Inactive</Badge>;
       default:
@@ -107,7 +99,7 @@ export default function Patients() {
     <>
       <Header
         title="Patient Management"
-        subtitle="Monitor and manage HIV patient information and treatment progress"
+        subtitle="Monitor and manage HIV patient information"
       />
 
       <div className="p-6">
@@ -129,22 +121,10 @@ export default function Patients() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Patients</SelectItem>
-              <SelectItem value="active">Active Treatment</SelectItem>
-              <SelectItem value="needs_attention">Needs Attention</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => {
-              setEditingPatient(null);
-              setShowModal(true);
-            }}
-          >
-            <Users className="h-4 w-4 mr-2" />
-            Add Patient
-          </Button>
         </div>
 
         <Card className="bg-white shadow-sm">
@@ -173,15 +153,28 @@ export default function Patients() {
                           <span className="text-gray-500">({patient.id})</span>
                           {getStatusBadge(patient.status)}
                         </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {patient.age} years old • {patient.gender} •{" "}
-                          {patient.phone}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Regimen:{" "}
-                          <span className="font-medium">
-                            {patient.arvRegimen}
-                          </span>
+
+                        <div className="text-sm text-gray-600 mt-2 grid gap-1">
+                          <div>
+                            <span className="font-medium">Age:</span>{" "}
+                            {patient.age} years old
+                          </div>
+                          <div>
+                            <span className="font-medium">Gender:</span>{" "}
+                            {patient.gender}
+                          </div>
+                          {patient.phone !== "N/A" && (
+                            <div>
+                              <span className="font-medium">Medical No:</span>{" "}
+                              {patient.phone}
+                            </div>
+                          )}
+                          {patient.medFac && (
+                            <div>
+                              <span className="font-medium">Facility:</span>{" "}
+                              {patient.medFac}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -189,17 +182,12 @@ export default function Patients() {
                     <div className="text-right">
                       <div className="text-sm text-gray-600 mb-2">
                         Last visit:{" "}
-                        {new Date(patient.lastVisit).toLocaleDateString()}
-                      </div>
-                      <div className="text-sm text-gray-600 mb-3">
-                        Next appointment:{" "}
-                        {new Date(patient.nextAppointment).toLocaleDateString()}
+                        {patient.lastVisit
+                          ? new Date(patient.lastVisit).toLocaleDateString()
+                          : "N/A"}
                       </div>
 
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                      <div className="flex space-x-2 mt-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -209,12 +197,6 @@ export default function Patients() {
                           }}
                         >
                           <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <TestTube className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
@@ -226,33 +208,6 @@ export default function Patients() {
                       </div>
                     </div>
                   </div>
-
-                  <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <div className="text-xs text-blue-600 font-medium">
-                        CD4 Count
-                      </div>
-                      <div className="text-lg font-bold text-blue-800">
-                        {patient.cd4Count} cells/μL
-                      </div>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <div className="text-xs text-green-600 font-medium">
-                        Viral Load
-                      </div>
-                      <div className="text-lg font-bold text-green-800">
-                        {patient.viralLoad}
-                      </div>
-                    </div>
-                    <div className="bg-purple-50 p-3 rounded-lg">
-                      <div className="text-xs text-purple-600 font-medium">
-                        Treatment Adherence
-                      </div>
-                      <div className="text-lg font-bold text-purple-800">
-                        95%
-                      </div>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
@@ -260,7 +215,7 @@ export default function Patients() {
         </Card>
       </div>
 
-      {/* MODALS */}
+      {/* Modal thêm/sửa bệnh nhân */}
       <PatientFormModal
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -269,12 +224,15 @@ export default function Patients() {
             if (editingPatient) {
               await updatePatient(data.id, {
                 name: data.name,
-                dob: new Date().toISOString(), // Hoặc convert từ form nếu có
+                dob: data.dob,
                 gender: data.gender,
                 medNo: data.phone,
-                medDate: new Date().toISOString(), // Tạm thời, hoặc lấy từ input
-                medFac: "Default Clinic", // Hoặc có field input riêng
+                medDate: data.medDate,
+                medFac: data.medFac,
               });
+              toast.success("Patient updated successfully!");
+            } else {
+              toast.success("Patient added locally!");
             }
 
             setPatients((prev) => {
@@ -285,17 +243,31 @@ export default function Patients() {
             });
           } catch (err) {
             console.error("Failed to save patient", err);
+            toast.error("Failed to save patient");
           }
           setShowModal(false);
         }}
         initialData={editingPatient}
       />
 
+      {/* Modal xác nhận xóa */}
       <ConfirmDeleteModal
         open={!!deletingPatientId}
         onClose={() => setDeletingPatientId(null)}
-        onConfirm={() => {
-          setPatients((prev) => prev.filter((p) => p.id !== deletingPatientId));
+        onConfirm={async () => {
+          if (!deletingPatientId) return;
+
+          try {
+            await deletePatient(deletingPatientId);
+            setPatients((prev) =>
+              prev.filter((p) => p.id !== deletingPatientId)
+            );
+            toast.success("Patient deleted successfully");
+          } catch (err) {
+            console.error("Delete failed", err);
+            toast.error("Failed to delete patient");
+          }
+
           setDeletingPatientId(null);
         }}
       />

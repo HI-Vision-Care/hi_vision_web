@@ -91,7 +91,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               // ✅ Điều hướng theo role
               switch (role) {
                 case "ADMIN":
-                  router.push("/admin");
+                  router.push("/admin/accounts");
                   break;
                 case "DOCTOR":
                   router.push("/patients");
