@@ -1,11 +1,11 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Mona_Sans } from "next/font/google";
 import "./globals.css";
 
 import { Toaster } from "sonner";
-
-import "@fortawesome/fontawesome-free/css/all.min.css";
 import { Providers } from "./providers";
+import { AuthProvider } from "@/components/AuthContext"; // nếu có
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
@@ -17,19 +17,21 @@ export const metadata: Metadata = {
   description: "HIV Treatment and Medical Services System",
 };
 
+// ✅ Đây là React component trả về JSX
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${monaSans.className} antialiased pattern`}>
-        <Providers>
-          {children}
-
-          <Toaster />
-        </Providers>
+        <AuthProvider>
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

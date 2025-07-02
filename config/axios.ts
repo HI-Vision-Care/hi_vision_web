@@ -6,7 +6,7 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
  * NEXT_PUBLIC_BASE_URL=http://localhost:8080/HiVision
  */
 const API_URL =
-  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8080/HiVision";
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8081/HiVision";
 
 // Khởi tạo 1 Axios instance duy nhất cho toàn app
 const axiosInstance: AxiosInstance = axios.create({
