@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 
-export default function Footer() {
+const Footer = () => {
   return (
     <footer className="bg-white text-black w-full">
       <div className="max-w-screen-xl mx-auto w-full">
@@ -125,4 +125,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

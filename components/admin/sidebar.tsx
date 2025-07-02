@@ -9,15 +9,10 @@ import {
   Users,
   UserCheck,
   Clock,
-  Settings,
-  Shield,
-  BarChart3,
-  Database,
   Menu,
   X,
   Pill,
   Calendar,
-  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,13 +25,9 @@ const adminNavigation = [
   { name: "Appointments", href: "/admin/appointments", icon: Calendar },
   { name: "Schedule", href: "/admin/schedule", icon: Clock },
   { name: "Shift Management", href: "/admin/shifts", icon: Clock },
-  // { name: "System Reports", href: "/admin/reports", icon: BarChart3 },
-  // { name: "Data Management", href: "/admin/data", icon: Database },
-  // { name: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
-  // { name: "System Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -78,15 +69,6 @@ export function Sidebar() {
                   Hi - Vision
                 </h2>
               </Link>
-              {/* <Shield className="h-8 w-8 text-red-600" />
-              <div>
-                <span className="text-xl font-bold text-gray-900">
-                  Hi-Vision
-                </span>
-                <div className="text-xs text-red-600 font-medium">
-                  ADMIN PANEL
-                </div>
-              </div> */}
             </div>
           </div>
 
@@ -137,4 +119,6 @@ export function Sidebar() {
       )}
     </>
   );
-}
+};
+
+export default Sidebar;

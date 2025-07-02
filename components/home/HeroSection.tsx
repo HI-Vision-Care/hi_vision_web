@@ -1,6 +1,6 @@
 import { Badge, Heart, MessageSquare, Mic, Search } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
 const HeroSection = () => {
   return (

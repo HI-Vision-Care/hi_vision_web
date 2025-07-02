@@ -6,10 +6,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import styles from "@/components/Header/Header.module.css";
+import styles from "@/components/home/Header.module.css";
 import { desktopNav, mobileNav } from "@/constants";
 
-export default function Header() {
+const HeaderHome = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [role, setRole] = useState<string | null>(null);
@@ -145,4 +145,6 @@ export default function Header() {
       )}
     </nav>
   );
-}
+};
+
+export default HeaderHome;

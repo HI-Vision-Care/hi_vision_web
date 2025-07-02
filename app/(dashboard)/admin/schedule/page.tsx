@@ -1,78 +1,12 @@
-"use client";
-
-import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
+import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Plus, Edit, Trash2 } from "lucide-react";
+import Header from "@/components/admin/header";
+import { schedules, weekDays } from "@/constants";
 
 export default function Schedule() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const schedules = [
-    {
-      id: 1,
-      date: "2024-01-15",
-      timeSlots: [
-        {
-          time: "08:00-12:00",
-          type: "Khám bệnh",
-          status: "active",
-          patients: 8,
-        },
-        { time: "14:00-17:00", type: "Tư vấn", status: "active", patients: 5 },
-      ],
-    },
-    {
-      id: 2,
-      date: "2024-01-16",
-      timeSlots: [
-        {
-          time: "08:00-12:00",
-          type: "Ca trực",
-          status: "scheduled",
-          patients: 0,
-        },
-        {
-          time: "13:00-16:00",
-          type: "Khám bệnh",
-          status: "active",
-          patients: 12,
-        },
-      ],
-    },
-    {
-      id: 3,
-      date: "2024-01-17",
-      timeSlots: [
-        {
-          time: "09:00-12:00",
-          type: "Tư vấn trực tuyến",
-          status: "active",
-          patients: 6,
-        },
-        {
-          time: "14:00-18:00",
-          type: "Khám bệnh",
-          status: "active",
-          patients: 15,
-        },
-      ],
-    },
-  ];
-
-  const weekDays = [
-    "Thứ 2",
-    "Thứ 3",
-    "Thứ 4",
-    "Thứ 5",
-    "Thứ 6",
-    "Thứ 7",
-    "Chủ nhật",
-  ];
-
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">
       <Sidebar />

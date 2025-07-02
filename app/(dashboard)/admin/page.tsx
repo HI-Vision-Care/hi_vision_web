@@ -1,7 +1,5 @@
 "use client";
 
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,139 +16,17 @@ import {
   Pill,
   BarChart3,
 } from "lucide-react";
+import Header from "@/components/admin/header";
+import Sidebar from "@/components/admin/sidebar";
+import {
+  doctorPerformance,
+  monthlyStats,
+  recentActivities,
+  systemAlerts,
+  systemStat,
+} from "@/constants";
 
 export default function AdminDashboard() {
-  const systemStats = [
-    {
-      title: "Total System Users",
-      value: "1,847",
-      change: "+23%",
-      icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Active Doctors",
-      value: "24",
-      change: "+2",
-      icon: UserCheck,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      title: "Total Patients",
-      value: "1,234",
-      change: "+12%",
-      icon: Activity,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      title: "System Uptime",
-      value: "99.9%",
-      change: "Excellent",
-      icon: Shield,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-  ];
-
-  const doctorPerformance = [
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      patients: 89,
-      satisfaction: 4.8,
-      status: "active",
-      shifts: 12,
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen",
-      patients: 76,
-      satisfaction: 4.9,
-      status: "active",
-      shifts: 10,
-    },
-    {
-      id: 3,
-      name: "Dr. Emily Davis",
-      patients: 92,
-      satisfaction: 4.7,
-      status: "active",
-      shifts: 14,
-    },
-    {
-      id: 4,
-      name: "Dr. Robert Wilson",
-      patients: 68,
-      satisfaction: 4.6,
-      status: "on_leave",
-      shifts: 0,
-    },
-  ];
-
-  const systemAlerts = [
-    {
-      id: 1,
-      message: "Server maintenance scheduled for tonight",
-      type: "info",
-      priority: "medium",
-    },
-    {
-      id: 2,
-      message: "3 doctors need license renewal",
-      type: "warning",
-      priority: "high",
-    },
-    {
-      id: 3,
-      message: "Database backup completed successfully",
-      type: "success",
-      priority: "low",
-    },
-    {
-      id: 4,
-      message: "High patient load detected in Ward A",
-      type: "urgent",
-      priority: "high",
-    },
-  ];
-
-  const recentActivities = [
-    {
-      id: 1,
-      action: "New doctor registered",
-      user: "Dr. Amanda Lee",
-      time: "2 hours ago",
-    },
-    {
-      id: 2,
-      action: "System backup completed",
-      user: "System",
-      time: "4 hours ago",
-    },
-    {
-      id: 3,
-      action: "Patient data exported",
-      user: "Admin",
-      time: "6 hours ago",
-    },
-    {
-      id: 4,
-      action: "ARV regimen updated",
-      user: "Dr. Michael Chen",
-      time: "8 hours ago",
-    },
-  ];
-
-  const monthlyStats = [
-    { label: "New Patients", value: "156", color: "blue" },
-    { label: "Completed Treatments", value: "142", color: "green" },
-    { label: "Missed Appointments", value: "14", color: "yellow" },
-    { label: "Emergency Cases", value: "3", color: "red" },
-  ];
-
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">
       <Sidebar />
@@ -164,7 +40,7 @@ export default function AdminDashboard() {
         <div className="p-6">
           {/* System Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {systemStats.map((stat, index) => (
+            {systemStat.map((stat, index) => (
               <Card key={index} className="bg-white shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">

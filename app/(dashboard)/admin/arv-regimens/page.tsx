@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,69 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Pill, Search, Plus, Edit, Copy, Eye } from "lucide-react";
+import Header from "@/components/admin/header";
+import { regimens } from "@/constants";
 
 export default function ARVRegimens() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-
-  const regimens = [
-    {
-      id: 1,
-      name: "TDF + 3TC + DTG",
-      category: "first_line",
-      description: "First-line regimen for adults",
-      drugs: ["Tenofovir (TDF)", "Lamivudine (3TC)", "Dolutegravir (DTG)"],
-      dosage: "1 tablet daily",
-      suitableFor: ["Adults", "Pregnant women (2nd, 3rd trimester)"],
-      contraindications: ["Severe kidney disease", "Component allergy"],
-      sideEffects: ["Mild nausea", "Headache", "Fatigue"],
-      patientsCount: 45,
-      effectiveness: 98,
-    },
-    {
-      id: 2,
-      name: "ABC + 3TC + DTG",
-      category: "first_line",
-      description: "Alternative to TDF for kidney issues",
-      drugs: ["Abacavir (ABC)", "Lamivudine (3TC)", "Dolutegravir (DTG)"],
-      dosage: "1 tablet daily",
-      suitableFor: ["Adults", "Patients with kidney problems"],
-      contraindications: ["HLA-B*5701 positive", "Severe liver disease"],
-      sideEffects: ["Allergic reaction", "Nausea", "Fatigue"],
-      patientsCount: 23,
-      effectiveness: 97,
-    },
-    {
-      id: 3,
-      name: "TDF + FTC + EFV",
-      category: "alternative",
-      description: "Alternative regimen, less preferred",
-      drugs: ["Tenofovir (TDF)", "Emtricitabine (FTC)", "Efavirenz (EFV)"],
-      dosage: "1 tablet daily (evening)",
-      suitableFor: ["Adults who cannot tolerate DTG"],
-      contraindications: ["Pregnant women (1st trimester)", "Mental disorders"],
-      sideEffects: ["Vivid dreams", "Dizziness", "Rash"],
-      patientsCount: 12,
-      effectiveness: 94,
-    },
-    {
-      id: 4,
-      name: "AZT + 3TC + LPV/r",
-      category: "pediatric",
-      description: "Pediatric regimen for children under 3",
-      drugs: [
-        "Zidovudine (AZT)",
-        "Lamivudine (3TC)",
-        "Lopinavir/ritonavir (LPV/r)",
-      ],
-      dosage: "Weight-based, twice daily",
-      suitableFor: ["Children < 3 years", "Children who cannot tolerate DTG"],
-      contraindications: ["Severe anemia", "Neutropenia"],
-      sideEffects: ["Anemia", "Nausea", "Diarrhea"],
-      patientsCount: 8,
-      effectiveness: 92,
-    },
-  ];
 
   const filteredRegimens = regimens.filter((regimen) => {
     const matchesSearch =
