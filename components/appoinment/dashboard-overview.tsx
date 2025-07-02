@@ -1,6 +1,8 @@
-"use client";
-
-import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
+import { useAccountId } from "@/hooks/useAccountId";
+import {
+  useGetDoctorProfile,
+  useGetAppointmentsByDoctorId,
+} from "@/services/doctor/hooks"; // hoặc đường dẫn bạn lưu hooks
 import {
   Card,
   CardContent,
@@ -10,27 +12,38 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Appointment } from "@/types";
+import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 
-interface DashboardOverviewProps {
-  appointments: Appointment[];
-  onAppointmentSelect: (appointment: Appointment) => void;
-}
+export function DashboardOverview({ onAppointmentSelect }) {
+  // 1. Lấy accountId từ token
+  const accountId = useAccountId();
 
-export function DashboardOverview({
-  appointments,
-  onAppointmentSelect,
-}: DashboardOverviewProps) {
-  const todayAppointments = appointments.filter(
-    (apt) => apt.date === "2024-01-15"
-  );
-  const scheduledCount = todayAppointments.filter(
+  // 2. Lấy profile để lấy doctorID
+  const { data: doctorProfile, isLoading: isProfileLoading } =
+    useGetDoctorProfile(accountId);
+
+  // 3. Lấy danh sách lịch hẹn theo doctorID
+  const doctorID = doctorProfile?.doctorID;
+  const { data: appointments = [], isLoading: isAppointmentsLoading } =
+    useGetAppointmentsByDoctorId(doctorID, !!doctorID);
+
+  // 4. Lọc today's appointments theo ngày hiện tại
+  const today = new Date();
+  const vnDate = new Date(today.getTime() + 7 * 60 * 60 * 1000); // Cộng 7 tiếng nếu server đang ở UTC
+  const todayVN = vnDate.toISOString().slice(0, 10);
+
+  const dateUTC = new Date(appointments.appointmentDate);
+  const hour = String(dateUTC.getUTCHours()).padStart(2, "0");
+  const minute = String(dateUTC.getUTCMinutes()).padStart(2, "0");
+  const timeUTC = `${hour}:${minute}`;
+
+  const scheduledCount = appointments.filter(
     (apt) => apt.status === "SCHEDULED"
   ).length;
-  const ongoingCount = todayAppointments.filter(
+  const ongoingCount = appointments.filter(
     (apt) => apt.status === "ONGOING"
   ).length;
-  const completedCount = todayAppointments.filter(
+  const completedCount = appointments.filter(
     (apt) => apt.status === "COMPLETED"
   ).length;
 
@@ -47,12 +60,17 @@ export function DashboardOverview({
     }
   };
 
+  if (isProfileLoading || isAppointmentsLoading) {
+    return <div>Đang tải dữ liệu...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, Dr. Wilson. Here&apos;s your overview for today.
+          Welcome back, {doctorProfile?.name}. Here&apos;s your overview for
+          today.
         </p>
       </div>
 
@@ -66,7 +84,7 @@ export function DashboardOverview({
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments.length}</div>
+            <div className="text-2xl font-bold">{appointments.length}</div>
             <p className="text-xs text-muted-foreground">
               {scheduledCount} scheduled, {ongoingCount} ongoing
             </p>
@@ -121,27 +139,23 @@ export function DashboardOverview({
       <Card>
         <CardHeader>
           <CardTitle>Today&apos;s Schedule</CardTitle>
-          <CardDescription>
-            Your appointments for January 15, 2024
-          </CardDescription>
+          <CardDescription>Your appointments for {todayVN}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {todayAppointments.map((appointment) => (
+            {appointments.map((appointment) => (
               <div
-                key={appointment.id}
+                key={appointment.appointmentID}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center space-x-4">
                   <div className="text-sm font-medium text-muted-foreground">
-                    {appointment.time}
+                    {timeUTC}
                   </div>
                   <div>
-                    <div className="font-medium">
-                      {appointment.patient.name}
-                    </div>
+                    <div className="font-medium">{appointment.patientName}</div>
                     <div className="text-sm text-muted-foreground">
-                      {appointment.type} • {appointment.duration} min
+                      {appointment.serviceName}
                     </div>
                   </div>
                 </div>

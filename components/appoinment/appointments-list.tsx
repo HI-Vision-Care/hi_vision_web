@@ -1,5 +1,9 @@
-"use client";
-
+import { useState, useMemo } from "react";
+import { useAccountId } from "@/hooks/useAccountId";
+import {
+  useGetDoctorProfile,
+  useGetAppointmentsByDoctorId,
+} from "@/services/doctor/hooks";
 import { Calendar, Clock, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,31 +16,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { Appointment } from "@/types";
 
-interface AppointmentsListProps {
-  appointments: Appointment[];
-  onAppointmentSelect: (appointment: Appointment) => void;
-}
+export function AppointmentsList({ onAppointmentSelect }) {
+  // Lấy accountId → doctorProfile → doctorID → appointments
+  const accountId = useAccountId();
+  const { data: doctorProfile, isLoading: isProfileLoading } =
+    useGetDoctorProfile(accountId);
+  const doctorID = doctorProfile?.doctorID;
+  const { data: appointments = [], isLoading: isAppointmentsLoading } =
+    useGetAppointmentsByDoctorId(doctorID, !!doctorID);
 
-export function AppointmentsList({
-  appointments,
-  onAppointmentSelect,
-}: AppointmentsListProps) {
+  // State filter/search
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch =
-      appointment.patient.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || appointment.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Mapping lại data cho đúng UI filter
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((appointment) => {
+      const matchesSearch =
+        (appointment.patientName || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        (appointment.serviceName || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || appointment.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [appointments, searchTerm, statusFilter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,6 +74,20 @@ export function AppointmentsList({
     }
   };
 
+  // Hàm format giờ VN
+  function formatTimeVN(isoString?: string) {
+    if (!isoString) return "--:--";
+    const dateUTC = new Date(isoString);
+    if (isNaN(dateUTC.getTime())) return "--:--";
+    const hourVN = (dateUTC.getUTCHours() + 7) % 24;
+    const minuteVN = String(dateUTC.getUTCMinutes()).padStart(2, "0");
+    return `${String(hourVN).padStart(2, "0")}:${minuteVN}`;
+  }
+
+  if (isProfileLoading || isAppointmentsLoading) {
+    return <div>Đang tải dữ liệu...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -84,7 +106,7 @@ export function AppointmentsList({
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by patient name or appointment type..."
+                placeholder="Search by patient name or service name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full"
@@ -110,7 +132,7 @@ export function AppointmentsList({
       <div className="grid gap-4">
         {filteredAppointments.map((appointment) => (
           <Card
-            key={appointment.id}
+            key={appointment.appointmentID}
             className="hover:shadow-md transition-shadow cursor-pointer"
           >
             <CardContent className="p-6">
@@ -118,22 +140,25 @@ export function AppointmentsList({
                 <div className="flex items-center space-x-4">
                   <div className="flex flex-col items-center text-center min-w-[80px]">
                     <div className="text-2xl font-bold text-primary">
-                      {new Date(appointment.date).getDate()}
+                      {new Date(appointment.appointmentDate).getDate()}
                     </div>
                     <div className="text-xs text-muted-foreground uppercase">
-                      {new Date(appointment.date).toLocaleDateString("en-US", {
-                        month: "short",
-                      })}
+                      {new Date(appointment.appointmentDate).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                        }
+                      )}
                     </div>
                     <div className="text-sm font-medium">
-                      {appointment.time}
+                      {formatTimeVN(appointment.appointmentDate)}
                     </div>
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-lg font-semibold">
-                        {appointment.patient.name}
+                        {appointment.patientName}
                       </h3>
                       <Badge className={getStatusColor(appointment.status)}>
                         {getStatusIcon(appointment.status)}
@@ -141,16 +166,13 @@ export function AppointmentsList({
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
-                      {appointment.type} • {appointment.duration} minutes
+                      {appointment.serviceName}
                     </div>
-                    <div className="text-sm">
-                      <span className="font-medium">Symptoms:</span>{" "}
-                      {appointment.symptoms.join(", ")}
-                    </div>
-                    {appointment.notes && (
+
+                    {appointment.note && (
                       <div className="text-sm text-muted-foreground mt-1">
                         <span className="font-medium">Notes:</span>{" "}
-                        {appointment.notes}
+                        {appointment.note}
                       </div>
                     )}
                   </div>
@@ -163,9 +185,6 @@ export function AppointmentsList({
                   >
                     View Details
                   </Button>
-                  <div className="text-xs text-muted-foreground">
-                    Age: {appointment.patient.age}
-                  </div>
                 </div>
               </div>
             </CardContent>
