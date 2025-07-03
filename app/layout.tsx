@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/components/AuthContext"; // nếu có
 import ChatWidget from "@/components/Chatbot/Gemini"; // nếu có
+import { ConsultationModal } from "@/components/ConsultationModal";
 
 const monaSans = Mona_Sans({
   variable: "--font-mona-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
           <Providers>
             {children}
             <Toaster />
+            <ConsultationModal/>
             <ChatWidget />
           </Providers>
         </AuthProvider>

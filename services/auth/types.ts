@@ -58,3 +58,11 @@ export interface WorkShift {
   status: string;
   note: string;
 }
+
+export interface ConsultationRequest {
+  phone: string;
+  name: string;
+  note: string;
+}
+
+
