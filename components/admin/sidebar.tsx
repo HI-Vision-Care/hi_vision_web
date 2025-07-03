@@ -13,17 +13,19 @@ import {
   X,
   Pill,
   Calendar,
+  User2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const adminNavigation = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  // { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Manage Accounts", href: "/admin/accounts", icon: User2 },
   { name: "Manage Doctors", href: "/admin/doctors", icon: UserCheck },
   { name: "All Patients", href: "/admin/patients", icon: Users },
   { name: "ARV Regimens", href: "/admin/arv-regimens", icon: Pill },
   { name: "Appointments", href: "/admin/appointments", icon: Calendar },
-  { name: "Schedule", href: "/admin/schedule", icon: Clock },
+  // { name: "Schedule", href: "/admin/schedule", icon: Clock },
   { name: "Shift Management", href: "/admin/shifts", icon: Clock },
 ];
 

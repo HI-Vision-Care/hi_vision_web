@@ -15,9 +15,8 @@ export interface PatientUI {
   gender: string;
   phone: string;
   lastVisit: string;
-  nextAppointment: string;
   status: string;
-  arvRegimen: string;
-  cd4Count: number;
-  viralLoad: string;
+  dob: string;
+  medDate: string;
+  medFac: string;
 }
