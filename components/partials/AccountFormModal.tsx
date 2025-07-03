@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AccountUI } from "@/services/account/types";
+import { updateAccount, createAccount } from "@/services/account/api";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -33,31 +35,86 @@ export default function AccountFormModal({
   initialData,
   readOnly = false,
 }: Props) {
-  const [formData, setFormData] = useState<AccountUI>({
-    id: initialData?.id || crypto.randomUUID(),
-    username: initialData?.username || "",
-    email: initialData?.email || "",
-    phone: initialData?.phone || "",
-    avatar:
-      initialData?.avatar ||
-      "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
-    role: initialData?.role || "PATIENT",
-    isDeleted: initialData?.isDeleted || false,
+  const isEditMode = !!initialData;
+
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    avatar: "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
+    role: "PATIENT",
+    password: "", // chỉ dùng khi tạo mới
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        username: initialData.username || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        avatar:
+          initialData.avatar ||
+          "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
+        role: initialData.role || "PATIENT",
+        password: "",
+      });
+    } else {
+      setFormData({
+        username: "",
+        email: "",
+        phone: "",
+        avatar: "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
+        role: "PATIENT",
+        password: "",
+      });
     }
   }, [initialData]);
 
-  const handleChange = (field: keyof AccountUI, value: string) => {
+  const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    if (!readOnly) {
-      onSave(formData);
+  const handleSubmit = async () => {
+    try {
+      if (readOnly) return;
+
+      if (isEditMode && initialData?.id) {
+        const payload = {
+          username: formData.username,
+          email: formData.email,
+          phone: formData.phone,
+          avatar: formData.avatar,
+        };
+        await updateAccount(initialData.id, payload);
+        toast.success("Account updated successfully!");
+
+        onSave({
+          ...initialData,
+          ...payload,
+        });
+      } else {
+        await createAccount({
+          email: formData.email,
+          password: formData.password,
+          role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
+        });
+        toast.success("Account created successfully!");
+
+        onSave({
+          id: crypto.randomUUID(), // giả lập ID nếu backend chưa trả về
+          username: formData.email.split("@")[0],
+          email: formData.email,
+          phone: "",
+          avatar: "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
+          role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
+          isDeleted: false,
+        });
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Error saving account:", error);
+      toast.error("Failed to save account.");
     }
   };
 
@@ -68,61 +125,82 @@ export default function AccountFormModal({
           <DialogTitle>
             {readOnly
               ? "View Account"
-              : initialData
+              : isEditMode
               ? "Edit Account"
-              : "Add Account"}
+              : "Create Account"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          <Input
-            value={formData.username}
-            onChange={(e) => handleChange("username", e.target.value)}
-            placeholder="Username"
-            disabled={readOnly}
-          />
+          {!isEditMode && (
+            <>
+              <Input
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                placeholder="Email"
+                disabled={readOnly}
+              />
+              <Input
+                value={formData.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                placeholder="Password"
+                type="password"
+                disabled={readOnly}
+              />
+              <Select
+                value={formData.role}
+                onValueChange={(val) => handleChange("role", val)}
+                disabled={readOnly}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ADMIN">ADMIN</SelectItem>
+                  <SelectItem value="DOCTOR">DOCTOR</SelectItem>
+                  {/* <SelectItem value="PATIENT">PATIENT</SelectItem> */}
+                </SelectContent>
+              </Select>
+            </>
+          )}
 
-          <Input
-            value={formData.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            placeholder="Email"
-            disabled={readOnly}
-          />
-
-          <Input
-            value={formData.phone}
-            onChange={(e) => handleChange("phone", e.target.value)}
-            placeholder="Phone"
-            disabled={readOnly}
-          />
-
-          <Input
-            value={formData.avatar}
-            onChange={(e) => handleChange("avatar", e.target.value)}
-            placeholder="Avatar URL"
-            disabled={readOnly}
-          />
-
-          <Select
-            value={formData.role}
-            onValueChange={(value) =>
-              handleChange("role", value as AccountUI["role"])
-            }
-            disabled={readOnly}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="DOCTOR">Doctor</SelectItem>
-              <SelectItem value="PATIENT">Patient</SelectItem>
-            </SelectContent>
-          </Select>
+          {isEditMode && (
+            <>
+              <Input
+                value={formData.username}
+                onChange={(e) => handleChange("username", e.target.value)}
+                placeholder="Username"
+                disabled={readOnly}
+              />
+              <Input
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                placeholder="Email"
+                disabled={readOnly}
+              />
+              <Input
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                placeholder="Phone"
+                disabled={readOnly}
+              />
+              <Input
+                value={formData.avatar}
+                onChange={(e) => handleChange("avatar", e.target.value)}
+                placeholder="Avatar URL"
+                disabled={readOnly}
+              />
+              <Input
+                value={formData.role}
+                disabled
+                className="opacity-80 text-gray-500"
+              />
+            </>
+          )}
 
           {!readOnly && (
             <Button className="w-full" onClick={handleSubmit}>
-              {initialData ? "Update" : "Create"}
+              {isEditMode ? "Update" : "Create"}
             </Button>
           )}
         </div>

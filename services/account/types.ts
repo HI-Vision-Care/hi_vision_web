@@ -7,3 +7,8 @@ export interface AccountUI {
   role: "ADMIN" | "DOCTOR" | "PATIENT";
   isDeleted: boolean;
 }
+export interface CreateAccountPayload {
+  email: string;
+  password: string;
+  role: "ADMIN" | "DOCTOR" | "PATIENT";
+}

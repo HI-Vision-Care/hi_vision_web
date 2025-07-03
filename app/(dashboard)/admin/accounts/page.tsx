@@ -14,19 +14,12 @@ import {
 } from "@/components/ui/select";
 import { Users, Search, Filter, Eye, Edit, Trash2 } from "lucide-react";
 import Header from "@/components/admin/header";
-import { getAllAccounts } from "@/services/account/api";
+import { getAllAccounts, deleteAccount } from "@/services/account/api";
 import AccountFormModal from "@/components/partials/AccountFormModal";
 import ConfirmDeleteModal from "@/components/partials/ConfirmDeleteModal";
+import { toast } from "sonner";
 
-export interface AccountUI {
-  id: string;
-  username: string;
-  email: string;
-  phone: string;
-  avatar: string;
-  role: "ADMIN" | "DOCTOR" | "PATIENT";
-  isDeleted: boolean;
-}
+import { AccountUI } from "@/services/account/types";
 
 export default function Accounts() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,15 +39,19 @@ export default function Accounts() {
         setAccounts(data);
       } catch (err) {
         console.error("Failed to load accounts", err);
+        toast.error("Failed to load accounts");
       }
     };
     fetchAccounts();
   }, []);
 
   const filteredAccounts = accounts.filter((account) => {
+    const username = account.username || "";
+    const email = account.email || "";
     const matchesSearch =
-      account.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.email.toLowerCase().includes(searchTerm.toLowerCase());
+      username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesRole = roleFilter === "all" || account.role === roleFilter;
     return matchesSearch && matchesRole;
   });
@@ -213,9 +210,20 @@ export default function Accounts() {
       <ConfirmDeleteModal
         open={!!deletingAccountId}
         onClose={() => setDeletingAccountId(null)}
-        onConfirm={() => {
-          setAccounts((prev) => prev.filter((a) => a.id !== deletingAccountId));
-          setDeletingAccountId(null);
+        onConfirm={async () => {
+          if (!deletingAccountId) return;
+          try {
+            await deleteAccount(deletingAccountId);
+            setAccounts((prev) =>
+              prev.filter((a) => a.id !== deletingAccountId)
+            );
+            toast.success("Account deleted successfully");
+          } catch (error) {
+            console.error("Failed to delete account", error);
+            toast.error("Failed to delete account");
+          } finally {
+            setDeletingAccountId(null);
+          }
         }}
       />
     </>

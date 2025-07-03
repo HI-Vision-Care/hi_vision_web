@@ -3,6 +3,7 @@ export interface Appointment {
   patientID: string;
   serviceID: number;
   doctorID: string;
+  appointmentId: string;
   appointmentDate: string; // ISO format
   isAnonymous: boolean;
   note?: string;
