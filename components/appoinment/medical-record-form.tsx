@@ -34,7 +34,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { LabResult, MedicalRecord, Patient } from "@/types";
-import { useCreateMedicalRecord } from "@/services/doctor/hooks";
+import {
+  useCreateLabResult,
+  useCreateMedicalRecord,
+} from "@/services/doctor/hooks";
 
 interface MedicalRecordFormProps {
   record: MedicalRecord | null;
@@ -46,11 +49,12 @@ interface MedicalRecordFormProps {
 export function MedicalRecordForm({
   appointmentId,
   record,
-  onSave,
   onBack,
   patients,
 }: MedicalRecordFormProps) {
+  const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
   const { mutate: createMedicalRecord, isLoading } = useCreateMedicalRecord();
+  const { mutate: createLabResult } = useCreateLabResult();
 
   const [formData, setFormData] = useState<Partial<MedicalRecord>>({
     patientId: "",
@@ -99,47 +103,44 @@ export function MedicalRecordForm({
   const addLabResult = () => {
     if (!labResult.testType || !labResult.resultValue) return;
 
-    const newLabResult: LabResult = {
-      id: editingLabId || `lab_${Date.now()}`,
-      recordId: formData.id || "",
-      testType: labResult.testType!,
-      resultText: labResult.resultText || "",
-      resultValue: labResult.resultValue!,
-      unit: labResult.unit || "",
-      referenceRange: labResult.referenceRange || "",
-      testDate: labResult.testDate!,
-      performedBy: labResult.performedBy || "Lab Technician",
-      status: labResult.status || "normal",
-    };
-
-    if (editingLabId) {
-      setFormData((prev) => ({
-        ...prev,
-        labResults:
-          prev.labResults?.map((lab) =>
-            lab.id === editingLabId ? newLabResult : lab
-          ) || [],
-      }));
-      setEditingLabId(null);
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        labResults: [...(prev.labResults || []), newLabResult],
-      }));
+    if (!createdRecordId) {
+      alert("Chưa có recordId, hãy lưu Medical Record trước.");
+      return;
     }
 
-    // Reset lab form
-    setLabResult({
-      testType: "",
-      resultText: "",
-      resultValue: "",
-      unit: "",
-      referenceRange: "",
-      testDate: new Date().toISOString().split("T")[0],
-      performedBy: "",
-      status: "normal",
-    });
-    setShowLabForm(false);
+    createLabResult(
+      {
+        recordId: createdRecordId,
+        testType: labResult.testType!,
+        resultText: labResult.resultText || "",
+        resultValue: labResult.resultValue!,
+        unit: labResult.unit || "",
+        referenceRange: labResult.referenceRange || "",
+        testDate: labResult.testDate!,
+        performedBy: labResult.performedBy || "Lab Technician",
+      },
+      {
+        onSuccess: () => {
+          // Xử lý khi thành công (ví dụ: load lại bảng, thông báo, v.v.)
+          setLabResult({
+            testType: "",
+            resultText: "",
+            resultValue: "",
+            unit: "",
+            referenceRange: "",
+            testDate: new Date().toISOString().split("T")[0],
+            performedBy: "",
+            status: "normal",
+          });
+          setShowLabForm(false);
+          setEditingLabId(null);
+          // Có thể load lại danh sách labResults nếu muốn show ra
+        },
+        onError: (err) => {
+          // Thông báo lỗi
+        },
+      }
+    );
   };
 
   const editLabResult = (lab: LabResult) => {
@@ -156,7 +157,6 @@ export function MedicalRecordForm({
   };
 
   const handleSave = () => {
-    // Chỉ kiểm tra diagnosis có đủ
     if (!formData.diagnosis) return;
 
     createMedicalRecord(
@@ -166,12 +166,14 @@ export function MedicalRecordForm({
         note: formData.notes || "",
       },
       {
-        onSuccess: () => {
-          // Có thể show toast/thông báo thành công ở đây
-          onBack();
+        onSuccess: (data) => {
+          if (data?.recordId) {
+            setCreatedRecordId(data.recordId); // Lưu lại cho LabResult
+          }
+          // onBack(); // Chỉ back khi cần, hoặc chuyển qua bước thêm LabResult
         },
         onError: (err) => {
-          // Xử lý lỗi ở đây nếu cần
+          // Xử lý lỗi
         },
       }
     );
