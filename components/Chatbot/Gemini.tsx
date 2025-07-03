@@ -1,9 +1,5 @@
 "use client";
 
-import { useState, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Brain, X, Sparkles } from "lucide-react"
 import {
   useState,
   useRef,
@@ -11,8 +7,9 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from "react";
-
-
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Brain, X, Sparkles } from "lucide-react";
 
 export type Message = {
   sender: "user" | "bot";

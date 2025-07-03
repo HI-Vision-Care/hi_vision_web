@@ -1,6 +1,10 @@
 import axiosInstance from "@/config/axios";
-import { DoctorResponse, DoctorUpdateRequest } from "./types";
-import { DoctorAppointment, DoctorProfile, DoctorResponse } from "./types";
+import {
+  DoctorAppointment,
+  DoctorProfile,
+  DoctorResponse,
+  DoctorUpdateRequest,
+} from "./types";
 import Cookies from "js-cookie";
 import { LabResult } from "@/types";
 
@@ -22,6 +26,8 @@ export async function updateDoctorProfile(
 
 export async function deleteDoctor(doctorID: string): Promise<void> {
   await axiosInstance.delete(`/doctor/delete/${doctorID}`);
+}
+
 export const getAppointmentsByDoctorId = async (
   doctorID: string
 ): Promise<DoctorAppointment[]> => {
