@@ -1,104 +1,113 @@
-"use client"
+"use client";
 
 import { useState, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Brain, X, Sparkles } from "lucide-react"
+import {
+  useState,
+  useRef,
+  useEffect,
+  type KeyboardEvent,
+  type ChangeEvent,
+} from "react";
+
+
 
 export type Message = {
-  sender: "user" | "bot"
-  text: string
-}
+  sender: "user" | "bot";
+  text: string;
+};
 
-export const HEALTH_KEYWORDS = ["tư vấn", "sức khỏe", "triệu chứng", "bệnh"]
+export const HEALTH_KEYWORDS = ["tư vấn", "sức khỏe", "triệu chứng", "bệnh"];
 
 export function needsMedicalAdvice(text: string) {
-  const lower = text.toLowerCase()
-  return HEALTH_KEYWORDS.some((kw) => lower.includes(kw))
+  const lower = text.toLowerCase();
+  return HEALTH_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
 const SUGGESTIONS = [
   "Tôi cần tư vấn",
   "Truy vấn sức khỏe",
   "Hướng dẫn đặt lịch",
-  "Hãy kể chuyện cười"
-]
+  "Hãy kể chuyện cười",
+];
 
 export default function ModernChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [prompt, setPrompt] = useState<string>("")
-  const [messages, setMessages] = useState<Message[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState(false);
+  const [prompt, setPrompt] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (messageText?: string) => {
-    const textToSend = messageText || prompt.trim()
-    if (!textToSend) return
+    const textToSend = messageText || prompt.trim();
+    if (!textToSend) return;
 
-    const userMessage: Message = { sender: "user", text: textToSend }
-    const newMessages = [...messages, userMessage]
-    setMessages(newMessages)
-    setLoading(true)
+    const userMessage: Message = { sender: "user", text: textToSend };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setLoading(true);
 
-    const history = newMessages.slice(-5)
+    const history = newMessages.slice(-5);
 
     try {
-      const body: any = { history, brief: true }
+      const body: any = { history, brief: true };
       if (needsMedicalAdvice(textToSend)) {
         body.userInfo = {
           name: "Nguyễn Văn A",
           age: 45,
           condition: "Tiền sử huyết áp cao",
-        }
+        };
       }
 
       const res = await fetch("/api/gemini", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-      })
+      });
 
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message || "API error")
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "API error");
 
-      const botMessage: Message = { sender: "bot", text: data.result }
-      setMessages((prev) => [...prev, botMessage])
+      const botMessage: Message = { sender: "bot", text: data.result };
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error: any) {
       const errorMessage: Message = {
         sender: "bot",
         text: "Có lỗi xảy ra: " + (error.message || error.toString()),
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setLoading(false)
-      setPrompt("")
+      setLoading(false);
+      setPrompt("");
     }
-  }
+  };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
+      e.preventDefault();
+      sendMessage();
     }
-  }
+  };
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setPrompt(e.target.value)
-  }
+    setPrompt(e.target.value);
+  };
 
   const handleSuggestionClick = (suggestion: string) => {
-    sendMessage(suggestion)
-  }
+    sendMessage(suggestion);
+  };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <>
@@ -122,7 +131,12 @@ export default function ModernChatWidget() {
               </div>
               <h3 className="font-semibold text-gray-800">AI Assistant</h3>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="h-8 w-8 hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="h-8 w-8 hover:bg-gray-100"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -136,7 +150,9 @@ export default function ModernChatWidget() {
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                     Xin chào Nguyễn Văn A!
                   </h2>
-                  <p className="text-gray-600 text-sm">Tôi có thể giúp gì cho bạn hôm nay?</p>
+                  <p className="text-gray-600 text-sm">
+                    Tôi có thể giúp gì cho bạn hôm nay?
+                  </p>
                 </div>
 
                 {/* Suggestion Buttons */}
@@ -164,7 +180,12 @@ export default function ModernChatWidget() {
                 }}
               >
                 {messages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={idx}
+                    className={`flex ${
+                      msg.sender === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
                     <div
                       className={`max-w-[80%] p-3 rounded-2xl ${
                         msg.sender === "user"
@@ -215,7 +236,11 @@ export default function ModernChatWidget() {
                     }}
                   />
 
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-700">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-500 hover:text-blue-700"
+                  >
                     <Sparkles className="h-4 w-4" />
                   </Button>
                 </div>
@@ -250,5 +275,5 @@ export default function ModernChatWidget() {
         }
       `}</style>
     </>
-  )
+  );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Clock, Users, AlertCircle, Plus, Calendar } from "lucide-react";
-import { getWorkShifts } from "@/services/auth/api"; // đảm bảo đúng path
-import type { WorkShift } from "@/services/auth/types";
+import Header from "@/components/admin/header";
+import { WorkShift } from "@/services/workShift/types";
+import { getWorkShifts } from "@/services/workShift/api";
 
 export default function Shifts() {
   const [selectedMonth, setSelectedMonth] = useState("2025-07");

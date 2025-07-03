@@ -9,19 +9,23 @@ export function middleware(req: NextRequest) {
 
   // ✅ Chặn nếu không đăng nhập
   if (!token) {
-    // Ví dụ: chặn truy cập /admin nếu chưa login
-    if (url.startsWith("/admin") || url.startsWith("/doctor") || url.startsWith("/patient")) {
+    if (
+      url.startsWith("/admin") ||
+      url.startsWith("/doctor") ||
+      url.startsWith("/patient")
+    ) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
     return NextResponse.next();
   }
 
-  // ✅ Phân quyền theo role
-  if (url.startsWith("/admin") && role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/403", req.url));
+  // 🚀 Nếu là DOCTOR thì cho đi hết
+  if (role === "DOCTOR") {
+    return NextResponse.next();
   }
 
-  if (url.startsWith("/doctor") && role !== "DOCTOR") {
+  // ✅ Phân quyền cho các role khác
+  if (url.startsWith("/admin") && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/403", req.url));
   }
 
@@ -29,5 +33,6 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/403", req.url));
   }
 
+  // Nếu không dính các rule trên thì NextResponse.next()
   return NextResponse.next();
 }

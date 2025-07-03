@@ -20,6 +20,7 @@ export interface RegisterResponse {
   email: string;
   phone: string;
 }
+
 export interface DoctorResponse {
   doctorID: string;
   name: string;
@@ -64,5 +65,6 @@ export interface ConsultationRequest {
   name: string;
   note: string;
 }
+
 
 

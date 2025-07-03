@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Header } from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +22,7 @@ import {
   Palette,
   Save,
 } from "lucide-react";
+import Header from "@/components/admin/header";
 
 export default function SystemSettings() {
   const [emailNotifications, setEmailNotifications] = useState(true);
