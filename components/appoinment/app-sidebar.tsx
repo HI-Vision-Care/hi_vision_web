@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Calendar,
-  Home,
-  Users,
-  FileText,
-  Settings,
-  Stethoscope,
-} from "lucide-react";
+import { Calendar, Home, Users, FileText, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -24,9 +17,13 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface AppSidebarProps {
-  currentView: "overview" | "appointments";
-  onViewChange: (view: "overview" | "appointments") => void;
+  currentView: "overview" | "appointments" | "medical-records";
+  onViewChange: (
+    view: "overview" | "appointments" | "medical-records",
+    appointmentId?: string
+  ) => void;
   onBackToList: () => void;
+  onBackToMedicalRecords: () => void;
 }
 
 const navigation = [
@@ -41,14 +38,14 @@ const navigation = [
     view: "appointments" as const,
   },
   {
+    title: "Medical Records",
+    icon: FileText,
+    view: "medical-records" as const,
+  },
+  {
     title: "Patients",
     icon: Users,
     view: "patients" as const,
-  },
-  {
-    title: "Medical Records",
-    icon: FileText,
-    view: "records" as const,
   },
 ];
 
@@ -56,11 +53,17 @@ export function AppSidebar({
   currentView,
   onViewChange,
   onBackToList,
+  onBackToMedicalRecords,
 }: AppSidebarProps) {
-  const handleNavigation = (view: "overview" | "appointments") => {
+  const handleNavigation = (
+    view: "overview" | "appointments" | "medical-records"
+  ) => {
     onViewChange(view);
     if (view !== "appointments") {
       onBackToList();
+    }
+    if (view !== "medical-records") {
+      onBackToMedicalRecords();
     }
   };
 
@@ -75,7 +78,7 @@ export function AppSidebar({
             >
               <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-amber-50 text-primary-foreground">
-                  <Image src="/logo.svg" alt="Logo" width={120} height={40} />
+                  <Image src="/logo.png" width={32} height={32} alt="Logo" />
                 </div>
               </Link>
               <div className="flex flex-col gap-0.5 leading-none">

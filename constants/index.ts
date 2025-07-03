@@ -1,3 +1,4 @@
+import { MedicalRecord } from "@/types";
 import {
   Heart,
   Lightbulb,
@@ -758,4 +759,25 @@ export const monthlyStats = [
   { label: "Completed Treatments", value: "142", color: "green" },
   { label: "Missed Appointments", value: "14", color: "yellow" },
   { label: "Emergency Cases", value: "3", color: "red" },
+];
+
+export const mockMedicalRecords: MedicalRecord[] = [
+  {
+    id: "mr1",
+    patientId: "p1",
+    patientName: "Sarah Johnson",
+    recordDate: "2024-01-15",
+    diagnosis: "HIV-1 infection, well-controlled on ART",
+    notes:
+      "Patient continues to show excellent adherence to antiretroviral therapy. No reported side effects. Viral load remains undetectable. CD4 count has improved significantly since last visit.",
+    treatmentPlan:
+      "Continue current ART regimen (Bictegravir/Tenofovir alafenamide/Emtricitabine). Monitor viral load and CD4 count every 3 months.",
+    followUpDate: "2024-04-15",
+    hivStage: "Stage 1",
+    cd4Count: 650,
+    viralLoad: 0,
+    labResults: [],
+    createdBy: "Dr. Sarah Wilson",
+    lastModified: "2024-01-15T10:30:00Z",
+  },
 ];
