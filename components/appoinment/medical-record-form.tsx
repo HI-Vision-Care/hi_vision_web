@@ -33,7 +33,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { LabResult, MedicalRecord, Patient } from "@/types";
 import {
   useCreateLabResult,
   useCreateMedicalRecord,
@@ -42,19 +41,15 @@ import {
 import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS, hivTestTypes } from "@/constants";
 
-
 export default function MedicalRecordForm({
   appointmentId,
   record,
   onBack,
 }: MedicalRecordFormProps) {
-
   const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
-  const { mutate: createMedicalRecord, isLoading } = useCreateMedicalRecord();
   const { mutate: createLabResult } = useCreateLabResult();
 
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
-
 
   const [formData, setFormData] = useState<Partial<MedicalRecord>>({
     patientId: "",
@@ -136,7 +131,7 @@ export default function MedicalRecordForm({
           setEditingLabId(null);
           // Có thể load lại danh sách labResults nếu muốn show ra
         },
-        onError: (err) => {
+        onError: () => {
           // Thông báo lỗi
         },
       }
