@@ -37,7 +37,7 @@ const HeaderHome = () => {
       case "ADMIN":
         return "/admin";
       case "DOCTOR":
-        return "/doctor/dashboard";
+        return "/patients";
       case "PATIENT":
         return "/patient/";
       default:

@@ -35,6 +35,13 @@ export interface Appointment {
     normalRange: string;
     status: "normal" | "abnormal";
   }[];
+  patientName: string;
+  doctorName: string;
+  serviceName: string;
+  appointmentDate: string;
+  isAnonymous: boolean;
+  note: string;
+  createAt: string;
 }
 
 export type AppointmentStatus =
@@ -75,6 +82,23 @@ export interface Appointment {
   }[];
 }
 
+export interface AppointmentDetailProps {
+  appointment: {
+    appointmentID: string;
+    patientName: string;
+    doctorName: string;
+    serviceName: string;
+    appointmentDate: string;
+    isAnonymous: boolean;
+    note?: string;
+    createAt: string;
+    status: string;
+  };
+  onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
+  onBack: () => void;
+  onViewChange: (view: "medical-records", appointmentId: string) => void;
+}
+
 export interface LabResult {
   id: string;
   recordId: string;
@@ -104,4 +128,10 @@ export interface MedicalRecord {
   labResults: LabResult[];
   createdBy: string;
   lastModified: string;
+}
+
+export interface MedicalRecordFormProps {
+  appointmentId: string;
+  record: MedicalRecord | null;
+  onBack: () => void;
 }

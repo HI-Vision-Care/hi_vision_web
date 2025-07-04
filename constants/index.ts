@@ -1,4 +1,3 @@
-import { MedicalRecord } from "@/types";
 import {
   Heart,
   Lightbulb,
@@ -761,23 +760,26 @@ export const monthlyStats = [
   { label: "Emergency Cases", value: "3", color: "red" },
 ];
 
-export const mockMedicalRecords: MedicalRecord[] = [
-  {
-    id: "mr1",
-    patientId: "p1",
-    patientName: "Sarah Johnson",
-    recordDate: "2024-01-15",
-    diagnosis: "HIV-1 infection, well-controlled on ART",
-    notes:
-      "Patient continues to show excellent adherence to antiretroviral therapy. No reported side effects. Viral load remains undetectable. CD4 count has improved significantly since last visit.",
-    treatmentPlan:
-      "Continue current ART regimen (Bictegravir/Tenofovir alafenamide/Emtricitabine). Monitor viral load and CD4 count every 3 months.",
-    followUpDate: "2024-04-15",
-    hivStage: "Stage 1",
-    cd4Count: 650,
-    viralLoad: 0,
-    labResults: [],
-    createdBy: "Dr. Sarah Wilson",
-    lastModified: "2024-01-15T10:30:00Z",
-  },
+export const hivTestTypes = [
+  "CD4+ T-cell count",
+  "HIV Viral Load",
+  "Complete Blood Count (CBC)",
+  "Comprehensive Metabolic Panel (CMP)",
+  "Lipid Panel",
+  "Liver Function Tests",
+  "Kidney Function Tests",
+  "Hepatitis B Surface Antigen",
+  "Hepatitis C Antibody",
+  "Tuberculosis Screening",
+  "Syphilis Test (RPR/VDRL)",
+  "Gonorrhea/Chlamydia",
+  "Drug Resistance Testing",
 ];
+
+export const APPOINTMENT_STATUS_COLORS: Record<string, string> = {
+  SCHEDULED: "bg-blue-100 text-blue-800",
+  ONGOING: "bg-yellow-200 text-warning-foreground",
+  COMPLETED: "bg-green-300 text-success-foreground",
+  CANCELLED: "bg-red-100 text-red-800",
+  DEFAULT: "bg-gray-100 text-gray-800",
+};

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,34 +15,29 @@ import {
 } from "@/components/ui/select";
 import { Users, Search, Filter, Eye, Edit, Trash2 } from "lucide-react";
 import Header from "@/components/admin/header";
-import { getAllAccounts, deleteAccount } from "@/services/account/api";
 import { toast } from "sonner";
 import { AccountUI } from "@/services/account/types";
 import { AccountFormModal, ConfirmDeleteModal } from "@/components/partials";
+import {
+  useCreateAccount,
+  useDeleteAccount,
+  useGetAllAccounts,
+  useUpdateAccount,
+} from "@/services/account/hook";
 
 export default function Accounts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [accounts, setAccounts] = useState<AccountUI[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const { data: accounts = [] } = useGetAllAccounts();
+  const { mutate: deleteAccountMutation } = useDeleteAccount();
+  const { mutate: createAccountMutation } = useCreateAccount();
+  const { mutate: updateAccountMutation } = useUpdateAccount();
   const [editingAccount, setEditingAccount] = useState<AccountUI | null>(null);
   const [deletingAccountId, setDeletingAccountId] = useState<string | null>(
     null
   );
   const [viewingAccount, setViewingAccount] = useState<AccountUI | null>(null);
-
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const data = await getAllAccounts();
-        setAccounts(data);
-      } catch (err) {
-        console.error("Failed to load accounts", err);
-        toast.error("Failed to load accounts");
-      }
-    };
-    fetchAccounts();
-  }, []);
 
   const filteredAccounts = accounts.filter((account) => {
     const username = account.username || "";
@@ -184,12 +180,15 @@ export default function Accounts() {
         open={showModal}
         onClose={() => setShowModal(false)}
         onSave={(data) => {
-          setAccounts((prev) => {
-            const exists = prev.find((a) => a.id === data.id);
-            return exists
-              ? prev.map((a) => (a.id === data.id ? data : a))
-              : [...prev, data];
-          });
+          if (editingAccount) {
+            updateAccountMutation({ accountId: data.id, data });
+          } else {
+            createAccountMutation({
+              email: data.email,
+              password: data.password,
+              role: data.role,
+            });
+          }
           setShowModal(false);
         }}
         initialData={editingAccount}
@@ -208,20 +207,18 @@ export default function Accounts() {
       <ConfirmDeleteModal
         open={!!deletingAccountId}
         onClose={() => setDeletingAccountId(null)}
-        onConfirm={async () => {
+        onConfirm={() => {
           if (!deletingAccountId) return;
-          try {
-            await deleteAccount(deletingAccountId);
-            setAccounts((prev) =>
-              prev.filter((a) => a.id !== deletingAccountId)
-            );
-            toast.success("Account deleted successfully");
-          } catch (error) {
-            console.error("Failed to delete account", error);
-            toast.error("Failed to delete account");
-          } finally {
-            setDeletingAccountId(null);
-          }
+          deleteAccountMutation(deletingAccountId, {
+            onSuccess: () => {
+              toast.success("Account deleted successfully");
+              setDeletingAccountId(null);
+            },
+            onError: () => {
+              toast.error("Failed to delete account");
+              setDeletingAccountId(null);
+            },
+          });
         }}
       />
     </>

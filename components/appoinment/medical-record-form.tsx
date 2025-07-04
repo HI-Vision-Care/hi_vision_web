@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,8 +7,6 @@ import {
   Save,
   Plus,
   Trash2,
-  User,
-  FileText,
   Activity,
   TestTube,
 } from "lucide-react";
@@ -33,24 +32,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LabResult, MedicalRecord, Patient } from "@/types";
+import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
 import { useCreateMedicalRecord } from "@/services/doctor/hooks";
-
-interface MedicalRecordFormProps {
-  record: MedicalRecord | null;
-  onSave: (record: MedicalRecord) => void;
-  onBack: () => void;
-  patients: Patient[];
-}
+import { APPOINTMENT_STATUS_COLORS, hivTestTypes } from "@/constants";
 
 export default function MedicalRecordForm({
   appointmentId,
   record,
-  onSave,
   onBack,
-  patients,
 }: MedicalRecordFormProps) {
-  const { mutate: createMedicalRecord, isLoading } = useCreateMedicalRecord();
+  const { mutate: createMedicalRecord } = useCreateMedicalRecord();
 
   const [formData, setFormData] = useState<Partial<MedicalRecord>>({
     patientId: "",
@@ -170,42 +161,10 @@ export default function MedicalRecordForm({
           // Có thể show toast/thông báo thành công ở đây
           onBack();
         },
-        onError: (err) => {
-          // Xử lý lỗi ở đây nếu cần
-        },
+        onError: () => {},
       }
     );
   };
-
-  const hivTestTypes = [
-    "CD4+ T-cell count",
-    "HIV Viral Load",
-    "Complete Blood Count (CBC)",
-    "Comprehensive Metabolic Panel (CMP)",
-    "Lipid Panel",
-    "Liver Function Tests",
-    "Kidney Function Tests",
-    "Hepatitis B Surface Antigen",
-    "Hepatitis C Antibody",
-    "Tuberculosis Screening",
-    "Syphilis Test (RPR/VDRL)",
-    "Gonorrhea/Chlamydia",
-    "Drug Resistance Testing",
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "normal":
-        return "bg-success text-success-foreground";
-      case "abnormal":
-        return "bg-warning text-warning-foreground";
-      case "critical":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-  console.log(appointmentId);
 
   return (
     <div className="space-y-6">
@@ -470,7 +429,12 @@ export default function MedicalRecordForm({
                             {new Date(lab.testDate).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Badge className={getStatusColor(lab.status)}>
+                            <Badge
+                              className={
+                                APPOINTMENT_STATUS_COLORS[lab.status] ||
+                                APPOINTMENT_STATUS_COLORS.DEFAULT
+                              }
+                            >
                               {lab.status}
                             </Badge>
                           </TableCell>

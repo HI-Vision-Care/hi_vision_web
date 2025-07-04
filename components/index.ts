@@ -28,3 +28,5 @@ export * from "./partials/DoctorFormModal";
 export * from "./partials/HomeSwiper";
 export * from "./partials/LoginNav";
 export * from "./partials/PatientFormModal";
+
+export * from "./doctor/DoctorDashboardClient";

@@ -13,19 +13,27 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
+import { Appointment } from "@/types";
+import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 
-export default function DashboardOverview({ onAppointmentSelect }) {
+interface DashboardOverviewProps {
+  onAppointmentSelect: (appointment: Appointment) => void;
+}
+
+export default function DashboardOverview({
+  onAppointmentSelect,
+}: DashboardOverviewProps) {
   // 1. Lấy accountId từ token
   const accountId = useAccountId();
 
   // 2. Lấy profile để lấy doctorID
   const { data: doctorProfile, isLoading: isProfileLoading } =
-    useGetDoctorProfile(accountId);
+    useGetDoctorProfile(accountId || "");
 
   // 3. Lấy danh sách lịch hẹn theo doctorID
   const doctorID = doctorProfile?.doctorID;
   const { data: appointments = [], isLoading: isAppointmentsLoading } =
-    useGetAppointmentsByDoctorId(doctorID, !!doctorID);
+    useGetAppointmentsByDoctorId(doctorID || "", !!doctorID);
 
   // 4. Lọc today's appointments theo ngày hiện tại
   const today = new Date();
@@ -47,21 +55,8 @@ export default function DashboardOverview({ onAppointmentSelect }) {
     (apt) => apt.status === "COMPLETED"
   ).length;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "SCHEDULED":
-        return "bg-blue-100 text-blue-800";
-      case "ONGOING":
-        return "bg-yellow-200 text-warning-foreground";
-      case "COMPLETED":
-        return "bg-green-300 text-success-foreground";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   if (isProfileLoading || isAppointmentsLoading) {
-    return <div>Đang tải dữ liệu...</div>;
+    return <div>Loading data...</div>;
   }
 
   return (
@@ -160,7 +155,12 @@ export default function DashboardOverview({ onAppointmentSelect }) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(appointment.status)}>
+                  <Badge
+                    className={
+                      APPOINTMENT_STATUS_COLORS[appointment.status] ||
+                      APPOINTMENT_STATUS_COLORS.DEFAULT
+                    }
+                  >
                     {appointment.status}
                   </Badge>
                   <Button
