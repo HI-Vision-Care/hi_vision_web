@@ -1,4 +1,4 @@
-import LoginNav from "@/components/partials/LoginNav";
+import { LoginNav } from "@/components/partials";
 import type { ReactNode } from "react";
 
 const AuthLayout = async ({ children }: { children: ReactNode }) => {

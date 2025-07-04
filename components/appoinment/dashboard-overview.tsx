@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 
-export function DashboardOverview({ onAppointmentSelect }) {
+export default function DashboardOverview({ onAppointmentSelect }) {
   // 1. Lấy accountId từ token
   const accountId = useAccountId();
 

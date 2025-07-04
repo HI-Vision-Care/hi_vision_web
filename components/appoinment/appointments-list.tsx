@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function AppointmentsList({ onAppointmentSelect }) {
+export default function AppointmentsList({ onAppointmentSelect }) {
   // Lấy accountId → doctorProfile → doctorID → appointments
   const accountId = useAccountId();
   const { data: doctorProfile, isLoading: isProfileLoading } =

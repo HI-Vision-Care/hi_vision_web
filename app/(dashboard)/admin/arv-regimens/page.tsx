@@ -18,8 +18,8 @@ import {
   Plus,
   Download,
 } from "lucide-react";
-import Header from "@/components/admin/header";
 import { getAllArvs } from "@/services/arv/api";
+import { Header } from "@/components/admin";
 
 interface ARV {
   arvId: string;

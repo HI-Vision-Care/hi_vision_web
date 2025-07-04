@@ -43,7 +43,7 @@ interface MedicalRecordFormProps {
   patients: Patient[];
 }
 
-export function MedicalRecordForm({
+export default function MedicalRecordForm({
   appointmentId,
   record,
   onSave,

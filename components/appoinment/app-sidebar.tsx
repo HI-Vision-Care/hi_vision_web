@@ -49,7 +49,7 @@ const navigation = [
   },
 ];
 
-export function AppSidebar({
+export default function AppSidebar({
   currentView,
   onViewChange,
   onBackToList,

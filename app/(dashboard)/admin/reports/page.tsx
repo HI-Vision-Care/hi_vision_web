@@ -19,13 +19,13 @@ import {
   FileText,
   PieChart,
 } from "lucide-react";
-import Header from "@/components/admin/header";
 import {
   arvRegimensUsage,
   chartData,
   reportData,
   treatmentOutcomes,
 } from "@/constants";
+import { Header } from "@/components/admin";
 
 export default function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");

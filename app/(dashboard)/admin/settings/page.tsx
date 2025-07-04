@@ -22,7 +22,7 @@ import {
   Palette,
   Save,
 } from "lucide-react";
-import Header from "@/components/admin/header";
+import { Header } from "@/components/admin";
 
 export default function SystemSettings() {
   const [emailNotifications, setEmailNotifications] = useState(true);

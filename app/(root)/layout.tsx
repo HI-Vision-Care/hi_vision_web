@@ -1,7 +1,5 @@
+import { Footer, HeaderHome } from "@/components/home";
 import { ReactNode } from "react";
-
-import Header from "@/components/home/HeaderHome";
-import Footer from "@/components/home/Footer";
 
 // import { isAuthenticated } from "@/lib/actions/auth.action";
 
@@ -12,7 +10,7 @@ const Layout = async ({ children }: { children: ReactNode }) => {
   return (
     <div className="root-layout ">
       <div className="container w-[80%] !m-auto">
-        <Header />
+        <HeaderHome />
 
         {children}
       </div>

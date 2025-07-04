@@ -41,7 +41,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export function AppointmentDetail({
+export default function AppointmentDetail({
   appointment,
   onStatusUpdate,
   onBack,

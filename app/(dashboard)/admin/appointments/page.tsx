@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Calendar,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Clock,
-  UserCheck,
-} from "lucide-react";
-import Header from "@/components/admin/header";
+import { Calendar, Filter, Eye, Edit, Clock } from "lucide-react";
 import { Appointment } from "@/services/appointment/types";
 import { getAllAppointments } from "@/services/appointment/api";
+import Sidebar from "@/components/admin/sidebar";
+import { Header } from "@/components/admin";
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);

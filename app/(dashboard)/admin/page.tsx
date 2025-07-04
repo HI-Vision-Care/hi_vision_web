@@ -16,8 +16,7 @@ import {
   Pill,
   BarChart3,
 } from "lucide-react";
-import Header from "@/components/admin/header";
-import Sidebar from "@/components/admin/sidebar";
+
 import {
   doctorPerformance,
   monthlyStats,
@@ -25,6 +24,8 @@ import {
   systemAlerts,
   systemStat,
 } from "@/constants";
+import { Header } from "@/components/admin";
+import Sidebar from "@/components/admin/sidebar";
 
 export default function AdminDashboard() {
   return (

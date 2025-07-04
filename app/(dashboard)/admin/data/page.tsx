@@ -15,8 +15,8 @@ import {
   CheckCircle,
   Clock,
 } from "lucide-react";
-import Header from "@/components/admin/header";
 import { backupHistory, systemStats } from "@/constants";
+import { Header } from "@/components/admin";
 
 export default function DataManagement() {
   const getStatusBadge = (status: string) => {

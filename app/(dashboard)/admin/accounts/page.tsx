@@ -15,11 +15,9 @@ import {
 import { Users, Search, Filter, Eye, Edit, Trash2 } from "lucide-react";
 import Header from "@/components/admin/header";
 import { getAllAccounts, deleteAccount } from "@/services/account/api";
-import AccountFormModal from "@/components/partials/AccountFormModal";
-import ConfirmDeleteModal from "@/components/partials/ConfirmDeleteModal";
 import { toast } from "sonner";
-
 import { AccountUI } from "@/services/account/types";
+import { AccountFormModal, ConfirmDeleteModal } from "@/components/partials";
 
 export default function Accounts() {
   const [searchTerm, setSearchTerm] = useState("");
