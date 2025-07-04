@@ -28,6 +28,7 @@ export default function MedicalRecordsList({
 }: MedicalRecordsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
+  const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
 
   const filteredRecords = medicalRecords.filter((record) => {
     const matchesSearch =
@@ -67,6 +68,10 @@ export default function MedicalRecordsList({
       return "bg-success text-success-foreground";
     if (viralLoad < 1000) return "bg-warning text-warning-foreground";
     return "bg-red-100 text-red-800";
+  };
+
+  const handleRecordSaved = (recordId: string) => {
+    setCreatedRecordId(recordId); // Lưu để truyền qua lab result form
   };
 
   return (
