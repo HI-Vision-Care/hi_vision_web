@@ -23,8 +23,8 @@ import {
   Info,
   User,
 } from "lucide-react";
-import { Header } from "@/components/admin";
 import { auditLogs } from "@/constants";
+import { Header } from "@/components/admin";
 
 export default function AuditLogs() {
   const [searchTerm, setSearchTerm] = useState("");

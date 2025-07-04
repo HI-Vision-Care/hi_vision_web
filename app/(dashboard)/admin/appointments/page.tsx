@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Sidebar from "@/components/admin/sidebar";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,34 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Calendar,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Clock,
-  UserCheck,
-} from "lucide-react";
-import Header from "@/components/admin/header";
+import { Calendar, Filter, Eye, Edit, Clock } from "lucide-react";
 import { Appointment } from "@/services/appointment/types";
-import { getAllAppointments } from "@/services/appointment/api";
+import Sidebar from "@/components/admin/sidebar";
+import { Header } from "@/components/admin";
+import { useGetAllAppointments } from "@/services/appointment/hooks";
 
 export default function Appointments() {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getAllAppointments();
-      setAppointments(data);
-    };
-    fetchData();
-  }, []);
+  const { data: appointments = [] } = useGetAllAppointments();
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
@@ -172,11 +156,6 @@ export default function Appointments() {
                 <SelectItem value="week">This Week</SelectItem>
               </SelectContent>
             </Select>
-
-            {/* <Button className="bg-red-600 hover:bg-red-700">
-              <Plus className="h-4 w-4 mr-2" />
-              New Appointment
-            </Button> */}
           </div>
 
           <Card className="bg-white shadow-sm">

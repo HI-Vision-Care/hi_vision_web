@@ -4,7 +4,7 @@ import {
   useGetDoctorProfile,
   useGetAppointmentsByDoctorId,
 } from "@/services/doctor/hooks";
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,15 +16,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Appointment } from "@/types";
+import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 
-export function AppointmentsList({ onAppointmentSelect }) {
+interface AppointmentListProps {
+  onAppointmentSelect: (appointment: Appointment) => void;
+}
+
+export default function AppointmentsList({
+  onAppointmentSelect,
+}: AppointmentListProps) {
   // Lấy accountId → doctorProfile → doctorID → appointments
   const accountId = useAccountId();
   const { data: doctorProfile, isLoading: isProfileLoading } =
-    useGetDoctorProfile(accountId);
+    useGetDoctorProfile(accountId || "");
   const doctorID = doctorProfile?.doctorID;
   const { data: appointments = [], isLoading: isAppointmentsLoading } =
-    useGetAppointmentsByDoctorId(doctorID, !!doctorID);
+    useGetAppointmentsByDoctorId(doctorID || "", !!doctorID);
 
   // State filter/search
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,34 +53,6 @@ export function AppointmentsList({ onAppointmentSelect }) {
       return matchesSearch && matchesStatus;
     });
   }, [appointments, searchTerm, statusFilter]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "SCHEDULED":
-        return "bg-blue-100 text-blue-800";
-      case "ONGOING":
-        return "bg-yellow-100 text-warning-foreground";
-      case "COMPLETED":
-        return "bg-green-300 text-success-foreground";
-      case "CANCELLED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "SCHEDULED":
-        return <Clock className="h-3 w-3" />;
-      case "ONGOING":
-        return <User className="h-3 w-3" />;
-      case "COMPLETED":
-        return <Calendar className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
-    }
-  };
 
   // Hàm format giờ VN
   function formatTimeVN(isoString?: string) {
@@ -160,8 +140,12 @@ export function AppointmentsList({ onAppointmentSelect }) {
                       <h3 className="text-lg font-semibold">
                         {appointment.patientName}
                       </h3>
-                      <Badge className={getStatusColor(appointment.status)}>
-                        {getStatusIcon(appointment.status)}
+                      <Badge
+                        className={
+                          APPOINTMENT_STATUS_COLORS[appointment.status] ||
+                          APPOINTMENT_STATUS_COLORS.DEFAULT
+                        }
+                      >
                         {appointment.status}
                       </Badge>
                     </div>

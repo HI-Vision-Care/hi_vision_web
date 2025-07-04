@@ -14,16 +14,14 @@ import {
 } from "@/components/ui/select";
 import { Users, Search, Filter, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
-import Header from "@/components/admin/header";
-import PatientFormModal from "@/components/partials/PatientFormModal";
-import ConfirmDeleteModal from "@/components/partials/ConfirmDeleteModal";
 import {
   getAllPatients,
   updatePatient,
   deletePatient,
 } from "@/services/patient/api";
 import { PatientUI } from "@/services/patient/types";
+import { Header } from "@/components/admin";
+import { ConfirmDeleteModal, PatientFormModal } from "@/components/partials";
 
 export default function Patients() {
   const [searchTerm, setSearchTerm] = useState("");

@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, Users, FileText, Settings } from "lucide-react";
+import { Calendar, Home, FileText, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface AppSidebarProps {
-  currentView: "overview" | "appointments" | "medical-records";
+  currentView:
+    | "overview"
+    | "appointments"
+    | "medical-records"
+    | "medical-record-form";
   onViewChange: (
     view: "overview" | "appointments" | "medical-records",
     appointmentId?: string
@@ -42,14 +46,9 @@ const navigation = [
     icon: FileText,
     view: "medical-records" as const,
   },
-  {
-    title: "Patients",
-    icon: Users,
-    view: "patients" as const,
-  },
 ];
 
-export function AppSidebar({
+export default function AppSidebar({
   currentView,
   onViewChange,
   onBackToList,

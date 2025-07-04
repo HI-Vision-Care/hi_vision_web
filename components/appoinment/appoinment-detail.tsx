@@ -8,49 +8,17 @@ import {
   useCompleteAppointment,
   useConfirmAppointmentByDoctor,
 } from "@/services/appointment/hooks";
+import { AppointmentDetailProps } from "@/types";
+import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 
-interface AppointmentDetailProps {
-  appointment: {
-    appointmentID: string;
-    patientName: string;
-    doctorName: string;
-    serviceName: string;
-    appointmentDate: string;
-    isAnonymous: boolean;
-    note?: string;
-    createAt: string;
-    status: string;
-  };
-  onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
-  onBack: () => void;
-  onViewChange: (view: "medical-records", appointmentId: string) => void;
-}
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "SCHEDULED":
-      return "bg-blue-100 text-blue-800";
-    case "ONGOING":
-      return "bg-yellow-200 text-warning-foreground";
-    case "COMPLETED":
-      return "bg-green-300 text-success-foreground";
-    case "CANCELLED":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-export function AppointmentDetail({
+export default function AppointmentDetail({
   appointment,
   onStatusUpdate,
   onBack,
   onViewChange,
 }: AppointmentDetailProps) {
-  const { mutate: confirmAppointment, isLoading: loadingConfirm } =
-    useConfirmAppointmentByDoctor();
-  const { mutate: completeAppointment, isLoading: loadingComplete } =
-    useCompleteAppointment();
+  const { mutate: confirmAppointment } = useConfirmAppointmentByDoctor();
+  const { mutate: completeAppointment } = useCompleteAppointment();
 
   return (
     <div className="space-y-6">
@@ -77,7 +45,12 @@ export function AppointmentDetail({
             })}
           </p>
         </div>
-        <Badge className={getStatusColor(appointment.status)}>
+        <Badge
+          className={
+            APPOINTMENT_STATUS_COLORS[appointment.status] ||
+            APPOINTMENT_STATUS_COLORS.DEFAULT
+          }
+        >
           {appointment.status}
         </Badge>
         <Button
@@ -158,7 +131,6 @@ export function AppointmentDetail({
                         confirmAppointment(appointment.appointmentID)
                       }
                       className="bg-yellow-200 text-black hover:bg-yellow-400"
-                      disabled={loadingConfirm}
                     >
                       Start Examination
                     </Button>
@@ -169,7 +141,6 @@ export function AppointmentDetail({
                         completeAppointment(appointment.appointmentID)
                       }
                       className="bg-green-300 hover:bg-green-400"
-                      disabled={loadingComplete}
                     >
                       Complete Appointment
                     </Button>

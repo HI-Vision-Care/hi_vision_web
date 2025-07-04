@@ -22,12 +22,33 @@ export interface DoctorAppointment {
   appointmentID: string;
   patientName: string;
   doctorName: string;
+  doctorID: string;
   serviceName: string;
   appointmentDate: string;
   isAnonymous: boolean;
   note: string;
   createAt: string;
   status: string;
+  id: string;
+  patient: string;
+  date: string;
+  time: string;
+  duration: string;
+  notes: string;
+  symptoms: string;
+}
+
+export interface Appointment {
+  appointmentID: string;
+  patientName: string;
+  doctorName: string;
+  serviceName: string;
+  appointmentDate: string;
+  isAnonymous: boolean;
+  note?: string;
+  createAt: string;
+  status: string;
+  type?: string; // để optional nếu backend không trả về, hoặc fix backend cho đồng bộ luôn!
 }
 
 export interface DoctorProfile {
