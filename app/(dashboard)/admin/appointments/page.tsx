@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,106 +12,101 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Calendar,
-  Search,
-  Filter,
-  Plus,
-  Eye,
-  Edit,
-  Clock,
-  UserCheck,
-} from "lucide-react";
-import Header from "@/components/admin/header";
-import { appointments, appointmentStats } from "@/constants";
+import { Calendar, Filter, Eye, Edit, Clock } from "lucide-react";
+import { Appointment } from "@/services/appointment/types";
+import Sidebar from "@/components/admin/sidebar";
+import { Header } from "@/components/admin";
+import { useGetAllAppointments } from "@/services/appointment/hooks";
 
 export default function Appointments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const { data: appointments = [] } = useGetAllAppointments();
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.patientName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.patientId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.type.toLowerCase().includes(searchTerm.toLowerCase());
+      appointment.patientID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.doctorID.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
-      statusFilter === "all" || appointment.status === statusFilter;
+      statusFilter === "all" || appointment.paymentStatus === statusFilter;
 
     let matchesDate = true;
+    const dateOnly = appointment.appointmentDate?.split("T")[0];
 
     if (dateFilter === "today") {
-      const today = "2024-01-15"; // MOCK: giả lập ngày hôm nay
-      matchesDate = appointment.date === today;
-    } else if (dateFilter === "tomorrow") {
-      const tomorrow = "2024-01-16";
-      matchesDate = appointment.date === tomorrow;
+      const today = new Date().toISOString().split("T")[0];
+      matchesDate = dateOnly === today;
     } else if (dateFilter === "week") {
-      const from = "2024-01-15";
-      const to = "2024-01-21";
-      matchesDate = appointment.date >= from && appointment.date <= to;
+      const today = new Date();
+      const nextWeek = new Date();
+      nextWeek.setDate(today.getDate() + 7);
+      matchesDate =
+        dateOnly >= today.toISOString().split("T")[0] &&
+        dateOnly <= nextWeek.toISOString().split("T")[0];
     }
 
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-      case "completed":
-        return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-      case "urgent":
-        return <Badge variant="destructive">Urgent</Badge>;
-      case "cancelled":
-        return <Badge variant="secondary">Cancelled</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
+  const openDetails = (appt: Appointment) => {
+    setSelectedAppt(appt);
+    setShowDetailModal(true);
   };
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return (
-          <Badge variant="destructive" className="text-xs">
-            Urgent
-          </Badge>
-        );
-      case "high":
-        return (
-          <Badge className="bg-orange-100 text-orange-800 text-xs">High</Badge>
-        );
-      case "normal":
-      default:
-        return (
-          <Badge variant="outline" className="text-xs">
-            Normal
-          </Badge>
-        );
-    }
+  const getStat = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const weekFromToday = new Date();
+    weekFromToday.setDate(new Date().getDate() + 7);
+
+    return [
+      {
+        label: "Total Appointments",
+        value: appointments.length.toString(),
+        color: "blue",
+      },
+      {
+        label: "Today",
+        value: appointments
+          .filter((a) => a.appointmentDate?.startsWith(today))
+          .length.toString(),
+        color: "green",
+      },
+      {
+        label: "This Week",
+        value: appointments
+          .filter(
+            (a) =>
+              a.appointmentDate >= today &&
+              a.appointmentDate <= weekFromToday.toISOString().split("T")[0]
+          )
+          .length.toString(),
+        color: "yellow",
+      },
+      {
+        label: "Anonymous",
+        value: appointments.filter((a) => a.isAnonymous).length.toString(),
+        color: "red",
+      },
+    ];
   };
 
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">
       <Sidebar />
 
-      <div className="">
+      <div>
         <Header
           title="Appointment Management"
           subtitle="Schedule, track, and manage all patient appointments"
         />
 
         <div className="p-6">
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            {appointmentStats.map((stat, index) => (
+            {getStat().map((stat, index) => (
               <Card key={index} className="bg-white shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -131,17 +125,13 @@ export default function Appointments() {
             ))}
           </div>
 
-          {/* Search and Filter */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search by patient name, doctor, ID, or appointment type..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <Input
+              placeholder="Search by patient ID or doctor ID"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1"
+            />
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48">
@@ -150,11 +140,8 @@ export default function Appointments() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="urgent">Urgent</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
               </SelectContent>
             </Select>
 
@@ -166,96 +153,83 @@ export default function Appointments() {
               <SelectContent>
                 <SelectItem value="all">All Dates</SelectItem>
                 <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="tomorrow">Tomorrow</SelectItem>
                 <SelectItem value="week">This Week</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button className="bg-red-600 hover:bg-red-700">
-              <Plus className="h-4 w-4 mr-2" />
-              New Appointment
-            </Button>
           </div>
 
-          {/* Appointments List */}
           <Card className="bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Appointments ({filteredAppointments.length})</span>
-                <Button variant="outline" size="sm" className="bg-transparent">
-                  Export List
-                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredAppointments.map((appointment) => (
+                {filteredAppointments.map((appointment, index) => (
                   <div
-                    key={appointment.id}
+                    key={index}
                     className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="text-center">
                           <div className="text-sm text-gray-500">
-                            {new Date(appointment.date).toLocaleDateString(
-                              "en-US",
-                              { weekday: "short" }
-                            )}
+                            {new Date(
+                              appointment.appointmentDate
+                            ).toLocaleDateString("en-US", { weekday: "short" })}
                           </div>
                           <div className="text-lg font-bold">
-                            {new Date(appointment.date).getDate()}
+                            {new Date(appointment.appointmentDate).getDate()}
                           </div>
                           <div className="text-sm font-medium">
-                            {appointment.time}
+                            {new Date(
+                              appointment.appointmentDate
+                            ).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </div>
                         </div>
 
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-medium text-lg">
-                              {appointment.patientName}
+                              Pid: {appointment.patientID}
                             </h3>
-                            <span className="text-gray-500">
-                              ({appointment.patientId})
-                            </span>
-                            {getStatusBadge(appointment.status)}
-                            {getPriorityBadge(appointment.priority)}
+                            <Badge>
+                              {appointment.isAnonymous ? "Anonymous" : "Normal"}
+                            </Badge>
                           </div>
 
                           <div className="flex items-center space-x-4 text-sm text-gray-600">
                             <div className="flex items-center space-x-1">
-                              <UserCheck className="h-4 w-4" />
-                              <span>{appointment.doctorName}</span>
+                              <span>Did: {appointment.doctorID}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Clock className="h-4 w-4" />
-                              <span>{appointment.duration} min</span>
-                            </div>
-                            <div>
-                              <span className="font-medium">
-                                {appointment.type}
-                              </span>
+                              <span>{appointment.serviceID}</span>
                             </div>
                           </div>
 
-                          {appointment.notes && (
+                          {appointment.note && (
                             <p className="text-sm text-gray-600 mt-2">
-                              {appointment.notes}
+                              {appointment.note}
                             </p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDetails(appointment)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Calendar className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -264,6 +238,44 @@ export default function Appointments() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Modal xem chi tiết */}
+          {showDetailModal && selectedAppt && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                <h3 className="text-xl font-bold mb-4">Appointment Details</h3>
+                <p>
+                  <strong>Patient ID:</strong> {selectedAppt.patientID}
+                </p>
+                <p>
+                  <strong>Doctor ID:</strong> {selectedAppt.doctorID}
+                </p>
+                <p>
+                  <strong>Service ID:</strong> {selectedAppt.serviceID}
+                </p>
+                <p>
+                  <strong>Time:</strong>{" "}
+                  {new Date(selectedAppt.appointmentDate).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Anonymous:</strong>{" "}
+                  {selectedAppt.isAnonymous ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Note:</strong> {selectedAppt.note || "No note"}
+                </p>
+                <p>
+                  <strong>URL Link:</strong> {selectedAppt.urlLink || "N/A"}
+                </p>
+                <Button
+                  className="mt-4 w-full"
+                  onClick={() => setShowDetailModal(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

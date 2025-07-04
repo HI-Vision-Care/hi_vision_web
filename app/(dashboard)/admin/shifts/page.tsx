@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,12 @@ import { Clock, Users, AlertCircle, Plus, Calendar } from "lucide-react";
 import Header from "@/components/admin/header";
 import { WorkShift } from "@/services/workShift/types";
 import { getWorkShifts } from "@/services/workShift/api";
+import { useRouter } from "next/navigation";
 
 export default function Shifts() {
   const [selectedMonth, setSelectedMonth] = useState("2025-07");
   const [shifts, setShifts] = useState<WorkShift[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const loadShifts = async () => {
@@ -36,12 +39,12 @@ export default function Shifts() {
     { label: "Total Shifts", value: shifts.length.toString(), color: "blue" },
     {
       label: "Booked",
-      value: shifts.filter((s) => s.status === "Đã đặt").length.toString(),
+      value: shifts.filter((s) => s.status === "Booked").length.toString(),
       color: "green",
     },
     {
       label: "Available",
-      value: shifts.filter((s) => s.status !== "Đã đặt").length.toString(),
+      value: shifts.filter((s) => s.status !== "Booked").length.toString(),
       color: "red",
     },
     {
@@ -51,17 +54,33 @@ export default function Shifts() {
     },
   ];
 
-  const doctors = [
-    { id: 1, name: "Dr. John Anderson", specialty: "HIV/AIDS", shifts: 8 },
-    {
-      id: 2,
-      name: "Dr. Maria Rodriguez",
-      specialty: "Internal Medicine",
-      shifts: 6,
-    },
-    { id: 3, name: "Dr. David Kim", specialty: "HIV/AIDS", shifts: 7 },
-    { id: 4, name: "Dr. Sarah Wilson", specialty: "Psychology", shifts: 5 },
-  ];
+  const doctors = useMemo(() => {
+    const doctorMap = new Map<
+      string,
+      { name: string; specialty: string; shifts: number }
+    >();
+
+    for (const shift of shifts) {
+      const doctor = shift.doctor;
+      if (!doctor) continue;
+
+      const shiftMonth = format(new Date(shift.date), "yyyy-MM");
+      if (shiftMonth !== selectedMonth) continue;
+
+      const key = doctor.doctorID;
+      if (!doctorMap.has(key)) {
+        doctorMap.set(key, {
+          name: doctor.name,
+          specialty: doctor.specialty,
+          shifts: 1,
+        });
+      } else {
+        doctorMap.get(key)!.shifts += 1;
+      }
+    }
+
+    return Array.from(doctorMap.values());
+  }, [shifts, selectedMonth]);
 
   return (
     <>
@@ -134,9 +153,7 @@ export default function Shifts() {
                             <div className="text-sm text-gray-500">
                               {new Date(shift.date).toLocaleDateString(
                                 "en-US",
-                                {
-                                  weekday: "short",
-                                }
+                                { weekday: "short" }
                               )}
                             </div>
                             <div className="text-lg font-bold">
@@ -159,6 +176,16 @@ export default function Shifts() {
                                 </Badge>
                               )}
                             </div>
+
+                            {shift.doctor?.name && (
+                              <div className="text-sm text-gray-800 mt-1">
+                                Doctor:{" "}
+                                <span className="font-medium">
+                                  {shift.doctor.name}
+                                </span>
+                              </div>
+                            )}
+
                             <div className="text-sm text-gray-600 mt-1">
                               {new Date(shift.startTime).toLocaleTimeString(
                                 [],
@@ -208,9 +235,9 @@ export default function Shifts() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {doctors.map((doctor) => (
+                {doctors.map((doctor, index) => (
                   <div
-                    key={doctor.id}
+                    key={index}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
                     <div>
@@ -229,7 +256,11 @@ export default function Shifts() {
                 ))}
               </div>
 
-              <Button variant="outline" className="w-full mt-4 bg-transparent">
+              <Button
+                variant="outline"
+                className="w-full mt-4 bg-transparent"
+                onClick={() => router.push("/admin/doctors")}
+              >
                 View All Doctors
               </Button>
             </CardContent>

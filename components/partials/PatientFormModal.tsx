@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -6,8 +8,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState, useEffect } from "react";
-import type { PatientUI } from "@/services/auth/types";
+import type { PatientUI } from "@/services/patient/types";
 
 interface Props {
   open: boolean;
@@ -26,22 +35,35 @@ export default function PatientFormModal({
     id: "",
     name: "",
     age: 0,
-    gender: "Unknown",
+    gender: "Male",
     phone: "",
     lastVisit: "",
-    nextAppointment: "",
     status: "active",
-    arvRegimen: "",
-    cd4Count: 0,
-    viralLoad: "",
+    dob: "",
+    medDate: "",
+    medFac: "",
   });
 
   useEffect(() => {
-    if (initialData) setForm(initialData);
-    else setForm({ ...form, id: crypto.randomUUID() }); // auto ID for new
+    if (initialData) {
+      setForm(initialData);
+    } else {
+      setForm({
+        id: crypto.randomUUID(),
+        name: "",
+        age: 0,
+        gender: "Male",
+        phone: "",
+        lastVisit: "",
+        status: "active",
+        dob: "",
+        medDate: "",
+        medFac: "",
+      });
+    }
   }, [initialData]);
 
-  const handleChange = (field: keyof PatientUI, value: any) => {
+  const handleChange = (field: keyof PatientUI, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -58,45 +80,54 @@ export default function PatientFormModal({
             {initialData ? "Edit Patient" : "Add New Patient"}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
+
+        <div className="space-y-4">
           <Input
-            placeholder="Name"
+            placeholder="Full Name"
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
           />
-          <Input
-            placeholder="Age"
-            type="number"
-            value={form.age}
-            onChange={(e) => handleChange("age", +e.target.value)}
-          />
-          <Input
-            placeholder="Gender"
+
+          <Select
             value={form.gender}
-            onChange={(e) => handleChange("gender", e.target.value)}
-          />
+            onValueChange={(value) => handleChange("gender", value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Male">Male</SelectItem>
+              <SelectItem value="Female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Input
-            placeholder="Phone"
+            placeholder="Medical No"
             value={form.phone}
             onChange={(e) => handleChange("phone", e.target.value)}
           />
+
           <Input
-            placeholder="ARV Regimen"
-            value={form.arvRegimen}
-            onChange={(e) => handleChange("arvRegimen", e.target.value)}
+            placeholder="Date of Birth (ISO)"
+            type="datetime-local"
+            value={form.dob}
+            onChange={(e) => handleChange("dob", e.target.value)}
           />
+
           <Input
-            placeholder="CD4 Count"
-            type="number"
-            value={form.cd4Count}
-            onChange={(e) => handleChange("cd4Count", +e.target.value)}
+            placeholder="Last Visit Date (ISO)"
+            type="datetime-local"
+            value={form.medDate}
+            onChange={(e) => handleChange("medDate", e.target.value)}
           />
+
           <Input
-            placeholder="Viral Load"
-            value={form.viralLoad}
-            onChange={(e) => handleChange("viralLoad", e.target.value)}
+            placeholder="Medical Facility"
+            value={form.medFac}
+            onChange={(e) => handleChange("medFac", e.target.value)}
           />
         </div>
+
         <Button className="mt-4 w-full" onClick={handleSubmit}>
           {initialData ? "Update" : "Create"}
         </Button>

@@ -21,7 +21,7 @@ interface MedicalRecordsListProps {
   onCreateNew: () => void;
 }
 
-export function MedicalRecordsList({
+export default function MedicalRecordsList({
   medicalRecords,
   onRecordSelect,
   onCreateNew,

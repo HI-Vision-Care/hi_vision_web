@@ -1,10 +1,10 @@
-import Sidebar from "@/components/admin/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Plus, Edit, Trash2 } from "lucide-react";
-import Header from "@/components/admin/header";
 import { schedules, weekDays } from "@/constants";
+import Sidebar from "@/components/admin/sidebar";
+import { Header } from "@/components/admin";
 
 export default function Schedule() {
   return (
