@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, FileText, Settings } from "lucide-react";
+import { Calendar, Home, FileText, Settings, Clock, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,13 +21,15 @@ interface AppSidebarProps {
     | "overview"
     | "appointments"
     | "medical-records"
-    | "medical-record-form";
+    | "medical-record-form"
+    | "schedule";
   onViewChange: (
-    view: "overview" | "appointments" | "medical-records",
+    view: "overview" | "appointments" | "medical-records" | "schedule",
     appointmentId?: string
   ) => void;
   onBackToList: () => void;
   onBackToMedicalRecords: () => void;
+  onBackToSchedule: () => void;
 }
 
 const navigation = [
@@ -42,9 +44,19 @@ const navigation = [
     view: "appointments" as const,
   },
   {
+    title: "Schedule",
+    icon: Clock,
+    view: "schedule" as const,
+  },
+  {
     title: "Medical Records",
     icon: FileText,
     view: "medical-records" as const,
+  },
+  {
+    title: "Patients",
+    icon: Users,
+    view: "patients" as const,
   },
 ];
 
@@ -53,9 +65,10 @@ export default function AppSidebar({
   onViewChange,
   onBackToList,
   onBackToMedicalRecords,
+  onBackToSchedule,
 }: AppSidebarProps) {
   const handleNavigation = (
-    view: "overview" | "appointments" | "medical-records"
+    view: "overview" | "appointments" | "medical-records" | "schedule"
   ) => {
     onViewChange(view);
     if (view !== "appointments") {
@@ -63,6 +76,9 @@ export default function AppSidebar({
     }
     if (view !== "medical-records") {
       onBackToMedicalRecords();
+    }
+    if (view !== "schedule") {
+      onBackToSchedule();
     }
   };
 
@@ -106,20 +122,6 @@ export default function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings className="size-4" />
-                  <span>Preferences</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

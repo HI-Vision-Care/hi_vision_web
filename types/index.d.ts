@@ -205,3 +205,18 @@ export interface MedicalRecordFormProps {
   record: MedicalRecord | null;
   onBack: () => void;
 }
+
+export interface WorkShift {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  shiftType: "Regular" | "On-call" | "Emergency" | "Night" | "Weekend";
+  location: string;
+  notes?: string;
+  status: "Scheduled" | "Active" | "Completed" | "Cancelled";
+  createdAt: string;
+  updatedAt: string;
+}

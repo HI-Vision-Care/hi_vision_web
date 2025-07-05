@@ -46,7 +46,9 @@ export default function MedicalRecordForm({
   record,
   onBack,
 }: MedicalRecordFormProps) {
-  const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
+  const [createdRecordId, setCreatedRecordId] = useState<string | null>(
+    record?.recordId ?? null
+  );
   const { mutate: createLabResult } = useCreateLabResult();
 
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
@@ -81,9 +83,10 @@ export default function MedicalRecordForm({
   const [showLabForm, setShowLabForm] = useState(false);
   const [editingLabId, setEditingLabId] = useState<string | null>(null);
 
+  // Nếu edit record, update lại state
   useEffect(() => {
-    if (record) {
-      setFormData(record);
+    if (record && record.recordId) {
+      setCreatedRecordId(record.recordId);
     }
   }, [record]);
 
@@ -105,7 +108,7 @@ export default function MedicalRecordForm({
 
     createLabResult(
       {
-        recordId: createdRecordId,
+        recordId: createdRecordId, // <-- Đảm bảo luôn đúng
         testType: labResult.testType!,
         resultText: labResult.resultText || "",
         resultValue: labResult.resultValue!,
@@ -116,7 +119,7 @@ export default function MedicalRecordForm({
       },
       {
         onSuccess: () => {
-          // Xử lý khi thành công (ví dụ: load lại bảng, thông báo, v.v.)
+          // Reset form, reload labResults nếu cần
           setLabResult({
             testType: "",
             resultText: "",
@@ -129,7 +132,6 @@ export default function MedicalRecordForm({
           });
           setShowLabForm(false);
           setEditingLabId(null);
-          // Có thể load lại danh sách labResults nếu muốn show ra
         },
         onError: () => {},
       }

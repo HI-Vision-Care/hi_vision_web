@@ -8,15 +8,22 @@ import {
   DashboardOverview,
   MedicalRecordForm,
   MedicalRecordsList,
+  WorkShiftCalendar,
+  WorkshiftForm,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { mockAppointments, mockWorkShifts } from "@/constants";
 import { useAllMedicalRecords } from "@/services/doctor/hooks";
-import { Appointment, MedicalRecord } from "@/types";
+import { Appointment, MedicalRecord, WorkShift } from "@/types";
 import { useState } from "react";
 
 export default function DoctorDashboard() {
   const [currentView, setCurrentView] = useState<
-    "overview" | "appointments" | "medical-records" | "medical-record-form"
+    | "overview"
+    | "appointments"
+    | "medical-records"
+    | "medical-record-form"
+    | "schedule"
   >("overview");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     string | null
@@ -24,9 +31,18 @@ export default function DoctorDashboard() {
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
 
+  const [appointments, setAppointments] =
+    useState<Appointment[]>(mockAppointments);
+
   const [selectedMedicalRecord, setSelectedMedicalRecord] =
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
+
+  const [isCreatingShift, setIsCreatingShift] = useState(false);
+  const [workShifts, setWorkShifts] = useState<WorkShift[]>(mockWorkShifts);
+  const [selectedWorkShift, setSelectedWorkShift] = useState<WorkShift | null>(
+    null
+  );
 
   const { data: medicalRecords = [] } = useAllMedicalRecords();
 
@@ -68,6 +84,37 @@ export default function DoctorDashboard() {
     }
   };
 
+  const handleWorkShiftSelect = (shift: WorkShift) => {
+    setSelectedWorkShift(shift);
+    setIsCreatingShift(false);
+  };
+
+  const handleCreateNewShift = () => {
+    setSelectedWorkShift(null);
+    setIsCreatingShift(true);
+  };
+
+  const handleBackToSchedule = () => {
+    setSelectedWorkShift(null);
+    setIsCreatingShift(false);
+  };
+
+  const handleSaveWorkShift = (shift: WorkShift) => {
+    if (shift.id && workShifts.find((s) => s.id === shift.id)) {
+      setWorkShifts((prev) => prev.map((s) => (s.id === shift.id ? shift : s)));
+    } else {
+      const newShift = { ...shift, id: `ws${Date.now()}` };
+      setWorkShifts((prev) => [...prev, newShift]);
+    }
+    setIsCreatingShift(false);
+    setSelectedWorkShift(shift);
+  };
+
+  const handleDeleteWorkShift = (shiftId: string) => {
+    setWorkShifts((prev) => prev.filter((s) => s.id !== shiftId));
+    setSelectedWorkShift(null);
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -75,6 +122,7 @@ export default function DoctorDashboard() {
         onViewChange={handleViewChange}
         onBackToList={handleBackToList}
         onBackToMedicalRecords={handleBackToMedicalRecords}
+        onBackToSchedule={handleBackToSchedule}
       />
       <SidebarInset>
         <DashboardHeader />
@@ -119,6 +167,26 @@ export default function DoctorDashboard() {
               onBack={() => setCurrentView("appointments")}
             />
           )}
+          {currentView === "schedule" &&
+            !selectedWorkShift &&
+            !isCreatingShift && (
+              <WorkShiftCalendar
+                workShifts={workShifts}
+                appointments={appointments}
+                onShiftSelect={handleWorkShiftSelect}
+                onCreateNew={handleCreateNewShift}
+              />
+            )}
+          {currentView === "schedule" &&
+            (selectedWorkShift || isCreatingShift) && (
+              <WorkshiftForm
+                shift={selectedWorkShift}
+                onSave={handleSaveWorkShift}
+                onDelete={handleDeleteWorkShift}
+                onBack={handleBackToSchedule}
+                appointments={appointments}
+              />
+            )}
         </main>
       </SidebarInset>
     </SidebarProvider>
