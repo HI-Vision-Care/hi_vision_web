@@ -131,9 +131,7 @@ export default function MedicalRecordForm({
           setEditingLabId(null);
           // Có thể load lại danh sách labResults nếu muốn show ra
         },
-        onError: () => {
-          // Thông báo lỗi
-        },
+        onError: () => {},
       }
     );
   };
@@ -156,9 +154,9 @@ export default function MedicalRecordForm({
 
     createMedicalRecord(
       {
-        appointmentId,
+        appointmentId: appointmentId ?? record?.appointmentId,
         diagnosis: formData.diagnosis,
-        note: formData.notes || "",
+        note: formData.note || "",
       },
       {
         onSuccess: (data) => {
@@ -222,10 +220,10 @@ export default function MedicalRecordForm({
                 <div>
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
-                    id="notes"
+                    id="note"
                     placeholder="Additional notes..."
-                    value={formData.notes || ""}
-                    onChange={(e) => handleInputChange("notes", e.target.value)}
+                    value={formData.note || ""}
+                    onChange={(e) => handleInputChange("note", e.target.value)}
                     rows={3}
                   />
                 </div>

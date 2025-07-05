@@ -10,6 +10,7 @@ import {
   MedicalRecordsList,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAllMedicalRecords } from "@/services/doctor/hooks";
 import { Appointment, MedicalRecord } from "@/types";
 import { useState } from "react";
 
@@ -26,6 +27,8 @@ export default function DoctorDashboard() {
   const [selectedMedicalRecord, setSelectedMedicalRecord] =
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
+
+  const { data: medicalRecords = [] } = useAllMedicalRecords();
 
   const handleMedicalRecordSelect = (record: MedicalRecord) => {
     setSelectedMedicalRecord(record);
@@ -95,6 +98,7 @@ export default function DoctorDashboard() {
             !selectedMedicalRecord &&
             !isCreatingRecord && (
               <MedicalRecordsList
+                medicalRecords={medicalRecords}
                 onRecordSelect={handleMedicalRecordSelect}
                 onCreateNew={handleCreateNewRecord}
               />
@@ -102,7 +106,7 @@ export default function DoctorDashboard() {
           {currentView === "medical-records" &&
             (selectedMedicalRecord || isCreatingRecord) && (
               <MedicalRecordForm
-                appointmentId={selectedAppointmentId ?? ""}
+                appointmentId={selectedMedicalRecord?.appointmentId ?? ""}
                 record={selectedMedicalRecord}
                 onBack={handleBackToMedicalRecords}
               />

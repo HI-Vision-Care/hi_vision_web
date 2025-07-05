@@ -193,21 +193,11 @@ export interface LabResult {
 }
 
 export interface MedicalRecord {
-  id: string;
-  patientId: string;
-  patientName: string;
-  recordDate: string;
+  recordId: string;
+  appointmentId: string;
   diagnosis: string;
-  notes: string;
+  createDate: string; // ISO Date string
   note: string;
-  treatmentPlan: string;
-  followUpDate: string;
-  hivStage: "Stage 1" | "Stage 2" | "Stage 3" | "AIDS";
-  cd4Count?: number;
-  viralLoad?: number;
-  labResults: LabResult[];
-  createdBy: string;
-  lastModified: string;
 }
 
 export interface MedicalRecordFormProps {
