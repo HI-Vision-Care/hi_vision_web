@@ -10,7 +10,7 @@ export interface Appointment {
   urlLink?: string;
   paymentStatus?: string | null;
   createAt: string;
-=======
+}
 export interface DoctorAppointment {
   appointmentID: string;
   patientName: string;

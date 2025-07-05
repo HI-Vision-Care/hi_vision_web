@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import {
   createLabResult,
   createMedicalRecord,
+  getAllMedicalRecords,
   getAppointmentsByDoctorId,
   getDoctorProfile,
+  getLabResultsByPatientId,
 } from "./api";
 import { DoctorAppointment, DoctorProfile } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,5 +69,24 @@ export function useCreateLabResult() {
       // invalidate lab results list hoặc medical record nếu cần
       queryClient.invalidateQueries(["labResults"]);
     },
+  });
+}
+
+export function useAllMedicalRecords(enabled = true) {
+  return useQuery({
+    queryKey: ["medicalRecords", "all"],
+    queryFn: getAllMedicalRecords,
+    enabled,
+  });
+}
+
+export function useLabResultsByPatientId(patientId?: string) {
+  return useQuery({
+    queryKey: ["labResults", patientId],
+    queryFn: () => {
+      if (!patientId) return Promise.resolve([]);
+      return getLabResultsByPatientId(patientId);
+    },
+    enabled: !!patientId,
   });
 }

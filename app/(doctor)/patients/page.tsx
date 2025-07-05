@@ -27,23 +27,6 @@ export default function DoctorDashboard() {
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
 
-  // const updateAppointmentStatus = (
-  //   appointmentId: string,
-  //   newStatus: AppointmentStatus
-  // ) => {
-  //   setAppointments((prev) =>
-  //     prev.map((apt) =>
-  //       apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-  //     )
-  //   );
-
-  //   if (selectedAppointment?.id === appointmentId) {
-  //     setSelectedAppointment((prev) =>
-  //       prev ? { ...prev, status: newStatus } : null
-  //     );
-  //   }
-  // };
-
   const handleMedicalRecordSelect = (record: MedicalRecord) => {
     setSelectedMedicalRecord(record);
     setIsCreatingRecord(false);
@@ -99,24 +82,15 @@ export default function DoctorDashboard() {
           {currentView === "appointments" && !selectedAppointment && (
             <AppointmentsList onAppointmentSelect={handleAppointmentSelect} />
           )}
+
           {currentView === "appointments" && selectedAppointment && (
             <AppointmentDetail
-              appointment={{
-                appointmentID: selectedAppointment.id,
-                patientName: selectedAppointment.patientName,
-                doctorName: selectedAppointment.doctorName,
-                serviceName: selectedAppointment.serviceName,
-                appointmentDate: selectedAppointment.appointmentDate,
-                isAnonymous: selectedAppointment.isAnonymous,
-                note: selectedAppointment.note,
-                createAt: selectedAppointment.createAt,
-                status: selectedAppointment.status,
-              }}
-              // onStatusUpdate={updateAppointmentStatus}
+              appointment={selectedAppointment}
               onBack={handleBackToList}
               onViewChange={handleViewChange}
             />
           )}
+
           {currentView === "medical-records" &&
             !selectedMedicalRecord &&
             !isCreatingRecord && (

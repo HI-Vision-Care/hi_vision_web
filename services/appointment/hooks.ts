@@ -61,9 +61,8 @@ export const useConfirmAppointmentByDoctor = () => {
   return useMutation({
     mutationFn: (appointmentID: string) =>
       confirmAppointmentByDoctor(appointmentID),
-    onSuccess: () => {
-      // Sau khi xác nhận thành công, có thể reload lại appointments list nếu muốn
-      queryClient.invalidateQueries({ queryKey: ["appointments"] as const });
+    onSuccess: (_data, appointmentID) => {
+      queryClient.invalidateQueries(["appointment", appointmentID]);
     },
   });
 };
@@ -73,9 +72,8 @@ export function useCompleteAppointment() {
 
   return useMutation({
     mutationFn: (appointmentID: string) => completeAppointment(appointmentID),
-    onSuccess: () => {
-      // Optional: invalidate appointments list nếu có
-      queryClient.invalidateQueries({ queryKey: ["appointments"] as const });
+    onSuccess: (_data, appointmentID) => {
+      queryClient.invalidateQueries(["appointment", appointmentID]);
     },
   });
 }
