@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FileText, Calendar, Activity } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,51 +27,48 @@ export default function MedicalRecordsList({
 }: MedicalRecordsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState("all");
-  const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
 
   const filteredRecords = medicalRecords.filter((record) => {
-    const matchesSearch =
-      record.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStage =
-      stageFilter === "all" || record.hivStage === stageFilter;
-    return matchesSearch && matchesStage;
+    const matchesSearch = record.diagnosis
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case "Stage 1":
-        return "bg-success text-success-foreground";
-      case "Stage 2":
-        return "bg-warning text-warning-foreground";
-      case "Stage 3":
-        return "bg-orange-100 text-orange-800";
-      case "AIDS":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  // const getStageColor = (stage: string) => {
+  //   switch (stage) {
+  //     case "Stage 1":
+  //       return "bg-success text-success-foreground";
+  //     case "Stage 2":
+  //       return "bg-warning text-warning-foreground";
+  //     case "Stage 3":
+  //       return "bg-orange-100 text-orange-800";
+  //     case "AIDS":
+  //       return "bg-red-100 text-red-800";
+  //     default:
+  //       return "bg-gray-100 text-gray-800";
+  //   }
+  // };
 
-  const getViralLoadStatus = (viralLoad?: number) => {
-    if (viralLoad === undefined) return "Unknown";
-    if (viralLoad === 0) return "Undetectable";
-    if (viralLoad < 50) return "Suppressed";
-    if (viralLoad < 1000) return "Low";
-    return "High";
-  };
+  // const getViralLoadStatus = (viralLoad?: number) => {
+  //   if (viralLoad === undefined) return "Unknown";
+  //   if (viralLoad === 0) return "Undetectable";
+  //   if (viralLoad < 50) return "Suppressed";
+  //   if (viralLoad < 1000) return "Low";
+  //   return "High";
+  // };
 
-  const getViralLoadColor = (viralLoad?: number) => {
-    if (viralLoad === undefined) return "bg-gray-100 text-gray-800";
-    if (viralLoad === 0 || viralLoad < 50)
-      return "bg-success text-success-foreground";
-    if (viralLoad < 1000) return "bg-warning text-warning-foreground";
-    return "bg-red-100 text-red-800";
-  };
+  // const getViralLoadColor = (viralLoad?: number) => {
+  //   if (viralLoad === undefined) return "bg-gray-100 text-gray-800";
+  //   if (viralLoad === 0 || viralLoad < 50)
+  //     return "bg-success text-success-foreground";
+  //   if (viralLoad < 1000) return "bg-warning text-warning-foreground";
+  //   return "bg-red-100 text-red-800";
+  // };
 
-  const handleRecordSaved = (recordId: string) => {
-    setCreatedRecordId(recordId); // Lưu để truyền qua lab result form
-  };
+  // const handleRecordSaved = (recordId: string) => {
+  //   setCreatedRecordId(recordId); // Lưu để truyền qua lab result form
+  // };
 
   return (
     <div className="space-y-6">
@@ -93,7 +89,7 @@ export default function MedicalRecordsList({
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
+      {/* <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Records</CardTitle>
@@ -106,60 +102,7 @@ export default function MedicalRecordsList({
             </p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Stage 1 Patients
-            </CardTitle>
-            <Activity className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {medicalRecords.filter((r) => r.hivStage === "Stage 1").length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Well-controlled cases
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Undetectable VL
-            </CardTitle>
-            <Activity className="h-4 w-4 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {medicalRecords.filter((r) => r.viralLoad === 0).length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Suppressed viral load
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Follow-ups Due
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">
-              {
-                medicalRecords.filter(
-                  (r) => new Date(r.followUpDate) <= new Date()
-                ).length
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">Require attention</p>
-          </CardContent>
-        </Card>
-      </div>
+      </div> */}
 
       {/* Filters */}
       <Card>
@@ -196,105 +139,40 @@ export default function MedicalRecordsList({
       <div className="grid gap-4">
         {filteredRecords.map((record) => (
           <Card
-            key={record.id}
+            key={record.recordId}
             className="hover:shadow-md transition-shadow cursor-pointer"
           >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex flex-col items-center text-center min-w-[80px]">
-                    <div className="text-2xl font-bold text-primary">
-                      {new Date(record.recordDate).getDate()}
-                    </div>
-                    <div className="text-xs text-muted-foreground uppercase">
-                      {new Date(record.recordDate).toLocaleDateString("en-US", {
-                        month: "short",
-                      })}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(record.recordDate).getFullYear()}
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-lg font-semibold">
-                        {record.patientName}
-                      </h3>
-                      <Badge className={getStageColor(record.hivStage)}>
-                        {record.hivStage}
-                      </Badge>
-                    </div>
-
-                    <div className="text-sm mb-2">
-                      <span className="font-medium">Diagnosis:</span>{" "}
-                      {record.diagnosis}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium text-muted-foreground">
-                          CD4 Count:
-                        </span>
-                        <div className="font-medium">
-                          {record.cd4Count
-                            ? `${record.cd4Count} cells/μL`
-                            : "Not recorded"}
-                        </div>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">
-                          Viral Load:
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {record.viralLoad !== undefined
-                              ? `${record.viralLoad} copies/mL`
-                              : "Not recorded"}
-                          </span>
-                          <Badge
-                            className={getViralLoadColor(record.viralLoad)}
-                            variant="outline"
-                          >
-                            {getViralLoadStatus(record.viralLoad)}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div>
-                        <span className="font-medium text-muted-foreground">
-                          Follow-up:
-                        </span>
-                        <div className="font-medium">
-                          {new Date(record.followUpDate).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-
-                    {record.notes && (
-                      <div className="text-sm text-muted-foreground mt-2">
-                        <span className="font-medium">Notes:</span>{" "}
-                        {record.notes.substring(0, 100)}
-                        {record.notes.length > 100 && "..."}
-                      </div>
-                    )}
-                  </div>
+            <CardContent className="p-6 flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold">
+                    Record ID: {record.recordId}
+                  </h3>
                 </div>
-
-                <div className="flex flex-col items-end space-y-2">
-                  <Button
-                    onClick={() => onRecordSelect(record)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    View Record
-                  </Button>
-                  <div className="text-xs text-muted-foreground">
-                    Lab Results: {record.labResults.length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    By: {record.createdBy}
-                  </div>
+                <div className="text-sm mb-2">
+                  <span className="font-medium">Diagnosis:</span>{" "}
+                  {record.diagnosis}
+                </div>
+                <div className="text-sm mb-2">
+                  <span className="font-medium">Appointment ID:</span>{" "}
+                  {record.appointmentId}
+                </div>
+                <div className="text-sm mb-2">
+                  <span className="font-medium">Date:</span>{" "}
+                  {record.createDate
+                    ? new Date(record.createDate).toLocaleDateString("vi-VN")
+                    : "N/A"}
+                </div>
+                <div className="text-sm mb-2">
+                  <span className="font-medium">Note:</span> {record.note}
                 </div>
               </div>
+              <Button
+                onClick={() => onRecordSelect(record)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                View Record
+              </Button>
             </CardContent>
           </Card>
         ))}

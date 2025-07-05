@@ -31,8 +31,8 @@ export default function RootLayout({
           <Providers>
             {children}
             <Toaster />
-            <ConsultationModal />
-            <ModernChatWidget />
+            {/* <ConsultationModal />
+            <ModernChatWidget /> */}
           </Providers>
         </AuthProvider>
       </body>

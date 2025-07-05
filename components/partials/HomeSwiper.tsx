@@ -36,7 +36,7 @@ export default function HomeSwiper() {
           <SwiperSlide key={i}>
             <div className="card flex flex-col py-4 rounded-md  mx-1">
               <Image
-                src="/img.jpg"
+                src="https://i.pinimg.com/736x/58/27/4d/58274de117a35ba287907e701d1e755a.jpg"
                 alt={`Topic ${i + 1}`}
                 width={150}
                 height={100}
@@ -73,7 +73,7 @@ export default function HomeSwiper() {
           <SwiperSlide key={i}>
             <div className="card flex flex-col py-4 rounded-md  mx-1">
               <Image
-                src="/img.jpg"
+                src="https://i.pinimg.com/736x/45/1d/b1/451db155874786bd0ba76bee971ac657.jpg"
                 alt={`Topic ${i + 1}`}
                 width={150}
                 height={100}

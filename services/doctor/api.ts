@@ -4,6 +4,7 @@ import {
   DoctorProfile,
   DoctorResponse,
   DoctorUpdateRequest,
+  MedicalRecord,
 } from "./types";
 import Cookies from "js-cookie";
 import { LabResult } from "@/types";
@@ -28,13 +29,6 @@ export async function deleteDoctor(doctorID: string): Promise<void> {
   await axiosInstance.delete(`/doctor/delete/${doctorID}`);
 }
 
-export const getAppointmentsByDoctorId = async (
-  doctorID: string
-): Promise<DoctorAppointment[]> => {
-  const res = await axiosInstance.get(`/doctor/view-appointment/${doctorID}`);
-  return res.data;
-};
-
 export const getDoctorProfile = async (
   accountId: string
 ): Promise<DoctorProfile> => {
@@ -44,6 +38,13 @@ export const getDoctorProfile = async (
       Authorization: `Bearer ${token}`,
     },
   });
+  return res.data;
+};
+
+export const getAppointmentsByDoctorId = async (
+  doctorID: string
+): Promise<DoctorAppointment[]> => {
+  const res = await axiosInstance.get(`/doctor/view-appointment/${doctorID}`);
   return res.data;
 };
 
@@ -58,7 +59,19 @@ export async function createMedicalRecord(
   return response.data;
 }
 
+export async function getAllMedicalRecords(): Promise<MedicalRecord[]> {
+  const response = await axiosInstance.get("/doctor/get-all-medical-records");
+  return response.data;
+}
+
 export async function createLabResult(data: LabResult) {
   const response = await axiosInstance.post("/doctor/create-lab-result", data);
+  return response.data;
+}
+
+export async function getLabResultsByPatientId(
+  patientId: string
+): Promise<LabResult[]> {
+  const response = await axiosInstance.get(`/patient/lab-results/${patientId}`);
   return response.data;
 }

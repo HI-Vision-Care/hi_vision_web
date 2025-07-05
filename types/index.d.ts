@@ -18,30 +18,61 @@ export interface Patient {
 }
 
 export interface Appointment {
-  id: string;
-  patient: Patient;
-  date: string;
-  time: string;
-  duration: number;
-  type: string;
-  status: AppointmentStatus;
-  notes: string;
-  symptoms: string[];
-  diagnosis?: string;
-  prescription?: string[];
-  labResults?: {
-    test: string;
-    result: string;
-    normalRange: string;
-    status: "normal" | "abnormal";
-  }[];
-  patientName: string;
-  doctorName: string;
-  serviceName: string;
+  appointmentID: string;
+  patient: {
+    patientID: string;
+    account: {
+      id: string;
+      username: string;
+      email: string;
+      phone: string;
+      avatar: string;
+      role: string;
+      isDeleted: boolean;
+    };
+    name: string;
+    dob: string;
+    gender: string;
+    medNo: string;
+    medDate: string;
+    medFac: string;
+  };
+  doctor: {
+    doctorID: string;
+    account: {
+      id: string;
+      username: string;
+      email: string;
+      phone: string;
+      avatar: string;
+      role: string;
+      isDeleted: boolean;
+    };
+    name: string;
+    gender: string;
+    specialty: string;
+    degrees: string;
+  };
+  medicalService: {
+    serviceID: number;
+    name: string;
+    description: string;
+    price: number;
+    img: string;
+    type: string;
+    specialty: string;
+    isActive: boolean;
+    isRequireDoctor: boolean;
+    isOnline: boolean;
+    createAt: string;
+  };
   appointmentDate: string;
   isAnonymous: boolean;
-  note: string;
+  note?: string;
   createAt: string;
+  status: string;
+  urlLink?: string;
+  paymentStatus?: string | null;
 }
 
 export type AppointmentStatus =
@@ -85,23 +116,72 @@ export interface Appointment {
 export interface AppointmentDetailProps {
   appointment: {
     appointmentID: string;
-    patientName: string;
-    doctorName: string;
-    serviceName: string;
+    patient: {
+      patientID: string;
+      account: {
+        id: string;
+        username: string;
+        email: string;
+        phone: string;
+        avatar: string;
+        role: string;
+        isDeleted: boolean;
+      };
+      name: string;
+      dob: string;
+      gender: string;
+      medNo: string;
+      medDate: string;
+      medFac: string;
+    };
+    doctor: {
+      doctorID: string;
+      account: {
+        id: string;
+        username: string;
+        email: string;
+        phone: string;
+        avatar: string;
+        role: string;
+        isDeleted: boolean;
+      };
+      name: string;
+      gender: string;
+      specialty: string;
+      degrees: string;
+    };
+    medicalService: {
+      serviceID: number;
+      name: string;
+      description: string;
+      price: number;
+      img: string;
+      type: string;
+      specialty: string;
+      isActive: boolean;
+      isRequireDoctor: boolean;
+      isOnline: boolean;
+      createAt: string;
+    };
     appointmentDate: string;
     isAnonymous: boolean;
     note?: string;
     createAt: string;
     status: string;
+    urlLink?: string;
+    paymentStatus?: string | null;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
-  onViewChange: (view: "medical-records", appointmentId: string) => void;
+  onViewChange: (
+    view: "medical-records" | "medical-record-form",
+    appointmentId: string
+  ) => void;
 }
 
 export interface LabResult {
   id: string;
-  recordId: string;
+  recordID: string;
   testType: string;
   resultText: string;
   resultValue: string;
@@ -113,21 +193,11 @@ export interface LabResult {
 }
 
 export interface MedicalRecord {
-  id: string;
-  patientId: string;
-  patientName: string;
-  recordDate: string;
+  recordId: string;
+  appointmentId: string;
   diagnosis: string;
-  notes: string;
+  createDate: string; // ISO Date string
   note: string;
-  treatmentPlan: string;
-  followUpDate: string;
-  hivStage: "Stage 1" | "Stage 2" | "Stage 3" | "AIDS";
-  cd4Count?: number;
-  viralLoad?: number;
-  labResults: LabResult[];
-  createdBy: string;
-  lastModified: string;
 }
 
 export interface MedicalRecordFormProps {

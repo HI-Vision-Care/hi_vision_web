@@ -10,6 +10,7 @@ import {
   MedicalRecordsList,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAllMedicalRecords } from "@/services/doctor/hooks";
 import { Appointment, MedicalRecord } from "@/types";
 import { useState } from "react";
 
@@ -27,22 +28,7 @@ export default function DoctorDashboard() {
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
 
-  // const updateAppointmentStatus = (
-  //   appointmentId: string,
-  //   newStatus: AppointmentStatus
-  // ) => {
-  //   setAppointments((prev) =>
-  //     prev.map((apt) =>
-  //       apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-  //     )
-  //   );
-
-  //   if (selectedAppointment?.id === appointmentId) {
-  //     setSelectedAppointment((prev) =>
-  //       prev ? { ...prev, status: newStatus } : null
-  //     );
-  //   }
-  // };
+  const { data: medicalRecords = [] } = useAllMedicalRecords();
 
   const handleMedicalRecordSelect = (record: MedicalRecord) => {
     setSelectedMedicalRecord(record);
@@ -99,28 +85,20 @@ export default function DoctorDashboard() {
           {currentView === "appointments" && !selectedAppointment && (
             <AppointmentsList onAppointmentSelect={handleAppointmentSelect} />
           )}
+
           {currentView === "appointments" && selectedAppointment && (
             <AppointmentDetail
-              appointment={{
-                appointmentID: selectedAppointment.id,
-                patientName: selectedAppointment.patientName,
-                doctorName: selectedAppointment.doctorName,
-                serviceName: selectedAppointment.serviceName,
-                appointmentDate: selectedAppointment.appointmentDate,
-                isAnonymous: selectedAppointment.isAnonymous,
-                note: selectedAppointment.note,
-                createAt: selectedAppointment.createAt,
-                status: selectedAppointment.status,
-              }}
-              // onStatusUpdate={updateAppointmentStatus}
+              appointment={selectedAppointment}
               onBack={handleBackToList}
               onViewChange={handleViewChange}
             />
           )}
+
           {currentView === "medical-records" &&
             !selectedMedicalRecord &&
             !isCreatingRecord && (
               <MedicalRecordsList
+                medicalRecords={medicalRecords}
                 onRecordSelect={handleMedicalRecordSelect}
                 onCreateNew={handleCreateNewRecord}
               />
@@ -128,7 +106,7 @@ export default function DoctorDashboard() {
           {currentView === "medical-records" &&
             (selectedMedicalRecord || isCreatingRecord) && (
               <MedicalRecordForm
-                appointmentId={selectedAppointmentId ?? ""}
+                appointmentId={selectedMedicalRecord?.appointmentId ?? ""}
                 record={selectedMedicalRecord}
                 onBack={handleBackToMedicalRecords}
               />

@@ -41,13 +41,11 @@ export default function AppointmentsList({
   // Mapping lại data cho đúng UI filter
   const filteredAppointments = useMemo(() => {
     return appointments.filter((appointment) => {
+      const patientName = appointment.patient?.name || "";
+      const serviceName = appointment.medicalService?.name || "";
       const matchesSearch =
-        (appointment.patientName || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (appointment.serviceName || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+        patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        serviceName.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "all" || appointment.status === statusFilter;
       return matchesSearch && matchesStatus;
@@ -55,13 +53,13 @@ export default function AppointmentsList({
   }, [appointments, searchTerm, statusFilter]);
 
   // Hàm format giờ VN
-  function formatTimeVN(isoString?: string) {
+  function formatTimeUTC(isoString?: string) {
     if (!isoString) return "--:--";
-    const dateUTC = new Date(isoString);
-    if (isNaN(dateUTC.getTime())) return "--:--";
-    const hourVN = (dateUTC.getUTCHours() + 7) % 24;
-    const minuteVN = String(dateUTC.getUTCMinutes()).padStart(2, "0");
-    return `${String(hourVN).padStart(2, "0")}:${minuteVN}`;
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "--:--";
+    const hour = String(date.getUTCHours()).padStart(2, "0");
+    const minute = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${hour}:${minute}`;
   }
 
   if (isProfileLoading || isAppointmentsLoading) {
@@ -131,14 +129,14 @@ export default function AppointmentsList({
                       )}
                     </div>
                     <div className="text-sm font-medium">
-                      {formatTimeVN(appointment.appointmentDate)}
+                      {formatTimeUTC(appointment.appointmentDate)}
                     </div>
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-lg font-semibold">
-                        {appointment.patientName}
+                        {appointment.patient?.name}
                       </h3>
                       <Badge
                         className={
@@ -150,7 +148,7 @@ export default function AppointmentsList({
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground mb-2">
-                      {appointment.serviceName}
+                      {appointment.medicalService?.name}
                     </div>
 
                     {appointment.note && (
