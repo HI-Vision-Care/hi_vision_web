@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // pages/api/gemini.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { GoogleGenAI } from "@google/genai";
@@ -8,7 +9,7 @@ type Message = { sender: "user" | "bot"; text: string };
 // Khởi tạo client server-side
 const ai = new GoogleGenAI({
   vertexai: false,
-  apiKey: process.env.GEMINI_API_KEY!,
+  apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY!,
 });
 
 // Hướng dẫn chung (có thể thêm userInfo vào nếu cần)
