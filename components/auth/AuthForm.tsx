@@ -94,7 +94,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                   router.push("/admin/accounts");
                   break;
                 case "DOCTOR":
-                  router.push("/patients");
+                  router.push("/doctor-dashboard");
                   break;
                 default:
                   router.push("/");

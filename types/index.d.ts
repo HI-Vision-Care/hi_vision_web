@@ -17,6 +17,30 @@ export interface Patient {
   };
 }
 
+export interface Medication {
+  id: string;
+  patientId: string;
+  patientName: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions: string;
+  prescribedBy: string;
+  prescribedDate: string;
+  startDate: string;
+  endDate: string;
+  status: "Active" | "Completed" | "Discontinued" | "On Hold";
+  refillsRemaining: number;
+  totalRefills: number;
+  notes?: string;
+  drugClass: string;
+  sideEffects?: string[];
+  interactions?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Appointment {
   appointmentID: string;
   patient: {

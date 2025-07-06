@@ -30,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <Providers>
             {children}
-            <Toaster />
+            <Toaster richColors />
             <ConsultationModal />
             <ModernChatWidget />
           </Providers>

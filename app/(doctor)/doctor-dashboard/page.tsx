@@ -8,13 +8,15 @@ import {
   DashboardOverview,
   MedicalRecordForm,
   MedicalRecordsList,
+  MedicationForm,
+  MedicationsList,
   WorkShiftCalendar,
   WorkshiftForm,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { mockAppointments, mockWorkShifts } from "@/constants";
+import { mockAppointments, mockMedications, mockWorkShifts } from "@/constants";
 import { useAllMedicalRecords } from "@/services/doctor/hooks";
-import { Appointment, MedicalRecord, WorkShift } from "@/types";
+import { Appointment, MedicalRecord, Medication, WorkShift } from "@/types";
 import { useState } from "react";
 
 export default function DoctorDashboard() {
@@ -24,6 +26,7 @@ export default function DoctorDashboard() {
     | "medical-records"
     | "medical-record-form"
     | "schedule"
+    | "medications"
   >("overview");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     string | null
@@ -43,6 +46,11 @@ export default function DoctorDashboard() {
   const [selectedWorkShift, setSelectedWorkShift] = useState<WorkShift | null>(
     null
   );
+
+  const [selectedMedication, setSelectedMedication] =
+    useState<Medication | null>(null);
+  const [isCreatingMedication, setIsCreatingMedication] = useState(false);
+  const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
   const { data: medicalRecords = [] } = useAllMedicalRecords();
 
@@ -75,7 +83,8 @@ export default function DoctorDashboard() {
       | "overview"
       | "appointments"
       | "medical-records"
-      | "medical-record-form",
+      | "medical-record-form"
+      | "medications",
     appointmentId?: string
   ) => {
     setCurrentView(view);
@@ -115,6 +124,39 @@ export default function DoctorDashboard() {
     setSelectedWorkShift(null);
   };
 
+  const handleMedicationSelect = (medication: Medication) => {
+    setSelectedMedication(medication);
+    setIsCreatingMedication(false);
+  };
+
+  const handleCreateNewMedication = () => {
+    setSelectedMedication(null);
+    setIsCreatingMedication(true);
+  };
+
+  const handleBackToMedications = () => {
+    setSelectedMedication(null);
+    setIsCreatingMedication(false);
+  };
+
+  const handleSaveMedication = (medication: Medication) => {
+    if (medication.id && medications.find((m) => m.id === medication.id)) {
+      setMedications((prev) =>
+        prev.map((m) => (m.id === medication.id ? medication : m))
+      );
+    } else {
+      const newMedication = { ...medication, id: `med${Date.now()}` };
+      setMedications((prev) => [...prev, newMedication]);
+    }
+    setIsCreatingMedication(false);
+    setSelectedMedication(medication);
+  };
+
+  const handleDeleteMedication = (medicationId: string) => {
+    setMedications((prev) => prev.filter((m) => m.id !== medicationId));
+    setSelectedMedication(null);
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar
@@ -123,6 +165,7 @@ export default function DoctorDashboard() {
         onBackToList={handleBackToList}
         onBackToMedicalRecords={handleBackToMedicalRecords}
         onBackToSchedule={handleBackToSchedule}
+        onBackToMedications={handleBackToMedications}
       />
       <SidebarInset>
         <DashboardHeader />
@@ -185,6 +228,25 @@ export default function DoctorDashboard() {
                 onDelete={handleDeleteWorkShift}
                 onBack={handleBackToSchedule}
                 appointments={appointments}
+              />
+            )}
+          {currentView === "medications" &&
+            !selectedMedication &&
+            !isCreatingMedication && (
+              <MedicationsList
+                medications={medications}
+                onMedicationSelect={handleMedicationSelect}
+                onCreateNew={handleCreateNewMedication}
+              />
+            )}
+          {currentView === "medications" &&
+            (selectedMedication || isCreatingMedication) && (
+              <MedicationForm
+                medication={selectedMedication}
+                onSave={handleSaveMedication}
+                onDelete={handleDeleteMedication}
+                onBack={handleBackToMedications}
+                patients={mockAppointments.map((apt) => apt.patient)}
               />
             )}
         </main>

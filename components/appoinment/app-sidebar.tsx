@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, FileText, Settings, Clock, Users } from "lucide-react";
+import { Calendar, Home, FileText, Clock, Users, Pill } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,14 +22,21 @@ interface AppSidebarProps {
     | "appointments"
     | "medical-records"
     | "medical-record-form"
-    | "schedule";
+    | "schedule"
+    | "medications";
   onViewChange: (
-    view: "overview" | "appointments" | "medical-records" | "schedule",
+    view:
+      | "overview"
+      | "appointments"
+      | "medical-records"
+      | "schedule"
+      | "medications",
     appointmentId?: string
   ) => void;
   onBackToList: () => void;
   onBackToMedicalRecords: () => void;
   onBackToSchedule: () => void;
+  onBackToMedications: () => void;
 }
 
 const navigation = [
@@ -49,6 +56,11 @@ const navigation = [
     view: "schedule" as const,
   },
   {
+    title: "Medications",
+    icon: Pill,
+    view: "medications" as const,
+  },
+  {
     title: "Medical Records",
     icon: FileText,
     view: "medical-records" as const,
@@ -66,9 +78,15 @@ export default function AppSidebar({
   onBackToList,
   onBackToMedicalRecords,
   onBackToSchedule,
+  onBackToMedications,
 }: AppSidebarProps) {
   const handleNavigation = (
-    view: "overview" | "appointments" | "medical-records" | "schedule"
+    view:
+      | "overview"
+      | "appointments"
+      | "medical-records"
+      | "schedule"
+      | "medications"
   ) => {
     onViewChange(view);
     if (view !== "appointments") {
@@ -79,6 +97,9 @@ export default function AppSidebar({
     }
     if (view !== "schedule") {
       onBackToSchedule();
+    }
+    if (view !== "medications") {
+      onBackToMedications();
     }
   };
 

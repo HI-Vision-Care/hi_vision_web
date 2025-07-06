@@ -7,3 +7,5 @@ export { default as MedicalRecordForm } from "./medical-record-form";
 export { default as MedicalRecordsList } from "./medical-records-list";
 export { default as WorkShiftCalendar } from "./workshift-calendar";
 export { default as WorkshiftForm } from "./worfshift-form";
+export { default as MedicationForm } from "./medication-form";
+export { default as MedicationsList } from "./medication-list";
