@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useQuery } from "@tanstack/react-query";
 import {
   createLabResult,
@@ -9,6 +10,7 @@ import {
 } from "./api";
 import { DoctorAppointment, DoctorProfile } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useGetAppointmentsByDoctorId = (
   doctorID: string,
@@ -47,7 +49,15 @@ export function useCreateMedicalRecord() {
     }) => createMedicalRecord(appointmentId, { diagnosis, note }),
     onSuccess: () => {
       // Optional: invalidateQueries để reload medical records hoặc appointments nếu cần
+      toast.success("Medical Record created!");
       queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to create medical record!";
+      toast.error(message);
     },
   });
 }

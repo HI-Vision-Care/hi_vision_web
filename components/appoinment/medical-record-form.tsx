@@ -41,6 +41,14 @@ import {
 import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS, hivTestTypes } from "@/constants";
 
+function isoToLocalDatetime(isoString: string) {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+}
+
 export default function MedicalRecordForm({
   appointmentId,
   record,
@@ -114,7 +122,8 @@ export default function MedicalRecordForm({
         resultValue: labResult.resultValue!,
         unit: labResult.unit || "",
         referenceRange: labResult.referenceRange || "",
-        testDate: labResult.testDate!,
+        testDate:
+          labResult.testDate && new Date(labResult.testDate).toISOString(),
         performedBy: labResult.performedBy || "Lab Technician",
       },
       {
@@ -284,11 +293,16 @@ export default function MedicalRecordForm({
                         <Label htmlFor="testDate">Test Date</Label>
                         <Input
                           id="testDate"
-                          type="date"
-                          value={labResult.testDate}
-                          onChange={(e) =>
-                            handleLabResultChange("testDate", e.target.value)
+                          type="datetime-local"
+                          value={
+                            labResult.testDate
+                              ? isoToLocalDatetime(labResult.testDate) // khi edit, convert ISO về local
+                              : ""
                           }
+                          onChange={(e) => {
+                            // Lưu lại đúng local string cho input
+                            handleLabResultChange("testDate", e.target.value);
+                          }}
                         />
                       </div>
                     </div>

@@ -7,10 +7,11 @@ import {
 } from "./types";
 
 export async function createPrescription(
+  patientId: string,
   payload: PrescriptionCreatePayload
 ): Promise<PrescriptionResponse> {
   const { data } = await axiosInstance.post<PrescriptionResponse>(
-    "/prescription/create",
+    `/prescription/create?patientId=${patientId}`,
     payload
   );
   return data;

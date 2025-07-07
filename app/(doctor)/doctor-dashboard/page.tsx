@@ -79,6 +79,10 @@ export default function DoctorDashboard() {
   const [isCreatingMedication, setIsCreatingMedication] = useState(false);
   const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
+    null
+  );
+
   const { data: medicalRecords = [] } = useAllMedicalRecords();
 
   const handleMedicalRecordSelect = (record: MedicalRecord) => {
@@ -112,14 +116,22 @@ export default function DoctorDashboard() {
       | "medical-records"
       | "medical-record-form"
       | "medications",
-    appointmentId?: string
+    appointmentId?: string,
+    patientId?: string,
+    createNewMedication?: boolean // <- thêm dòng này
   ) => {
     setCurrentView(view);
-    if (appointmentId) {
-      setSelectedAppointmentId(appointmentId);
+    if (appointmentId) setSelectedAppointmentId(appointmentId);
+    if (patientId) setSelectedPatientId(patientId);
+
+    // thêm dòng này:
+    if (view === "medications" && createNewMedication) {
+      setSelectedMedication(null);
+      setIsCreatingMedication(true);
     }
   };
-  const handleWorkShiftSelect = (shift: any) => {
+
+  const handleWorkShiftSelect = (shift: WorkShift) => {
     setSelectedWorkShift(mapBackendShiftToForm(shift));
     setIsCreatingShift(false);
   };
@@ -182,8 +194,6 @@ export default function DoctorDashboard() {
     setMedications((prev) => prev.filter((m) => m.id !== medicationId));
     setSelectedMedication(null);
   };
-
-  console.log(workShifts);
 
   return (
     <SidebarProvider>
@@ -274,6 +284,7 @@ export default function DoctorDashboard() {
                 onSave={handleSaveMedication}
                 onDelete={handleDeleteMedication}
                 onBack={handleBackToMedications}
+                initialPatientId={selectedPatientId}
                 patients={mockAppointments.map((apt) => apt.patient)}
               />
             )}

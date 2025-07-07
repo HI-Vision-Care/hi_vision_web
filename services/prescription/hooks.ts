@@ -10,10 +10,16 @@ import {
   getArvPrescriptionsByPatientId,
 } from "./api";
 
+// mutationFn nhận { patientId, payload }
 export function useCreatePrescription(options = {}) {
   return useMutation({
-    mutationFn: (payload: PrescriptionCreatePayload) =>
-      createPrescription(payload),
+    mutationFn: ({
+      patientId,
+      payload,
+    }: {
+      patientId: string;
+      payload: PrescriptionCreatePayload;
+    }) => createPrescription(patientId, payload),
     ...options,
   });
 }

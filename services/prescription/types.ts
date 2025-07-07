@@ -1,14 +1,21 @@
 // Payload gửi đi khi tạo đơn thuốc
-export interface PrescriptionCreatePayload {
-  patientid: string;
+export interface PrescriptionRequest {
+  prescribeBy: string;
+}
+
+export interface ArvRequest {
+  arvID: string;
   dosage: string;
   duration: string;
-  prescribeBy: string;
+}
+
+export interface PrescriptionCreatePayload {
+  prescriptionRequest: PrescriptionRequest;
+  arvRequests: ArvRequest[];
 }
 
 // Response trả về sau khi tạo thành công
 export interface PrescriptionResponse {
-  prescriptionID: string;
   patient: {
     patientID: string;
     account: {
@@ -24,12 +31,15 @@ export interface PrescriptionResponse {
     dob: string;
     gender: string;
     medNo: string;
+    medDate: string;
     medFac: string;
-    createdAt: string;
   };
-  date: string;
+  preArvResponses: {
+    arvID: string;
+    dosage: string;
+    duration: string;
+  }[];
   prescribeBy: string;
-  status: string; // ví dụ: "CREATED"
 }
 
 // Payload gửi đi (request body)

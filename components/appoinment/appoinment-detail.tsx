@@ -7,6 +7,7 @@ import {
   BriefcaseMedical,
   Calendar,
   Clock,
+  FileText,
   Hospital,
   Mail,
   Phone,
@@ -51,7 +52,6 @@ export default function AppointmentDetail({
     isLoading: isLabLoading,
     error: labError,
   } = useLabResultsByPatientId(patientId);
-  console.log(patientId);
 
   return (
     <div className="space-y-6">
@@ -84,6 +84,20 @@ export default function AppointmentDetail({
           }
         >
           New Record
+        </Button>
+        <Button
+          variant="outline"
+          className="bg-secondary text-white hover:bg-secondary/80"
+          onClick={() =>
+            onViewChange(
+              "medications",
+              undefined,
+              appointment.patient?.patientID,
+              true
+            )
+          }
+        >
+          Create prescription
         </Button>
       </div>
 
@@ -176,6 +190,44 @@ export default function AppointmentDetail({
               {/* Status Actions */}
             </CardContent>
           </Card>
+
+          {/* Diagnosis & Prescription */}
+          {(appointment.diagnosis || appointment.prescription) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Diagnosis & Treatment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {appointment.diagnosis && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Diagnosis
+                    </label>
+                    <p className="mt-1">{appointment.diagnosis}</p>
+                  </div>
+                )}
+
+                {appointment.prescription && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Prescription
+                    </label>
+                    <ul className="mt-1 space-y-1">
+                      {appointment.prescription.map((item, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <Pill className="h-4 w-4 text-muted-foreground" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Lab Results */}
           <Card>

@@ -65,7 +65,6 @@ export default function ModernChatWidget() {
     profile?.account?.username ||
     profile?.account?.email ||
     "Khách";
-  console.log(accountId);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
