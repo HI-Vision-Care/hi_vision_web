@@ -45,5 +45,4 @@ export interface DoctorProfile {
   dob: string;
   gender: string;
   avatar: string;
-  // các trường khác...
 }

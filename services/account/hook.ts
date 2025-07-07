@@ -9,7 +9,12 @@ import {
   getPatientProfile,
   getDoctorProfile,
 } from "./api";
-import { AccountUI, CreateAccountPayload } from "./types";
+import {
+  AccountUI,
+  CreateAccountPayload,
+  DoctorProfile,
+  PatientProfile,
+} from "./types";
 import { toast } from "sonner";
 
 // Lấy tất cả account
@@ -86,8 +91,6 @@ export const useDeleteAccount = () => {
     },
   });
 };
-
-import { DoctorProfile, PatientProfile } from "./types";
 
 export function useGetUserProfile(
   accountId: string | null,

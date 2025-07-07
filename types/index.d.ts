@@ -239,8 +239,8 @@ export interface WorkShift {
   endTime: string;
   shiftType: "Regular" | "On-call" | "Emergency" | "Night" | "Weekend";
   location: string;
-  notes?: string;
-  status: "Scheduled" | "Active" | "Completed" | "Cancelled";
+  note: string;
+  status: "Scheduled" | "Active" | "Completed" | "Cancelled" | "Available";
   createdAt: string;
   updatedAt: string;
 }

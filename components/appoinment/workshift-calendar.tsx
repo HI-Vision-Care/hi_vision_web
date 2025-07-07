@@ -5,7 +5,6 @@ import {
   Calendar,
   Clock,
   Plus,
-  MapPin,
   Users,
   AlertCircle,
   ChevronLeft,
@@ -31,6 +30,12 @@ interface WorkShiftCalendarProps {
   onCreateNew: () => void;
 }
 
+function formatTime(iso: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function WorkShiftCalendar({
   workShifts,
   appointments,
@@ -50,6 +55,10 @@ export default function WorkShiftCalendar({
   const firstDayOfWeek = firstDayOfMonth.getDay();
   const daysInMonth = lastDayOfMonth.getDate();
 
+  const [showAllShiftsModal, setShowAllShiftsModal] = useState(false);
+  const [modalShifts, setModalShifts] = useState<WorkShift[]>([]);
+  const [modalDate, setModalDate] = useState<Date | null>(null);
+
   const calendarDays = [];
 
   // Add empty cells for days before the first day of the month
@@ -63,8 +72,15 @@ export default function WorkShiftCalendar({
   }
 
   const getShiftsForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
-    return workShifts.filter((shift) => shift.date === dateString);
+    const dateString =
+      date.getFullYear().toString().padStart(4, "0") +
+      "-" +
+      (date.getMonth() + 1).toString().padStart(2, "0") +
+      "-" +
+      date.getDate().toString().padStart(2, "0");
+    return workShifts.filter(
+      (shift) => shift.date.split("T")[0] === dateString
+    );
   };
 
   const getAppointmentsForDate = (date: Date) => {
@@ -91,10 +107,12 @@ export default function WorkShiftCalendar({
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "Available":
+        return "bg-blue-100 text-blue-800";
       case "Active":
         return "bg-success text-success-foreground";
       case "Scheduled":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary text-primary-foreground";
       case "Completed":
         return "bg-gray-100 text-gray-800";
       case "Cancelled":
@@ -164,7 +182,9 @@ export default function WorkShiftCalendar({
 
   // Calculate statistics
   const totalShifts = workShifts.length;
-  const activeShifts = workShifts.filter((s) => s.status === "Active").length;
+  const activeShifts = workShifts.filter(
+    (s) => s.status === "Available"
+  ).length;
   const upcomingShifts = workShifts.filter(
     (s) => s.status === "Scheduled"
   ).length;
@@ -353,13 +373,21 @@ export default function WorkShiftCalendar({
                             shift.shiftType
                           )} text-xs px-1 py-0 w-full justify-start`}
                         >
-                          {shift.startTime}-{shift.endTime}
+                          {formatTime(shift.startTime)} -{" "}
+                          {formatTime(shift.endTime)}
                         </Badge>
                       </div>
                     ))}
 
                     {dayShifts.length > 2 && (
-                      <div className="text-xs text-muted-foreground">
+                      <div
+                        className="text-xs text-blue-500 cursor-pointer "
+                        onClick={() => {
+                          setModalShifts(dayShifts);
+                          setModalDate(date);
+                          setShowAllShiftsModal(true);
+                        }}
+                      >
                         +{dayShifts.length - 2} more
                       </div>
                     )}
@@ -405,19 +433,19 @@ export default function WorkShiftCalendar({
                 >
                   <div className="flex items-center space-x-3">
                     <div className="text-sm font-medium">
-                      {shift.startTime} - {shift.endTime}
+                      {formatTime(shift.startTime)} -{" "}
+                      {formatTime(shift.endTime)}
                     </div>
-                    <Badge className={getShiftTypeColor(shift.shiftType)}>
-                      {shift.shiftType}
-                    </Badge>
                     <Badge className={getStatusColor(shift.status)}>
                       {shift.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {shift.location}
-                  </div>
+                  {shift.note && (
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <AlertCircle className="h-4 w-4" />
+                      {shift.note}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -437,6 +465,52 @@ export default function WorkShiftCalendar({
           )}
         </CardContent>
       </Card>
+
+      {showAllShiftsModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-xl w-[340px] max-w-[90vw] p-6 relative">
+            <button
+              className="absolute top-3 right-4 text-xl text-gray-400 hover:text-black"
+              onClick={() => setShowAllShiftsModal(false)}
+            >
+              ×
+            </button>
+            <h3 className="text-lg font-bold mb-3 text-center">
+              All Slots for{" "}
+              {modalDate &&
+                `${modalDate.getDate()}/${
+                  modalDate.getMonth() + 1
+                }/${modalDate.getFullYear()}`}
+            </h3>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {modalShifts.map((shift) => (
+                <div
+                  key={shift.id}
+                  className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-muted/50"
+                  onClick={() => {
+                    setShowAllShiftsModal(false);
+                    onShiftSelect(shift);
+                  }}
+                >
+                  <Badge
+                    className={`${getShiftTypeColor(
+                      shift.shiftType
+                    )} text-xs px-1 py-0`}
+                  >
+                    {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
+                  </Badge>
+                  <span className="ml-2 text-sm">{shift.status}</span>
+                  {shift.note && (
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {shift.note}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

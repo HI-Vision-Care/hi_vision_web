@@ -124,7 +124,7 @@ export default function WorkShiftForm({
       endTime: formData.endTime!,
       shiftType: formData.shiftType as any,
       location: formData.location!,
-      notes: formData.notes || "",
+      note: formData.note || "",
       status: (formData.status as any) || "Scheduled",
       createdAt: formData.createdAt!,
       updatedAt: new Date().toISOString(),
@@ -142,6 +142,8 @@ export default function WorkShiftForm({
 
   const getShiftTypeColor = (shiftType: string) => {
     switch (shiftType) {
+      case "Available":
+        return "bg-blue-100 text-blue-800";
       case "Regular":
         return "bg-primary text-primary-foreground";
       case "On-call":

@@ -14,10 +14,36 @@ import {
   WorkshiftForm,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { mockAppointments, mockMedications, mockWorkShifts } from "@/constants";
+import { mockAppointments, mockMedications } from "@/constants";
 import { useAllMedicalRecords } from "@/services/doctor/hooks";
+import { useWorkShiftsByDoctorId } from "@/services/workShift/hooks";
 import { Appointment, MedicalRecord, Medication, WorkShift } from "@/types";
 import { useState } from "react";
+
+function mapBackendShiftToForm(shiftFromBackend: any): WorkShift {
+  return {
+    id: shiftFromBackend.id?.toString() || "",
+    doctorId: shiftFromBackend.doctor?.doctorID || "",
+    doctorName: shiftFromBackend.doctor?.name || "",
+    date: shiftFromBackend.date?.split("T")[0] || "",
+    startTime: shiftFromBackend.startTime
+      ? shiftFromBackend.startTime.length > 5
+        ? shiftFromBackend.startTime.split("T")[1]?.substring(0, 5)
+        : shiftFromBackend.startTime
+      : "",
+    endTime: shiftFromBackend.endTime
+      ? shiftFromBackend.endTime.length > 5
+        ? shiftFromBackend.endTime.split("T")[1]?.substring(0, 5)
+        : shiftFromBackend.endTime
+      : "",
+    shiftType: shiftFromBackend.shiftType || "Regular",
+    location: shiftFromBackend.location || "Main Clinic", // fallback hợp lý
+    note: shiftFromBackend.note || "", // backend là 'note', form cần 'notes'
+    status: shiftFromBackend.status || "Scheduled",
+    createdAt: shiftFromBackend.createdAt || new Date().toISOString(),
+    updatedAt: shiftFromBackend.updatedAt || new Date().toISOString(),
+  };
+}
 
 export default function DoctorDashboard() {
   const [currentView, setCurrentView] = useState<
@@ -40,9 +66,10 @@ export default function DoctorDashboard() {
   const [selectedMedicalRecord, setSelectedMedicalRecord] =
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
-
+  const doctorId = "14e78fbb-11c8-41f1-9ab4-d85a4f190380";
+  const { data: workShifts = [] } = useWorkShiftsByDoctorId(doctorId);
   const [isCreatingShift, setIsCreatingShift] = useState(false);
-  const [workShifts, setWorkShifts] = useState<WorkShift[]>(mockWorkShifts);
+
   const [selectedWorkShift, setSelectedWorkShift] = useState<WorkShift | null>(
     null
   );
@@ -92,9 +119,8 @@ export default function DoctorDashboard() {
       setSelectedAppointmentId(appointmentId);
     }
   };
-
-  const handleWorkShiftSelect = (shift: WorkShift) => {
-    setSelectedWorkShift(shift);
+  const handleWorkShiftSelect = (shift: any) => {
+    setSelectedWorkShift(mapBackendShiftToForm(shift));
     setIsCreatingShift(false);
   };
 
@@ -109,18 +135,18 @@ export default function DoctorDashboard() {
   };
 
   const handleSaveWorkShift = (shift: WorkShift) => {
-    if (shift.id && workShifts.find((s) => s.id === shift.id)) {
-      setWorkShifts((prev) => prev.map((s) => (s.id === shift.id ? shift : s)));
-    } else {
-      const newShift = { ...shift, id: `ws${Date.now()}` };
-      setWorkShifts((prev) => [...prev, newShift]);
-    }
+    // if (shift.id && workShifts.find((s) => s.id === shift.id)) {
+    //   setWorkShifts((prev) => prev.map((s) => (s.id === shift.id ? shift : s)));
+    // } else {
+    //   const newShift = { ...shift, id: `ws${Date.now()}` };
+    //   setWorkShifts((prev) => [...prev, newShift]);
+    // }
     setIsCreatingShift(false);
     setSelectedWorkShift(shift);
   };
 
-  const handleDeleteWorkShift = (shiftId: string) => {
-    setWorkShifts((prev) => prev.filter((s) => s.id !== shiftId));
+  const handleDeleteWorkShift = () => {
+    // setWorkShifts((prev) => prev.filter((s) => s.id !== shiftId));
     setSelectedWorkShift(null);
   };
 
@@ -156,6 +182,8 @@ export default function DoctorDashboard() {
     setMedications((prev) => prev.filter((m) => m.id !== medicationId));
     setSelectedMedication(null);
   };
+
+  console.log(workShifts);
 
   return (
     <SidebarProvider>
