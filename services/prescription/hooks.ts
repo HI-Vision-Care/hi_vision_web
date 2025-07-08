@@ -25,7 +25,7 @@ export function useCreatePrescription() {
 
     // ---- Thêm mặc định xử lý thành công và lỗi ở đây ----
     onSuccess: (data: any) => {
-      toast.success(data?.message || "Tạo đơn thuốc thành công!");
+      toast.success(data?.message || "Prescription created successfully!");
     },
     onError: (error: any) => {
       let message = "Có lỗi xảy ra!";
