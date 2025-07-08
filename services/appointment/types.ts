@@ -11,17 +11,6 @@ export interface Appointment {
   paymentStatus?: string | null;
   createAt: string;
 }
-export interface DoctorAppointment {
-  appointmentID: string;
-  patientName: string;
-  doctorName: string;
-  serviceName: string;
-  appointmentDate: string;
-  isAnonymous: boolean;
-  note: string;
-  createAt: string;
-  status: string;
-}
 
 export interface LabResult {
   recordId: string;

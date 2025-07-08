@@ -1,13 +1,7 @@
 import axiosInstance from "@/config/axios";
-import {
-  DoctorAppointment,
-  DoctorProfile,
-  DoctorResponse,
-  DoctorUpdateRequest,
-  MedicalRecord,
-} from "./types";
+import { DoctorProfile, DoctorResponse, DoctorUpdateRequest } from "./types";
 import Cookies from "js-cookie";
-import { LabResult } from "@/types";
+import { DoctorAppointment, LabResult, MedicalRecord } from "@/types";
 
 export async function getAllDoctor(): Promise<DoctorResponse[]> {
   const { data } = await axiosInstance.get<DoctorResponse[]>("doctor");

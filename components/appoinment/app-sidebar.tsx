@@ -1,6 +1,3 @@
-"use client";
-
-import { Calendar, Home, Clock, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,50 +12,17 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
+import { DashboardView, ViewChangeOptions } from "@/types";
+import { navigation } from "@/constants";
 
 interface AppSidebarProps {
-  currentView:
-    | "overview"
-    | "appointments"
-    | "medical-records"
-    | "medical-record-form"
-    | "schedule"
-    | "medications";
-  onViewChange: (options: {
-    view:
-      | "overview"
-      | "appointments"
-      | "medical-records"
-      | "schedule"
-      | "medications"
-      | "patients";
-    appointmentId?: string;
-    patientId?: string;
-    createNew?: boolean;
-  }) => void;
+  currentView: DashboardView;
+  onViewChange: (options: ViewChangeOptions) => void;
   onBackToList: () => void;
   onBackToMedicalRecords: () => void;
   onBackToSchedule: () => void;
   onBackToMedications: () => void;
 }
-
-const navigation = [
-  {
-    title: "Dashboard",
-    icon: Home,
-    view: "overview" as const,
-  },
-  {
-    title: "Appointments",
-    icon: Calendar,
-    view: "appointments" as const,
-  },
-  {
-    title: "Schedule",
-    icon: Clock,
-    view: "schedule" as const,
-  },
-];
 
 export default function AppSidebar({
   currentView,
@@ -68,15 +32,7 @@ export default function AppSidebar({
   onBackToSchedule,
   onBackToMedications,
 }: AppSidebarProps) {
-  const handleNavigation = (
-    view:
-      | "overview"
-      | "appointments"
-      | "medical-records"
-      | "schedule"
-      | "medications"
-      | "patients"
-  ) => {
+  const handleNavigation = (view: DashboardView) => {
     onViewChange({ view });
     if (view !== "appointments") {
       onBackToList();

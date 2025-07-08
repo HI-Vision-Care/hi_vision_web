@@ -27,6 +27,7 @@ export interface PatientAccount {
 }
 
 export interface PatientProfile {
+  doctorID: string;
   patientID: string;
   account: PatientAccount;
   name: string;

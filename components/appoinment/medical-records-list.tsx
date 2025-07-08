@@ -35,41 +35,6 @@ export default function MedicalRecordsList({
     return matchesSearch;
   });
 
-  // const getStageColor = (stage: string) => {
-  //   switch (stage) {
-  //     case "Stage 1":
-  //       return "bg-success text-success-foreground";
-  //     case "Stage 2":
-  //       return "bg-warning text-warning-foreground";
-  //     case "Stage 3":
-  //       return "bg-orange-100 text-orange-800";
-  //     case "AIDS":
-  //       return "bg-red-100 text-red-800";
-  //     default:
-  //       return "bg-gray-100 text-gray-800";
-  //   }
-  // };
-
-  // const getViralLoadStatus = (viralLoad?: number) => {
-  //   if (viralLoad === undefined) return "Unknown";
-  //   if (viralLoad === 0) return "Undetectable";
-  //   if (viralLoad < 50) return "Suppressed";
-  //   if (viralLoad < 1000) return "Low";
-  //   return "High";
-  // };
-
-  // const getViralLoadColor = (viralLoad?: number) => {
-  //   if (viralLoad === undefined) return "bg-gray-100 text-gray-800";
-  //   if (viralLoad === 0 || viralLoad < 50)
-  //     return "bg-success text-success-foreground";
-  //   if (viralLoad < 1000) return "bg-warning text-warning-foreground";
-  //   return "bg-red-100 text-red-800";
-  // };
-
-  // const handleRecordSaved = (recordId: string) => {
-  //   setCreatedRecordId(recordId); // Lưu để truyền qua lab result form
-  // };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

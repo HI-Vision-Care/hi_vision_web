@@ -1,6 +1,6 @@
 import axiosInstance from "@/config/axios";
 import { Appointment } from "./types"; // Bạn cần định nghĩa hoặc điều chỉnh interface phù hợp
-import { DoctorAppointment } from "../doctor/types";
+import { DoctorAppointment } from "@/types";
 
 export async function getAllAppointments(): Promise<Appointment[]> {
   const { data } = await axiosInstance.get<Appointment[]>(

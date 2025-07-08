@@ -107,14 +107,60 @@ export type AppointmentStatus =
 
 export interface DoctorAppointment {
   appointmentID: string;
-  patientName: string;
-  doctorName: string;
-  serviceName: string;
-  appointmentDate: string;
-  isAnonymous: boolean;
-  note: string;
-  createAt: string;
+  patient: {
+    patientID: string;
+    account: {
+      id: string;
+      username: string;
+      email: string;
+      phone: string;
+      avatar: string;
+      role: string;
+      isDeleted: boolean;
+    };
+    name: string;
+    dob: string;
+    gender: string;
+    medNo: string;
+    medDate: string;
+    medFac: string;
+  };
+  doctor: {
+    doctorID: string;
+    account: {
+      id: string;
+      username: string;
+      email: string;
+      phone: string;
+      avatar: string;
+      role: string;
+      isDeleted: boolean;
+    };
+    name: string;
+    gender: string;
+    specialty: string;
+    degrees: string;
+  };
+  medicalService: {
+    serviceID: number;
+    name: string;
+    description: string;
+    price: number;
+    img: string;
+    type: string;
+    specialty: string;
+    isActive: boolean;
+    isRequireDoctor: boolean;
+    isOnline: boolean;
+    createAt: string;
+  };
+  appointmentDate: string; // ISO date string
   status: string;
+  isAnonymous: boolean;
+  urlLink: string;
+  note: string;
+  paymentStatus: string | null;
+  createAt: string; // ISO date string
 }
 
 export interface Appointment {
@@ -239,17 +285,20 @@ export interface MedicalRecordFormProps {
   onBack: () => void;
 }
 
-export interface WorkShift {
-  id: string;
-  doctorId: string;
-  doctorName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  shiftType: "Regular" | "On-call" | "Emergency" | "Night" | "Weekend";
-  location: string;
-  note: string;
-  status: "Scheduled" | "Active" | "Completed" | "Cancelled" | "Available";
-  createdAt: string;
-  updatedAt: string;
-}
+// Trong file types.ts hoặc đầu file page.tsx
+export type DashboardView =
+  | "overview"
+  | "appointments"
+  | "medical-records"
+  | "medical-record-form"
+  | "schedule"
+  | "medications"
+  | "patients";
+
+export type ViewChangeOptions = {
+  view: DashboardView;
+  appointmentId?: string;
+  patientId?: string;
+  createNew?: boolean;
+  prescribedBy?: string;
+};

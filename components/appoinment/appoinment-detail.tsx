@@ -62,8 +62,7 @@ export default function AppointmentDetail({
     error: arvError,
   } = useArvPrescriptionsByPatientId(patientId);
 
-  const isAnonymous =
-    appointment.isAnonymous === true || appointment.isAnonymous === "Yes";
+  const isAnonymous = appointment.isAnonymous === true;
 
   return (
     <div className="space-y-6">
