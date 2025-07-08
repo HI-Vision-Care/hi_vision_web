@@ -8,9 +8,10 @@ import {
   getDoctorProfile,
   getLabResultsByPatientId,
 } from "./api";
-import { DoctorAppointment, DoctorProfile } from "./types";
+import { DoctorProfile } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { DoctorAppointment } from "@/types";
 
 export const useGetAppointmentsByDoctorId = (
   doctorID: string,

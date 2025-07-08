@@ -21,11 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Appointment, WorkShift } from "@/types";
+import { WorkShift } from "@/services/workShift/types";
 
 interface WorkShiftCalendarProps {
   workShifts: WorkShift[];
-  appointments: Appointment[];
   onShiftSelect: (shift: WorkShift) => void;
   onCreateNew: () => void;
 }
@@ -38,7 +37,6 @@ function formatTime(iso: string) {
 
 export default function WorkShiftCalendar({
   workShifts,
-  appointments,
   onShiftSelect,
   onCreateNew,
 }: WorkShiftCalendarProps) {
@@ -81,11 +79,6 @@ export default function WorkShiftCalendar({
     return workShifts.filter(
       (shift) => shift.date.split("T")[0] === dateString
     );
-  };
-
-  const getAppointmentsForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
-    return appointments.filter((apt) => apt.date === dateString);
   };
 
   const getShiftTypeColor = (shiftType: string) => {
@@ -140,7 +133,6 @@ export default function WorkShiftCalendar({
 
   const hasConflicts = (date: Date) => {
     const shifts = getShiftsForDate(date);
-    // const appointments = getAppointmentsForDate(date);
 
     // Check for overlapping shifts
     for (let i = 0; i < shifts.length; i++) {
@@ -196,6 +188,8 @@ export default function WorkShiftCalendar({
     weekEnd.setDate(weekStart.getDate() + 6);
     return shiftDate >= weekStart && shiftDate <= weekEnd;
   }).length;
+
+  console.log(workShifts);
 
   return (
     <div className="space-y-6">
@@ -336,7 +330,6 @@ export default function WorkShiftCalendar({
               }
 
               const dayShifts = getShiftsForDate(date);
-              const dayAppointments = getAppointmentsForDate(date);
               const hasConflict = hasConflicts(date);
 
               return (
@@ -389,13 +382,6 @@ export default function WorkShiftCalendar({
                         }}
                       >
                         +{dayShifts.length - 2} more
-                      </div>
-                    )}
-
-                    {dayAppointments.length > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        {dayAppointments.length} apt
-                        {dayAppointments.length !== 1 ? "s" : ""}
                       </div>
                     )}
                   </div>

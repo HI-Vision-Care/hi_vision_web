@@ -18,14 +18,20 @@ export interface Doctor {
 }
 
 export interface WorkShift {
-  id: number;
-  doctor: Doctor; // ✅ thêm dòng này
-  slot: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  status: string;
-  note: string | null;
+  id?: number;
+  doctor?: Doctor; // ✅ thêm dòng này
+  slot?: string;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  status?: string;
+  note?: string | null;
+  doctorId?: string;
+  doctorName?: string;
+  shiftType?: string;
+  location?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Payload cho API đăng ký work shift

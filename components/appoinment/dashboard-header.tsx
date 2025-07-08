@@ -1,5 +1,6 @@
 "use client";
 
+import Cookies from "js-cookie";
 import { Bell, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useEffect, useState } from "react";
+import { useAccountId } from "@/hooks/useAccountId";
+import { useGetUserProfile } from "@/services/account/hook";
+import { useRouter } from "next/navigation";
 
 export default function DashboardHeader() {
+  const [role, setRole] = useState<string | null>(null);
+  const router = useRouter();
+
+  const accountId = useAccountId();
+  const { data: profile } = useGetUserProfile(accountId, role);
+
+  const userName =
+    profile?.name ||
+    profile?.account?.username ||
+    profile?.account?.email ||
+    "User";
+
+  useEffect(() => {
+    const userRole = Cookies.get("role");
+    setRole(userRole || null);
+  }, []);
+
+  const handleLogout = () => {
+    Cookies.remove("token");
+    Cookies.remove("role");
+    Cookies.remove("user");
+    router.push("/sign-in");
+  };
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger className="-ml-1" />
@@ -46,12 +74,12 @@ export default function DashboardHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Dr. Sarah Wilson</DropdownMenuLabel>
+            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Sign out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

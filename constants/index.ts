@@ -12,7 +12,28 @@ import {
   Shield,
   Activity,
   UserCheck,
+  Home,
+  Calendar,
 } from "lucide-react";
+
+//navigation sidebar doctor-dashboard
+export const navigation = [
+  {
+    title: "Dashboard",
+    icon: Home,
+    view: "overview" as const,
+  },
+  {
+    title: "Appointments",
+    icon: Calendar,
+    view: "appointments" as const,
+  },
+  {
+    title: "Schedule",
+    icon: Clock,
+    view: "schedule" as const,
+  },
+];
 
 //Routes
 export const desktopNav = [

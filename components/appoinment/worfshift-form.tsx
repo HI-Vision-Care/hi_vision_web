@@ -25,14 +25,14 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Appointment, WorkShift } from "@/types";
+import { Appointment } from "@/types";
+import { WorkShift } from "@/services/workShift/types";
 
 interface WorkShiftFormProps {
   shift: WorkShift | null;
   onSave: (shift: WorkShift) => void;
   onDelete: (shiftId: string) => void;
   onBack: () => void;
-  appointments: Appointment[];
 }
 
 export default function WorkShiftForm({
@@ -40,7 +40,6 @@ export default function WorkShiftForm({
   onSave,
   onDelete,
   onBack,
-  appointments,
 }: WorkShiftFormProps) {
   const [formData, setFormData] = useState<Partial<WorkShift>>({
     doctorId: "dr1",

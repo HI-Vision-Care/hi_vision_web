@@ -10,75 +10,60 @@ import {
   MedicalRecordForm,
   MedicalRecordsList,
   MedicationForm,
-  MedicationsList,
   WorkShiftCalendar,
   WorkshiftForm,
 } from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { mockAppointments, mockMedications } from "@/constants";
+import { useAccountId } from "@/hooks/useAccountId";
+import { useGetUserProfile } from "@/services/account/hook";
 import { useAllMedicalRecords } from "@/services/doctor/hooks";
 import { useWorkShiftsByDoctorId } from "@/services/workShift/hooks";
-import { Appointment, MedicalRecord, Medication, WorkShift } from "@/types";
-import { useState } from "react";
-
-function mapBackendShiftToForm(shiftFromBackend: any): WorkShift {
-  return {
-    id: shiftFromBackend.id?.toString() || "",
-    doctorId: shiftFromBackend.doctor?.doctorID || "",
-    doctorName: shiftFromBackend.doctor?.name || "",
-    date: shiftFromBackend.date?.split("T")[0] || "",
-    startTime: shiftFromBackend.startTime
-      ? shiftFromBackend.startTime.length > 5
-        ? shiftFromBackend.startTime.split("T")[1]?.substring(0, 5)
-        : shiftFromBackend.startTime
-      : "",
-    endTime: shiftFromBackend.endTime
-      ? shiftFromBackend.endTime.length > 5
-        ? shiftFromBackend.endTime.split("T")[1]?.substring(0, 5)
-        : shiftFromBackend.endTime
-      : "",
-    shiftType: shiftFromBackend.shiftType || "Regular",
-    location: shiftFromBackend.location || "Main Clinic", // fallback hợp lý
-    note: shiftFromBackend.note || "", // backend là 'note', form cần 'notes'
-    status: shiftFromBackend.status || "Scheduled",
-    createdAt: shiftFromBackend.createdAt || new Date().toISOString(),
-    updatedAt: shiftFromBackend.updatedAt || new Date().toISOString(),
-  };
-}
+import { WorkShift } from "@/services/workShift/types";
+import {
+  Appointment,
+  DashboardView,
+  MedicalRecord,
+  Medication,
+  ViewChangeOptions,
+} from "@/types";
+import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 export default function DoctorDashboard() {
-  const [currentView, setCurrentView] = useState<
-    | "overview"
-    | "appointments"
-    | "medical-records"
-    | "medical-record-form"
-    | "schedule"
-    | "medications"
-  >("overview");
+  const [role, setRole] = useState<string | null>(null);
+  const accountId = useAccountId();
+  const { data: profile } = useGetUserProfile(accountId, role);
+
+  useEffect(() => {
+    const userRole = Cookies.get("role");
+    setRole(userRole || null);
+  }, []);
+
+  const [currentView, setCurrentView] = useState<DashboardView>("overview");
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     string | null
   >(null);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
 
-  const [appointments, setAppointments] =
-    useState<Appointment[]>(mockAppointments);
-
   const [selectedMedicalRecord, setSelectedMedicalRecord] =
     useState<MedicalRecord | null>(null);
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
-  const doctorId = "14e78fbb-11c8-41f1-9ab4-d85a4f190380";
-  const { data: workShifts = [] } = useWorkShiftsByDoctorId(doctorId);
+  const doctorId = profile?.doctorID;
+  const { data: workShifts = [] } = useWorkShiftsByDoctorId(doctorId || "");
   const [isCreatingShift, setIsCreatingShift] = useState(false);
 
   const [selectedWorkShift, setSelectedWorkShift] = useState<WorkShift | null>(
     null
   );
 
+  const [prescribedBy, setPrescribedBy] = useState<string | undefined>(
+    undefined
+  );
+
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
   const [isCreatingMedication, setIsCreatingMedication] = useState(false);
-  const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(
     null
@@ -110,20 +95,11 @@ export default function DoctorDashboard() {
     setSelectedAppointment(null);
   };
 
-  const handleViewChange = (options: {
-    view:
-      | "overview"
-      | "appointments"
-      | "medical-records"
-      | "medical-record-form"
-      | "medications";
-    appointmentId?: string;
-    patientId?: string;
-    createNew?: boolean;
-  }) => {
+  const handleViewChange = (options: ViewChangeOptions) => {
     setCurrentView(options.view);
     if (options.appointmentId) setSelectedAppointmentId(options.appointmentId);
     if (options.patientId) setSelectedPatientId(options.patientId);
+    if (options.prescribedBy) setPrescribedBy(options.prescribedBy);
 
     if (options.view === "medications" && options.createNew) {
       setSelectedMedication(null);
@@ -132,7 +108,7 @@ export default function DoctorDashboard() {
   };
 
   const handleWorkShiftSelect = (shift: WorkShift) => {
-    setSelectedWorkShift(mapBackendShiftToForm(shift));
+    setSelectedWorkShift(shift);
     setIsCreatingShift(false);
   };
 
@@ -162,37 +138,9 @@ export default function DoctorDashboard() {
     setSelectedWorkShift(null);
   };
 
-  const handleMedicationSelect = (medication: Medication) => {
-    setSelectedMedication(medication);
-    setIsCreatingMedication(false);
-  };
-
-  const handleCreateNewMedication = () => {
-    setSelectedMedication(null);
-    setIsCreatingMedication(true);
-  };
-
   const handleBackToMedications = () => {
     setSelectedMedication(null);
     setIsCreatingMedication(false);
-  };
-
-  const handleSaveMedication = (medication: Medication) => {
-    if (medication.id && medications.find((m) => m.id === medication.id)) {
-      setMedications((prev) =>
-        prev.map((m) => (m.id === medication.id ? medication : m))
-      );
-    } else {
-      const newMedication = { ...medication, id: `med${Date.now()}` };
-      setMedications((prev) => [...prev, newMedication]);
-    }
-    setIsCreatingMedication(false);
-    setSelectedMedication(medication);
-  };
-
-  const handleDeleteMedication = (medicationId: string) => {
-    setMedications((prev) => prev.filter((m) => m.id !== medicationId));
-    setSelectedMedication(null);
   };
 
   return (
@@ -253,7 +201,6 @@ export default function DoctorDashboard() {
             !isCreatingShift && (
               <WorkShiftCalendar
                 workShifts={workShifts}
-                appointments={appointments}
                 onShiftSelect={handleWorkShiftSelect}
                 onCreateNew={handleCreateNewShift}
               />
@@ -265,27 +212,23 @@ export default function DoctorDashboard() {
                 onSave={handleSaveWorkShift}
                 onDelete={handleDeleteWorkShift}
                 onBack={handleBackToSchedule}
-                appointments={appointments}
               />
             )}
-          {currentView === "medications" &&
+          {/* {currentView === "medications" &&
             !selectedMedication &&
             !isCreatingMedication && (
               <MedicationsList
-                medications={medications}
+                medications={}
                 onMedicationSelect={handleMedicationSelect}
                 onCreateNew={handleCreateNewMedication}
               />
-            )}
+            )} */}
           {currentView === "medications" &&
             (selectedMedication || isCreatingMedication) && (
               <MedicationForm
-                medication={selectedMedication}
-                onSave={handleSaveMedication}
-                onDelete={handleDeleteMedication}
-                onBack={handleBackToMedications}
+                onBack={handleBackToList}
                 initialPatientId={selectedPatientId || ""}
-                patients={mockAppointments.map((apt) => apt.patient)}
+                prescribedBy={prescribedBy}
               />
             )}
         </main>
