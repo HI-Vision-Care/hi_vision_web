@@ -38,12 +38,14 @@ interface MedicationFormProps {
   initialPatientId: string;
   prescribedBy?: string;
   onSuccess?: () => void;
+  onBack?: () => void;
 }
 
 export default function MedicationForm({
   initialPatientId,
   prescribedBy,
   onSuccess,
+  onBack,
 }: MedicationFormProps) {
   const { data: arvs, isLoading: isLoadingArvs } = useGetAllArvs();
   const [arvRows, setArvRows] = useState([
@@ -51,7 +53,8 @@ export default function MedicationForm({
   ]);
   const [submitting, setSubmitting] = useState(false);
 
-  const { mutate: createPrescription, isPending } = useCreatePrescription();
+  const { mutate: createPrescription, isPending } =
+    useCreatePrescription(onBack);
   const doctorName = prescribedBy || "Dr. John Doe";
 
   const handleArvChange = (

@@ -90,6 +90,8 @@ export interface PrescriptionSimple {
 }
 export interface AddArvToPresResponse {
   id: number;
+  dosage: string;
+  duration: string;
   prescription: PrescriptionSimple;
   arv: Arv;
 }

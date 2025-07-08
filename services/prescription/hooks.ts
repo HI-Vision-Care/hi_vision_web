@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 
 // mutationFn nhận { patientId, payload }
-export function useCreatePrescription() {
+export function useCreatePrescription(onSuccess?: () => void) {
   return useMutation({
     mutationFn: ({
       patientId,
@@ -26,6 +26,7 @@ export function useCreatePrescription() {
     // ---- Thêm mặc định xử lý thành công và lỗi ở đây ----
     onSuccess: (data: any) => {
       toast.success(data?.message || "Prescription created successfully!");
+      if (onSuccess) onSuccess();
     },
     onError: (error: any) => {
       let message = "Có lỗi xảy ra!";

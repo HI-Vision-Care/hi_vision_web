@@ -40,7 +40,14 @@ export default function AppointmentsList({
 
   // Mapping lại data cho đúng UI filter
   const filteredAppointments = useMemo(() => {
-    return appointments.filter((appointment) => {
+    // Sort theo appointmentDate mới nhất lên đầu (descending)
+    const sorted = [...appointments].sort(
+      (a, b) =>
+        new Date(b.appointmentDate).getTime() -
+        new Date(a.appointmentDate).getTime()
+    );
+    // Filter như cũ
+    return sorted.filter((appointment) => {
       const patientName = appointment.patient?.name || "";
       const serviceName = appointment.medicalService?.name || "";
       const matchesSearch =
@@ -63,7 +70,7 @@ export default function AppointmentsList({
   }
 
   if (isProfileLoading || isAppointmentsLoading) {
-    return <div>Đang tải dữ liệu...</div>;
+    return <div>Loading data...</div>;
   }
 
   return (

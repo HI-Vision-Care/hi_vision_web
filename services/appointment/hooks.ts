@@ -55,17 +55,15 @@ export const useGetAppointmentsByDoctorId = (
   });
 
 // Hook xác nhận lịch hẹn (cho button xác nhận ở UI)
-export const useConfirmAppointmentByDoctor = () => {
+export const useConfirmAppointmentByDoctor = (onSuccess?: () => void) => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (appointmentID: string) =>
       confirmAppointmentByDoctor(appointmentID),
     onSuccess: (_data, appointmentID) => {
-      toast.success(
-        "Appointment confirmed! Return to the appointments list to see the updated status."
-      );
+      toast.success("Appointment confirmed!");
       queryClient.invalidateQueries(["appointment", appointmentID]);
+      if (onSuccess) onSuccess(); // chỉ gọi khi truyền vào
     },
     onError: (error: any) => {
       toast.error(
@@ -77,17 +75,16 @@ export const useConfirmAppointmentByDoctor = () => {
   });
 };
 
-export function useCompleteAppointment() {
+export function useCompleteAppointment(onSuccess?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (appointmentID: string) => completeAppointment(appointmentID),
     onSuccess: (_data, appointmentID) => {
-      toast.success(
-        "Appointment completed! Status has been updated. Go back to appointments list to see the change."
-      );
+      toast.success("Appointment completed!");
 
       queryClient.invalidateQueries(["appointment", appointmentID]);
+      if (onSuccess) onSuccess();
     },
     onError: (error: any) => {
       toast.error(

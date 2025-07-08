@@ -202,6 +202,7 @@ export interface AppointmentDetailProps {
     appointmentId?: string;
     patientId?: string;
     createNew?: boolean;
+    prescribedBy?: string;
   }) => void;
 }
 

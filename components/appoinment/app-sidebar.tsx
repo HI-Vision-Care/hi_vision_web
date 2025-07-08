@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, FileText, Clock, Users, Pill } from "lucide-react";
+import { Calendar, Home, Clock, Users } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -57,21 +57,6 @@ const navigation = [
     title: "Schedule",
     icon: Clock,
     view: "schedule" as const,
-  },
-  {
-    title: "Medications",
-    icon: Pill,
-    view: "medications" as const,
-  },
-  {
-    title: "Medical Records",
-    icon: FileText,
-    view: "medical-records" as const,
-  },
-  {
-    title: "Patients",
-    icon: Users,
-    view: "patients" as const,
   },
 ];
 

@@ -75,6 +75,10 @@ export default function DoctorDashboard() {
     null
   );
 
+  const [prescribedBy, setPrescribedBy] = useState<string | undefined>(
+    undefined
+  );
+
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
   const [isCreatingMedication, setIsCreatingMedication] = useState(false);
@@ -120,10 +124,12 @@ export default function DoctorDashboard() {
     appointmentId?: string;
     patientId?: string;
     createNew?: boolean;
+    prescribedBy?: string;
   }) => {
     setCurrentView(options.view);
     if (options.appointmentId) setSelectedAppointmentId(options.appointmentId);
     if (options.patientId) setSelectedPatientId(options.patientId);
+    if (options.prescribedBy) setPrescribedBy(options.prescribedBy);
 
     if (options.view === "medications" && options.createNew) {
       setSelectedMedication(null);
@@ -283,9 +289,10 @@ export default function DoctorDashboard() {
                 medication={selectedMedication}
                 onSave={handleSaveMedication}
                 onDelete={handleDeleteMedication}
-                onBack={handleBackToMedications}
+                onBack={handleBackToList}
                 initialPatientId={selectedPatientId || ""}
                 patients={mockAppointments.map((apt) => apt.patient)}
+                prescribedBy={prescribedBy}
               />
             )}
         </main>
