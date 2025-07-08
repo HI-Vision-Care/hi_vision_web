@@ -62,7 +62,17 @@ export const useConfirmAppointmentByDoctor = () => {
     mutationFn: (appointmentID: string) =>
       confirmAppointmentByDoctor(appointmentID),
     onSuccess: (_data, appointmentID) => {
+      toast.success(
+        "Appointment confirmed! Return to the appointments list to see the updated status."
+      );
       queryClient.invalidateQueries(["appointment", appointmentID]);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Error confirming appointment"
+      );
     },
   });
 };
@@ -73,7 +83,18 @@ export function useCompleteAppointment() {
   return useMutation({
     mutationFn: (appointmentID: string) => completeAppointment(appointmentID),
     onSuccess: (_data, appointmentID) => {
+      toast.success(
+        "Appointment completed! Status has been updated. Go back to appointments list to see the change."
+      );
+
       queryClient.invalidateQueries(["appointment", appointmentID]);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Error completing appointment"
+      );
     },
   });
 }

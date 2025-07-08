@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -7,9 +8,12 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from "react";
+import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, X, Sparkles } from "lucide-react";
+import { useGetUserProfile } from "@/services/account/hook";
+import { useAccountId } from "@/hooks/useAccountId";
 
 export type Message = {
   sender: "user" | "bot";
@@ -30,11 +34,37 @@ const SUGGESTIONS = [
   "Hãy kể chuyện cười",
 ];
 
+function calculateAge(dob: string) {
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 export default function ModernChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const accountId = useAccountId(); // lấy id & role
+  const userRole = Cookies.get("role");
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
+  } = useGetUserProfile(accountId, userRole || "");
+
+  // Lấy tên (ưu tiên profile?.name, fallback username, hoặc "Khách")
+  const name =
+    profile?.name ||
+    profile?.account?.username ||
+    profile?.account?.email ||
+    "Khách";
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -52,11 +82,12 @@ export default function ModernChatWidget() {
 
     try {
       const body: any = { history, brief: true };
-      if (needsMedicalAdvice(textToSend)) {
+      if (needsMedicalAdvice(textToSend) && profile) {
         body.userInfo = {
-          name: "Nguyễn Văn A",
-          age: 45,
-          condition: "Tiền sử huyết áp cao",
+          name: profile?.name || profile?.account?.username || "Khách",
+          age: profile?.dob ? calculateAge(profile.dob) : undefined,
+          gender: profile?.gender,
+          // condition: ... // có thể lấy từ profile nếu có
         };
       }
 
@@ -126,7 +157,7 @@ export default function ModernChatWidget() {
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
-              <h3 className="font-semibold text-gray-800">AI Assistant</h3>
+              <h3 className="font-semibold text-gray-800">HI-Vision AI</h3>
             </div>
             <Button
               variant="ghost"
@@ -145,7 +176,11 @@ export default function ModernChatWidget() {
               <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-blue-50/30 to-purple-50/30">
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-                    Xin chào Nguyễn Văn A!
+                    {profileLoading
+                      ? "Đang tải thông tin..."
+                      : profileError
+                      ? "Xin chào!"
+                      : `Xin chào ${name}!`}
                   </h2>
                   <p className="text-gray-600 text-sm">
                     Tôi có thể giúp gì cho bạn hôm nay?

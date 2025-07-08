@@ -27,3 +27,13 @@ export interface WorkShift {
   status: string;
   note: string | null;
 }
+
+// Payload cho API đăng ký work shift
+export interface WorkShiftRegistrationPayload {
+  slot: string;
+  date: string; // ISO string, vd: "2025-07-07T02:26:08.628Z"
+  startTime: string; // ISO string
+  endTime: string; // ISO string
+}
+
+export type WorkShiftRegistrationList = WorkShiftRegistrationPayload[];

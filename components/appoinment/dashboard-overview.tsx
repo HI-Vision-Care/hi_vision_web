@@ -147,7 +147,6 @@ export default function DashboardOverview({
                 );
                 const timeUTC = `${hour}:${minute}:${second}`;
                 const day = apptDate.toISOString().slice(0, 10);
-                console.log(appointment.appointmentDate);
 
                 return (
                   <div

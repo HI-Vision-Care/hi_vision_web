@@ -17,6 +17,30 @@ export interface Patient {
   };
 }
 
+export interface Medication {
+  id: string;
+  patientId: string;
+  patientName: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions: string;
+  prescribedBy: string;
+  prescribedDate: string;
+  startDate: string;
+  endDate: string;
+  status: "Active" | "Completed" | "Discontinued" | "On Hold";
+  refillsRemaining: number;
+  totalRefills: number;
+  notes?: string;
+  drugClass: string;
+  sideEffects?: string[];
+  interactions?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Appointment {
   appointmentID: string;
   patient: {
@@ -173,10 +197,12 @@ export interface AppointmentDetailProps {
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
-  onViewChange: (
-    view: "medical-records" | "medical-record-form",
-    appointmentId: string
-  ) => void;
+  onViewChange: (options: {
+    view: "medical-records" | "medical-record-form" | "medications";
+    appointmentId?: string;
+    patientId?: string;
+    createNew?: boolean;
+  }) => void;
 }
 
 export interface LabResult {
@@ -193,15 +219,36 @@ export interface LabResult {
 }
 
 export interface MedicalRecord {
+  patientId: string;
+  patientName: string;
+  recordDate: string;
   recordId: string;
   appointmentId: string;
   diagnosis: string;
   createDate: string; // ISO Date string
   note: string;
+  notes: string;
+  treatmentPlan: string;
+  followUpDate: string;
 }
 
 export interface MedicalRecordFormProps {
   appointmentId: string;
   record: MedicalRecord | null;
   onBack: () => void;
+}
+
+export interface WorkShift {
+  id: string;
+  doctorId: string;
+  doctorName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  shiftType: "Regular" | "On-call" | "Emergency" | "Night" | "Weekend";
+  location: string;
+  note: string;
+  status: "Scheduled" | "Active" | "Completed" | "Cancelled" | "Available";
+  createdAt: string;
+  updatedAt: string;
 }

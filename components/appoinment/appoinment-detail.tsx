@@ -23,6 +23,7 @@ import {
 import { AppointmentDetailProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 import { useLabResultsByPatientId } from "@/services/doctor/hooks";
+import Image from "next/image";
 
 function formatAppointmentTimeUTC(dateStr: string) {
   const date = new Date(dateStr);
@@ -51,7 +52,6 @@ export default function AppointmentDetail({
     isLoading: isLabLoading,
     error: labError,
   } = useLabResultsByPatientId(patientId);
-  console.log(patientId);
 
   return (
     <div className="space-y-6">
@@ -80,10 +80,27 @@ export default function AppointmentDetail({
           variant="outline"
           className="bg-primary text-white hover:bg-primary/80"
           onClick={() =>
-            onViewChange("medical-record-form", appointment.appointmentID)
+            onViewChange({
+              view: "medical-record-form",
+              appointmentId: appointment.appointmentID,
+            })
           }
         >
           New Record
+        </Button>
+        <Button
+          variant="outline"
+          className="bg-secondary text-white hover:bg-secondary/80"
+          onClick={() =>
+            onViewChange({
+              view: "medications",
+              appointmentId: appointment.appointmentID,
+              patientId: appointment.patient?.patientID,
+              createNew: true,
+            })
+          }
+        >
+          Create prescription
         </Button>
       </div>
 
@@ -177,6 +194,43 @@ export default function AppointmentDetail({
             </CardContent>
           </Card>
 
+          {/* Diagnosis & Prescription */}
+          {/* {(appointment.diagnosis || appointment.prescription) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Diagnosis & Treatment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {appointment.diagnosis && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Diagnosis
+                    </label>
+                    <p className="mt-1">{appointment.diagnosis}</p>
+                  </div>
+                )}
+
+                {appointment.prescription && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Prescription
+                    </label>
+                    <ul className="mt-1 space-y-1">
+                      {appointment.prescription.map((item, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <Pill className="h-4 w-4 text-muted-foreground" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card> */}
+
           {/* Lab Results */}
           <Card>
             <CardHeader>
@@ -244,10 +298,12 @@ export default function AppointmentDetail({
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 {appointment.patient?.account?.avatar && (
-                  <img
+                  <Image
                     src={appointment.patient.account.avatar}
                     alt="Avatar"
-                    className="w-12 h-12 rounded-full object-cover border"
+                    width={50}
+                    height={50}
+                    className="rounded-full object-cover border"
                   />
                 )}
                 <div>

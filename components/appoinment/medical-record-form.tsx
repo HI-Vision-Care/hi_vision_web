@@ -41,12 +41,22 @@ import {
 import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS, hivTestTypes } from "@/constants";
 
+function isoToLocalDatetime(isoString: string) {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+}
+
 export default function MedicalRecordForm({
   appointmentId,
   record,
   onBack,
 }: MedicalRecordFormProps) {
-  const [createdRecordId, setCreatedRecordId] = useState<string | null>(null);
+  const [createdRecordId, setCreatedRecordId] = useState<string | null>(
+    record?.recordId ?? null
+  );
   const { mutate: createLabResult } = useCreateLabResult();
 
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
@@ -81,9 +91,10 @@ export default function MedicalRecordForm({
   const [showLabForm, setShowLabForm] = useState(false);
   const [editingLabId, setEditingLabId] = useState<string | null>(null);
 
+  // Nếu edit record, update lại state
   useEffect(() => {
-    if (record) {
-      setFormData(record);
+    if (record && record.recordId) {
+      setCreatedRecordId(record.recordId);
     }
   }, [record]);
 
@@ -105,18 +116,19 @@ export default function MedicalRecordForm({
 
     createLabResult(
       {
-        recordId: createdRecordId,
+        recordId: createdRecordId, // <-- Đảm bảo luôn đúng
         testType: labResult.testType!,
         resultText: labResult.resultText || "",
         resultValue: labResult.resultValue!,
         unit: labResult.unit || "",
         referenceRange: labResult.referenceRange || "",
-        testDate: labResult.testDate!,
+        testDate:
+          labResult.testDate && new Date(labResult.testDate).toISOString(),
         performedBy: labResult.performedBy || "Lab Technician",
       },
       {
         onSuccess: () => {
-          // Xử lý khi thành công (ví dụ: load lại bảng, thông báo, v.v.)
+          // Reset form, reload labResults nếu cần
           setLabResult({
             testType: "",
             resultText: "",
@@ -129,7 +141,6 @@ export default function MedicalRecordForm({
           });
           setShowLabForm(false);
           setEditingLabId(null);
-          // Có thể load lại danh sách labResults nếu muốn show ra
         },
         onError: () => {},
       }
@@ -282,11 +293,16 @@ export default function MedicalRecordForm({
                         <Label htmlFor="testDate">Test Date</Label>
                         <Input
                           id="testDate"
-                          type="date"
-                          value={labResult.testDate}
-                          onChange={(e) =>
-                            handleLabResultChange("testDate", e.target.value)
+                          type="datetime-local"
+                          value={
+                            labResult.testDate
+                              ? isoToLocalDatetime(labResult.testDate) // khi edit, convert ISO về local
+                              : ""
                           }
+                          onChange={(e) => {
+                            // Lưu lại đúng local string cho input
+                            handleLabResultChange("testDate", e.target.value);
+                          }}
                         />
                       </div>
                     </div>

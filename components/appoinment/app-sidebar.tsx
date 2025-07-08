@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Home, FileText, Settings } from "lucide-react";
+import { Calendar, Home, FileText, Clock, Users, Pill } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,13 +21,25 @@ interface AppSidebarProps {
     | "overview"
     | "appointments"
     | "medical-records"
-    | "medical-record-form";
-  onViewChange: (
-    view: "overview" | "appointments" | "medical-records",
-    appointmentId?: string
-  ) => void;
+    | "medical-record-form"
+    | "schedule"
+    | "medications";
+  onViewChange: (options: {
+    view:
+      | "overview"
+      | "appointments"
+      | "medical-records"
+      | "schedule"
+      | "medications"
+      | "patients";
+    appointmentId?: string;
+    patientId?: string;
+    createNew?: boolean;
+  }) => void;
   onBackToList: () => void;
   onBackToMedicalRecords: () => void;
+  onBackToSchedule: () => void;
+  onBackToMedications: () => void;
 }
 
 const navigation = [
@@ -42,9 +54,24 @@ const navigation = [
     view: "appointments" as const,
   },
   {
+    title: "Schedule",
+    icon: Clock,
+    view: "schedule" as const,
+  },
+  {
+    title: "Medications",
+    icon: Pill,
+    view: "medications" as const,
+  },
+  {
     title: "Medical Records",
     icon: FileText,
     view: "medical-records" as const,
+  },
+  {
+    title: "Patients",
+    icon: Users,
+    view: "patients" as const,
   },
 ];
 
@@ -53,16 +80,30 @@ export default function AppSidebar({
   onViewChange,
   onBackToList,
   onBackToMedicalRecords,
+  onBackToSchedule,
+  onBackToMedications,
 }: AppSidebarProps) {
   const handleNavigation = (
-    view: "overview" | "appointments" | "medical-records"
+    view:
+      | "overview"
+      | "appointments"
+      | "medical-records"
+      | "schedule"
+      | "medications"
+      | "patients"
   ) => {
-    onViewChange(view);
+    onViewChange({ view });
     if (view !== "appointments") {
       onBackToList();
     }
     if (view !== "medical-records") {
       onBackToMedicalRecords();
+    }
+    if (view !== "schedule") {
+      onBackToSchedule();
+    }
+    if (view !== "medications") {
+      onBackToMedications();
     }
   };
 
@@ -106,20 +147,6 @@ export default function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings className="size-4" />
-                  <span>Preferences</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

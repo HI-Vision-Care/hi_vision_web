@@ -1,5 +1,5 @@
 import axiosInstance from "@/config/axios";
-import { PatientResponse } from "./types";
+import { LabResult, PatientResponse } from "./types";
 
 export async function getAllPatients(): Promise<PatientResponse[]> {
   const { data } = await axiosInstance.get<PatientResponse[]>("patient");
@@ -28,4 +28,13 @@ export async function updatePatient(
 
 export async function deletePatient(patientId: string) {
   return axiosInstance.delete(`/patient/delete/${patientId}`);
+}
+
+export async function getLabResultsByPatientId(
+  patientId: string
+): Promise<LabResult[]> {
+  const { data } = await axiosInstance.get<LabResult[]>(
+    `/patient/lab-results/${patientId}`
+  );
+  return data;
 }
