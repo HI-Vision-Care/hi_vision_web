@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -109,23 +110,22 @@ export default function DoctorDashboard() {
     setSelectedAppointment(null);
   };
 
-  const handleViewChange = (
+  const handleViewChange = (options: {
     view:
       | "overview"
       | "appointments"
       | "medical-records"
       | "medical-record-form"
-      | "medications",
-    appointmentId?: string,
-    patientId?: string,
-    createNewMedication?: boolean // <- thêm dòng này
-  ) => {
-    setCurrentView(view);
-    if (appointmentId) setSelectedAppointmentId(appointmentId);
-    if (patientId) setSelectedPatientId(patientId);
+      | "medications";
+    appointmentId?: string;
+    patientId?: string;
+    createNew?: boolean;
+  }) => {
+    setCurrentView(options.view);
+    if (options.appointmentId) setSelectedAppointmentId(options.appointmentId);
+    if (options.patientId) setSelectedPatientId(options.patientId);
 
-    // thêm dòng này:
-    if (view === "medications" && createNewMedication) {
+    if (options.view === "medications" && options.createNew) {
       setSelectedMedication(null);
       setIsCreatingMedication(true);
     }
@@ -284,7 +284,7 @@ export default function DoctorDashboard() {
                 onSave={handleSaveMedication}
                 onDelete={handleDeleteMedication}
                 onBack={handleBackToMedications}
-                initialPatientId={selectedPatientId}
+                initialPatientId={selectedPatientId || ""}
                 patients={mockAppointments.map((apt) => apt.patient)}
               />
             )}

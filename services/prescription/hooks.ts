@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   AddArvToPresPayloadList,
@@ -9,9 +10,10 @@ import {
   createPrescription,
   getArvPrescriptionsByPatientId,
 } from "./api";
+import { toast } from "sonner";
 
 // mutationFn nhận { patientId, payload }
-export function useCreatePrescription(options = {}) {
+export function useCreatePrescription() {
   return useMutation({
     mutationFn: ({
       patientId,
@@ -20,7 +22,20 @@ export function useCreatePrescription(options = {}) {
       patientId: string;
       payload: PrescriptionCreatePayload;
     }) => createPrescription(patientId, payload),
-    ...options,
+
+    // ---- Thêm mặc định xử lý thành công và lỗi ở đây ----
+    onSuccess: (data: any) => {
+      toast.success(data?.message || "Tạo đơn thuốc thành công!");
+    },
+    onError: (error: any) => {
+      let message = "Có lỗi xảy ra!";
+      if (error?.response?.data?.message) {
+        message = error.response.data.message;
+      } else if (error?.message) {
+        message = error.message;
+      }
+      toast.error(message);
+    },
   });
 }
 

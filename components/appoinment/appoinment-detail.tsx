@@ -7,7 +7,6 @@ import {
   BriefcaseMedical,
   Calendar,
   Clock,
-  FileText,
   Hospital,
   Mail,
   Phone,
@@ -24,6 +23,7 @@ import {
 import { AppointmentDetailProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 import { useLabResultsByPatientId } from "@/services/doctor/hooks";
+import Image from "next/image";
 
 function formatAppointmentTimeUTC(dateStr: string) {
   const date = new Date(dateStr);
@@ -80,7 +80,10 @@ export default function AppointmentDetail({
           variant="outline"
           className="bg-primary text-white hover:bg-primary/80"
           onClick={() =>
-            onViewChange("medical-record-form", appointment.appointmentID)
+            onViewChange({
+              view: "medical-record-form",
+              appointmentId: appointment.appointmentID,
+            })
           }
         >
           New Record
@@ -89,12 +92,12 @@ export default function AppointmentDetail({
           variant="outline"
           className="bg-secondary text-white hover:bg-secondary/80"
           onClick={() =>
-            onViewChange(
-              "medications",
-              undefined,
-              appointment.patient?.patientID,
-              true
-            )
+            onViewChange({
+              view: "medications",
+              appointmentId: appointment.appointmentID,
+              patientId: appointment.patient?.patientID,
+              createNew: true,
+            })
           }
         >
           Create prescription
@@ -192,7 +195,7 @@ export default function AppointmentDetail({
           </Card>
 
           {/* Diagnosis & Prescription */}
-          {(appointment.diagnosis || appointment.prescription) && (
+          {/* {(appointment.diagnosis || appointment.prescription) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -226,8 +229,7 @@ export default function AppointmentDetail({
                   </div>
                 )}
               </CardContent>
-            </Card>
-          )}
+            </Card> */}
 
           {/* Lab Results */}
           <Card>
@@ -296,10 +298,12 @@ export default function AppointmentDetail({
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 {appointment.patient?.account?.avatar && (
-                  <img
+                  <Image
                     src={appointment.patient.account.avatar}
                     alt="Avatar"
-                    className="w-12 h-12 rounded-full object-cover border"
+                    width={50}
+                    height={50}
+                    className="rounded-full object-cover border"
                   />
                 )}
                 <div>

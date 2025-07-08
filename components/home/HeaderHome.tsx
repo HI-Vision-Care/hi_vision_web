@@ -69,7 +69,6 @@ const HeaderHome = () => {
         return "/dashboard"; // fallback
     }
   };
-  console.log(role);
 
   return (
     <nav className="flex items-center justify-between py-4 px-4 relative">

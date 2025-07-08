@@ -197,10 +197,12 @@ export interface AppointmentDetailProps {
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
-  onViewChange: (
-    view: "medical-records" | "medical-record-form",
-    appointmentId: string
-  ) => void;
+  onViewChange: (options: {
+    view: "medical-records" | "medical-record-form" | "medications";
+    appointmentId?: string;
+    patientId?: string;
+    createNew?: boolean;
+  }) => void;
 }
 
 export interface LabResult {
@@ -217,11 +219,17 @@ export interface LabResult {
 }
 
 export interface MedicalRecord {
+  patientId: string;
+  patientName: string;
+  recordDate: string;
   recordId: string;
   appointmentId: string;
   diagnosis: string;
   createDate: string; // ISO Date string
   note: string;
+  notes: string;
+  treatmentPlan: string;
+  followUpDate: string;
 }
 
 export interface MedicalRecordFormProps {

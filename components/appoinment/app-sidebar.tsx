@@ -24,15 +24,18 @@ interface AppSidebarProps {
     | "medical-record-form"
     | "schedule"
     | "medications";
-  onViewChange: (
+  onViewChange: (options: {
     view:
       | "overview"
       | "appointments"
       | "medical-records"
       | "schedule"
-      | "medications",
-    appointmentId?: string
-  ) => void;
+      | "medications"
+      | "patients";
+    appointmentId?: string;
+    patientId?: string;
+    createNew?: boolean;
+  }) => void;
   onBackToList: () => void;
   onBackToMedicalRecords: () => void;
   onBackToSchedule: () => void;
@@ -87,8 +90,9 @@ export default function AppSidebar({
       | "medical-records"
       | "schedule"
       | "medications"
+      | "patients"
   ) => {
-    onViewChange(view);
+    onViewChange({ view });
     if (view !== "appointments") {
       onBackToList();
     }
