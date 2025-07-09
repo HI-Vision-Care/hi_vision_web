@@ -1,5 +1,10 @@
 import axiosInstance from "@/config/axios";
-import { DoctorProfile, DoctorResponse, DoctorUpdateRequest } from "./types";
+import {
+  DoctorProfile,
+  DoctorResponse,
+  DoctorUpdateRequest,
+  MedicalRecordByAppointmentResponse,
+} from "./types";
 import Cookies from "js-cookie";
 import { DoctorAppointment, LabResult, MedicalRecord } from "@/types";
 
@@ -57,6 +62,24 @@ export async function getAllMedicalRecords(): Promise<MedicalRecord[]> {
   const response = await axiosInstance.get("/doctor/get-all-medical-records");
   return response.data;
 }
+
+export const getMedicalRecordByAppointmentId = async (
+  appointmentId: string
+): Promise<MedicalRecordByAppointmentResponse> => {
+  const res = await axiosInstance.get(
+    `/medical-record/appointment/${appointmentId}`
+  );
+  return res.data;
+};
+
+export const getLabResultsByAppointmentId = async (
+  appointmentId: string
+): Promise<LabResult[]> => {
+  const res = await axiosInstance.get(
+    `/lab-result/appointment/${appointmentId}`
+  );
+  return res.data;
+};
 
 export async function createLabResult(data: LabResult) {
   const response = await axiosInstance.post("/doctor/create-lab-result", data);

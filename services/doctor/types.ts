@@ -57,3 +57,22 @@ export interface LabResult {
   testDate: string;
   performedBy: string;
 }
+
+export interface MedicalRecordByAppointmentResponse {
+  recordId: string;
+  appointmentId: string;
+  diagnosis: string;
+  createDate: string;
+  note: string;
+}
+
+export interface LabResult {
+  recordId: string;
+  testType: string;
+  resultText: string;
+  resultValue: string;
+  unit: string;
+  referenceRange: string;
+  testDate: string;
+  performedBy: string;
+}

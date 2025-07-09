@@ -24,9 +24,10 @@ import {
 } from "@/services/appointment/hooks";
 import type { AppointmentDetailProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS } from "@/constants";
-import { useLabResultsByPatientId } from "@/services/doctor/hooks";
+import { useMedicalRecordByAppointmentId } from "@/services/doctor/hooks";
 import Image from "next/image";
 import { useArvPrescriptionsByPatientId } from "@/services/prescription/hooks";
+import MedicalRecordWithLabResults from "./medicalrecord-labresults";
 
 function formatAppointmentTimeUTC(dateStr: string) {
   const date = new Date(dateStr);
@@ -50,11 +51,12 @@ export default function AppointmentDetail({
   const { mutate: confirmAppointment } = useConfirmAppointmentByDoctor(onBack);
   const { mutate: completeAppointment } = useCompleteAppointment(onBack);
   const patientId = appointment.patient?.patientID;
+
   const {
-    data: labResults = [],
-    isLoading: isLabLoading,
-    error: labError,
-  } = useLabResultsByPatientId(patientId);
+    data: medicalRecord,
+    isLoading: isMedicalRecordLoading,
+    error: medicalRecordError,
+  } = useMedicalRecordByAppointmentId(appointment.appointmentID);
 
   const {
     data: arvPrescriptions = [],
@@ -62,7 +64,7 @@ export default function AppointmentDetail({
     error: arvError,
   } = useArvPrescriptionsByPatientId(patientId);
 
-  const isAnonymous = appointment.isAnonymous === true;
+  const isAnonymous = appointment.isAnonymous;
 
   return (
     <div className="space-y-6">
@@ -229,51 +231,24 @@ export default function AppointmentDetail({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                Lab Results
+                Medical Record
+                {isMedicalRecordLoading && (
+                  <span className="ml-2 text-xs">Loading...</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isLabLoading ? (
-                <div>Loading lab results...</div>
-              ) : labError ? (
-                <div className="text-red-500">Error loading lab results.</div>
-              ) : labResults.length === 0 ? (
-                <div>No lab results found.</div>
-              ) : (
-                <div className="space-y-4">
-                  {labResults.map((result) => (
-                    <div
-                      key={result.recordID}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div>
-                        <div className="font-medium">{result.testType}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {result.testDate && (
-                            <>
-                              Date:{" "}
-                              {new Date(result.testDate).toLocaleDateString(
-                                "vi-VN"
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Reference: {result.referenceRange}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">
-                          {result.resultValue} {result.unit}
-                        </div>
-                        <div className="text-xs">{result.resultText}</div>
-                        <div className="text-xs text-muted-foreground">
-                          By: {result.performedBy}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              {medicalRecordError ? (
+                <div className="text-red-500">
+                  Error loading medical record.
                 </div>
+              ) : !medicalRecord ? (
+                <div>No medical record found.</div>
+              ) : (
+                <MedicalRecordWithLabResults
+                  medicalRecord={medicalRecord}
+                  appointment={appointment}
+                />
               )}
             </CardContent>
           </Card>

@@ -77,7 +77,7 @@ export default function WorkShiftCalendar({
       "-" +
       date.getDate().toString().padStart(2, "0");
     return workShifts.filter(
-      (shift) => shift.date.split("T")[0] === dateString
+      (shift) => shift.date && shift.date.split("T")[0] === dateString
     );
   };
 
@@ -181,6 +181,7 @@ export default function WorkShiftCalendar({
     (s) => s.status === "Scheduled"
   ).length;
   const thisWeekShifts = workShifts.filter((s) => {
+    if (!s.date) return false;
     const shiftDate = new Date(s.date);
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
@@ -188,8 +189,6 @@ export default function WorkShiftCalendar({
     weekEnd.setDate(weekStart.getDate() + 6);
     return shiftDate >= weekStart && shiftDate <= weekEnd;
   }).length;
-
-  console.log(workShifts);
 
   return (
     <div className="space-y-6">
@@ -363,11 +362,11 @@ export default function WorkShiftCalendar({
                       >
                         <Badge
                           className={`${getShiftTypeColor(
-                            shift.shiftType
+                            shift.shiftType || ""
                           )} text-xs px-1 py-0 w-full justify-start`}
                         >
-                          {formatTime(shift.startTime)} -{" "}
-                          {formatTime(shift.endTime)}
+                          {formatTime(shift.startTime || "")} -{" "}
+                          {formatTime(shift.endTime || "")}
                         </Badge>
                       </div>
                     ))}
@@ -393,7 +392,9 @@ export default function WorkShiftCalendar({
       </Card>
 
       {/* Conflicts Alert */}
-      {workShifts.some((shift) => hasConflicts(new Date(shift.date))) && (
+      {workShifts.some((shift) =>
+        hasConflicts(shift.date ? new Date(shift.date) : new Date())
+      ) && (
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -419,10 +420,10 @@ export default function WorkShiftCalendar({
                 >
                   <div className="flex items-center space-x-3">
                     <div className="text-sm font-medium">
-                      {formatTime(shift.startTime)} -{" "}
-                      {formatTime(shift.endTime)}
+                      {formatTime(shift.startTime || "")} -{" "}
+                      {formatTime(shift.endTime || "")}
                     </div>
-                    <Badge className={getStatusColor(shift.status)}>
+                    <Badge className={getStatusColor(shift.status || "")}>
                       {shift.status}
                     </Badge>
                   </div>
@@ -480,10 +481,11 @@ export default function WorkShiftCalendar({
                 >
                   <Badge
                     className={`${getShiftTypeColor(
-                      shift.shiftType
+                      shift.shiftType || ""
                     )} text-xs px-1 py-0`}
                   >
-                    {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
+                    {formatTime(shift.startTime || "")} -{" "}
+                    {formatTime(shift.endTime || "")}
                   </Badge>
                   <span className="ml-2 text-sm">{shift.status}</span>
                   {shift.note && (

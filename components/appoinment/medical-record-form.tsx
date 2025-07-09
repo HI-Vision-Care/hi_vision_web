@@ -57,7 +57,7 @@ export default function MedicalRecordForm({
   const [createdRecordId, setCreatedRecordId] = useState<string | null>(
     record?.recordId ?? null
   );
-  const { mutate: createLabResult } = useCreateLabResult();
+  const { mutate: createLabResult } = useCreateLabResult(onBack);
 
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
 
