@@ -6,7 +6,9 @@ import {
   getAllMedicalRecords,
   getAppointmentsByDoctorId,
   getDoctorProfile,
+  getLabResultsByAppointmentId,
   getLabResultsByPatientId,
+  getMedicalRecordByAppointmentId,
 } from "./api";
 import { DoctorProfile } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,7 +65,7 @@ export function useCreateMedicalRecord() {
   });
 }
 
-export function useCreateLabResult() {
+export function useCreateLabResult(onSuccess?: () => void) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
@@ -79,9 +81,20 @@ export function useCreateLabResult() {
     onSuccess: () => {
       // invalidate lab results list hoặc medical record nếu cần
       queryClient.invalidateQueries(["labResults"]);
+      if (onSuccess) onSuccess();
     },
   });
 }
+
+export const useMedicalRecordByAppointmentId = (
+  appointmentId: string,
+  enabled = true
+) =>
+  useQuery({
+    queryKey: ["medical-record", appointmentId],
+    queryFn: () => getMedicalRecordByAppointmentId(appointmentId),
+    enabled: !!appointmentId && enabled,
+  });
 
 export function useAllMedicalRecords(enabled = true) {
   return useQuery({
@@ -101,3 +114,13 @@ export function useLabResultsByPatientId(patientId?: string) {
     enabled: !!patientId,
   });
 }
+
+export const useLabResultsByAppointmentId = (
+  appointmentId: string,
+  enabled = true
+) =>
+  useQuery({
+    queryKey: ["lab-results", appointmentId],
+    queryFn: () => getLabResultsByAppointmentId(appointmentId),
+    enabled: !!appointmentId && enabled,
+  });

@@ -163,26 +163,6 @@ export interface DoctorAppointment {
   createAt: string; // ISO date string
 }
 
-export interface Appointment {
-  id: string;
-  patient: Patient;
-  date: string;
-  time: string;
-  duration: number;
-  type: string;
-  status: AppointmentStatus;
-  notes: string;
-  symptoms: string[];
-  diagnosis?: string;
-  prescription?: string[];
-  labResults?: {
-    test: string;
-    result: string;
-    normalRange: string;
-    status: "normal" | "abnormal";
-  }[];
-}
-
 export interface AppointmentDetailProps {
   appointment: {
     appointmentID: string;
@@ -301,4 +281,17 @@ export type ViewChangeOptions = {
   patientId?: string;
   createNew?: boolean;
   prescribedBy?: string;
+};
+
+interface MedicalRecordByAppointmentResponse {
+  recordId: string;
+  appointmentId: string;
+  diagnosis: string;
+  createDate: string;
+  note?: string | null;
+}
+
+export type MedicalRecordWithLabResultsProps = {
+  medicalRecord: MedicalRecordByAppointmentResponse;
+  appointment: Appointment;
 };

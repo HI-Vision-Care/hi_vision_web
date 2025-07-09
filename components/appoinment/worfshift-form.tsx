@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Appointment } from "@/types";
 import { WorkShift } from "@/services/workShift/types";
 
 interface WorkShiftFormProps {
@@ -41,32 +40,78 @@ export default function WorkShiftForm({
   onDelete,
   onBack,
 }: WorkShiftFormProps) {
+  type AppointmentConflict = {
+    id: string;
+    patient: { name: string };
+    time: string;
+    type: string;
+  };
+
+  type ShiftConflict = {
+    id: string;
+    // add other properties if needed
+  };
+
+  const [conflicts, setConflicts] = useState<{
+    appointments: AppointmentConflict[];
+    overlappingShifts: ShiftConflict[];
+  }>({
+    appointments: [],
+    overlappingShifts: [],
+  });
+  console.log(shift);
+
+  const toDateInputValue = (iso: string) => {
+    if (!iso) return "";
+    return iso.split("T")[0];
+  };
+
+  const toTimeInputValue = (isoOrTime: string) => {
+    if (!isoOrTime) return "";
+    // Nếu là dạng full ISO
+    if (isoOrTime.includes("T")) {
+      return isoOrTime.split("T")[1].slice(0, 5);
+    }
+    // Nếu là dạng "13:00:00"
+    if (isoOrTime.length === 8 && isoOrTime[2] === ":") {
+      return isoOrTime.slice(0, 5);
+    }
+    // Nếu đúng luôn là "13:00"
+    return isoOrTime;
+  };
+
   const [formData, setFormData] = useState<Partial<WorkShift>>({
     doctorId: "dr1",
     doctorName: "Dr. Sarah Wilson",
     date: new Date().toISOString().split("T")[0],
     startTime: "09:00",
     endTime: "17:00",
-    shiftType: "Regular",
-    location: "Main Clinic",
-    notes: "",
-    status: "Scheduled",
+    note: "",
+    status: "Available",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
 
-  const [conflicts, setConflicts] = useState<{
-    appointments: Appointment[];
-    overlappingShifts: WorkShift[];
-  }>({
-    appointments: [],
-    overlappingShifts: [],
-  });
+  const checkConflicts = () => {
+    // Tạm chưa check, luôn rỗng (sửa lại sau)
+    setConflicts({
+      appointments: [],
+      overlappingShifts: [],
+    });
+  };
 
   useEffect(() => {
     if (shift) {
-      setFormData(shift);
+      setFormData({
+        ...formData,
+        ...shift,
+        date: toDateInputValue(shift.date || ""),
+        startTime: toTimeInputValue(shift.startTime || ""),
+        endTime: toTimeInputValue(shift.endTime || ""),
+        status: shift.status || "Available", // dùng đúng status
+      });
     }
+    // eslint-disable-next-line
   }, [shift]);
 
   useEffect(() => {
@@ -81,78 +126,43 @@ export default function WorkShiftForm({
     }));
   };
 
-  const checkConflicts = () => {
-    if (!formData.date || !formData.startTime || !formData.endTime) return;
-
-    const shiftStart = new Date(`${formData.date}T${formData.startTime}`);
-    const shiftEnd = new Date(`${formData.date}T${formData.endTime}`);
-
-    // Check appointment conflicts
-    const conflictingAppointments = appointments.filter((apt) => {
-      if (apt.date !== formData.date) return false;
-
-      const aptStart = new Date(`${apt.date}T${apt.time}`);
-      const aptEnd = new Date(aptStart.getTime() + apt.duration * 60000);
-
-      return shiftStart < aptEnd && aptStart < shiftEnd;
-    });
-
-    setConflicts({
-      appointments: conflictingAppointments,
-      overlappingShifts: [],
-    });
-  };
-
   const handleSave = () => {
-    if (
-      !formData.date ||
-      !formData.startTime ||
-      !formData.endTime ||
-      !formData.shiftType ||
-      !formData.location
-    ) {
-      return;
-    }
+    // Nếu cần gửi về "2025-07-14T13:00:00"
+    const date = formData.date; // "2025-07-14"
+    const startTime = formData.startTime; // "13:00"
+    const endTime = formData.endTime; // "17:00"
+    // Convert thành "2025-07-14T13:00:00"
+    const fullStart = date && startTime ? `${date}T${startTime}:00` : "";
+    const fullEnd = date && endTime ? `${date}T${endTime}:00` : "";
 
     const shiftToSave: WorkShift = {
-      id: formData.id || `ws_${Date.now()}`,
-      doctorId: formData.doctorId!,
-      doctorName: formData.doctorName!,
-      date: formData.date!,
-      startTime: formData.startTime!,
-      endTime: formData.endTime!,
-      shiftType: formData.shiftType as any,
-      location: formData.location!,
-      note: formData.note || "",
-      status: (formData.status as any) || "Scheduled",
-      createdAt: formData.createdAt!,
-      updatedAt: new Date().toISOString(),
-    };
-
+      ...formData,
+      startTime: fullStart,
+      endTime: fullEnd,
+      date,
+    } as WorkShift;
     onSave(shiftToSave);
   };
 
   const handleDelete = () => {
     if (shift?.id) {
-      onDelete(shift.id);
+      onDelete(String(shift.id));
       onBack();
     }
   };
 
-  const getShiftTypeColor = (shiftType: string) => {
-    switch (shiftType) {
+  const getShiftTypeColor = (status: string) => {
+    switch (status) {
       case "Available":
         return "bg-blue-100 text-blue-800";
-      case "Regular":
+      case "Scheduled":
         return "bg-primary text-primary-foreground";
-      case "On-call":
-        return "bg-warning text-warning-foreground";
-      case "Emergency":
+      case "Active":
+        return "bg-success text-success-foreground";
+      case "Completed":
+        return "bg-gray-100 text-gray-800";
+      case "Cancelled":
         return "bg-red-100 text-red-800";
-      case "Night":
-        return "bg-purple-100 text-purple-800";
-      case "Weekend":
-        return "bg-secondary text-secondary-foreground";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -169,7 +179,9 @@ export default function WorkShiftForm({
       end.setDate(end.getDate() + 1);
     }
 
-    return (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+    const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    if (isNaN(duration) || duration < 0) return 0;
+    return duration;
   };
 
   const duration = calculateDuration();
@@ -187,7 +199,9 @@ export default function WorkShiftForm({
           </h1>
           <p className="text-muted-foreground">
             {shift
-              ? `Last updated: ${new Date(shift.updatedAt).toLocaleString()}`
+              ? `Last updated: ${new Date(
+                  shift.updatedAt ?? ""
+                ).toLocaleString()}`
               : "Schedule a new work shift"}
           </p>
         </div>
@@ -235,22 +249,22 @@ export default function WorkShiftForm({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="shiftType">Shift Type</Label>
+                  <Label htmlFor="status">Status</Label>
                   <Select
-                    value={formData.shiftType}
+                    value={formData.status}
                     onValueChange={(value) =>
-                      handleInputChange("shiftType", value)
+                      handleInputChange("status", value)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Regular">Regular Shift</SelectItem>
-                      <SelectItem value="On-call">On-call</SelectItem>
-                      <SelectItem value="Emergency">Emergency</SelectItem>
-                      <SelectItem value="Night">Night Shift</SelectItem>
-                      <SelectItem value="Weekend">Weekend</SelectItem>
+                      <SelectItem value="Available">Available</SelectItem>
+                      <SelectItem value="Scheduled">Scheduled</SelectItem>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -290,54 +304,12 @@ export default function WorkShiftForm({
               </div>
 
               <div>
-                <Label htmlFor="location">Location</Label>
-                <Select
-                  value={formData.location}
-                  onValueChange={(value) =>
-                    handleInputChange("location", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Main Clinic">Main Clinic</SelectItem>
-                    <SelectItem value="Emergency Department">
-                      Emergency Department
-                    </SelectItem>
-                    <SelectItem value="ICU">Intensive Care Unit</SelectItem>
-                    <SelectItem value="Surgery">Surgery Department</SelectItem>
-                    <SelectItem value="Pediatrics">Pediatrics Ward</SelectItem>
-                    <SelectItem value="Cardiology">Cardiology Unit</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleInputChange("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Scheduled">Scheduled</SelectItem>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="note">Note</Label>
                 <Textarea
-                  id="notes"
-                  placeholder="Additional notes about this shift..."
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
+                  id="note"
+                  placeholder="Additional note about this shift..."
+                  value={formData.note ?? ""}
+                  onChange={(e) => handleInputChange("note", e.target.value)}
                   rows={3}
                 />
               </div>
@@ -388,23 +360,15 @@ export default function WorkShiftForm({
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Type</span>
                 <Badge
-                  className={getShiftTypeColor(formData.shiftType || "Regular")}
+                  className={getShiftTypeColor(formData.status || "Available")}
                 >
-                  {formData.shiftType}
+                  {formData.status}
                 </Badge>
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Duration</span>
                 <span className="font-medium">{duration.toFixed(1)} hours</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Location</span>
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-sm">{formData.location}</span>
-                </div>
               </div>
 
               {formData.date && (
