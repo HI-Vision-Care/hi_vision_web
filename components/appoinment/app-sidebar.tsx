@@ -1,13 +1,3 @@
-"use client";
-
-import {
-  Calendar,
-  Home,
-  Users,
-  FileText,
-  Settings,
-  Stethoscope,
-} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,45 +12,39 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import Link from "next/link";
+import { DashboardView, ViewChangeOptions } from "@/types";
+import { navigation } from "@/constants";
 
 interface AppSidebarProps {
-  currentView: "overview" | "appointments";
-  onViewChange: (view: "overview" | "appointments") => void;
+  currentView: DashboardView;
+  onViewChange: (options: ViewChangeOptions) => void;
   onBackToList: () => void;
+  onBackToMedicalRecords: () => void;
+  onBackToSchedule: () => void;
+  onBackToMedications: () => void;
 }
 
-const navigation = [
-  {
-    title: "Dashboard",
-    icon: Home,
-    view: "overview" as const,
-  },
-  {
-    title: "Appointments",
-    icon: Calendar,
-    view: "appointments" as const,
-  },
-  {
-    title: "Patients",
-    icon: Users,
-    view: "patients" as const,
-  },
-  {
-    title: "Medical Records",
-    icon: FileText,
-    view: "records" as const,
-  },
-];
-
-export function AppSidebar({
+export default function AppSidebar({
   currentView,
   onViewChange,
   onBackToList,
+  onBackToMedicalRecords,
+  onBackToSchedule,
+  onBackToMedications,
 }: AppSidebarProps) {
-  const handleNavigation = (view: "overview" | "appointments") => {
-    onViewChange(view);
+  const handleNavigation = (view: DashboardView) => {
+    onViewChange({ view });
     if (view !== "appointments") {
       onBackToList();
+    }
+    if (view !== "medical-records") {
+      onBackToMedicalRecords();
+    }
+    if (view !== "schedule") {
+      onBackToSchedule();
+    }
+    if (view !== "medications") {
+      onBackToMedications();
     }
   };
 
@@ -75,7 +59,7 @@ export function AppSidebar({
             >
               <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-amber-50 text-primary-foreground">
-                  <Image src="/logo.svg" alt="Logo" width={120} height={40} />
+                  <Image src="/logo.png" width={32} height={32} alt="Logo" />
                 </div>
               </Link>
               <div className="flex flex-col gap-0.5 leading-none">
@@ -104,20 +88,6 @@ export function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings className="size-4" />
-                  <span>Preferences</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -1,6 +1,8 @@
-"use client";
-
-import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
+import { useAccountId } from "@/hooks/useAccountId";
+import {
+  useGetDoctorProfile,
+  useGetAppointmentsByDoctorId,
+} from "@/services/doctor/hooks"; // hoặc đường dẫn bạn lưu hooks
 import {
   Card,
   CardContent,
@@ -10,49 +12,50 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar, Clock, Users, CheckCircle } from "lucide-react";
 import { Appointment } from "@/types";
+import { APPOINTMENT_STATUS_COLORS } from "@/constants";
 
 interface DashboardOverviewProps {
-  appointments: Appointment[];
   onAppointmentSelect: (appointment: Appointment) => void;
 }
 
-export function DashboardOverview({
-  appointments,
+export default function DashboardOverview({
   onAppointmentSelect,
 }: DashboardOverviewProps) {
-  const todayAppointments = appointments.filter(
-    (apt) => apt.date === "2024-01-15"
-  );
-  const scheduledCount = todayAppointments.filter(
+  // 1. Lấy accountId từ token
+  const accountId = useAccountId();
+
+  // 2. Lấy profile để lấy doctorID
+  const { data: doctorProfile, isLoading: isProfileLoading } =
+    useGetDoctorProfile(accountId || "");
+
+  // 3. Lấy danh sách lịch hẹn theo doctorID
+  const doctorID = doctorProfile?.doctorID;
+  const { data: appointments = [], isLoading: isAppointmentsLoading } =
+    useGetAppointmentsByDoctorId(doctorID || "", !!doctorID);
+
+  const scheduledCount = appointments.filter(
     (apt) => apt.status === "SCHEDULED"
   ).length;
-  const ongoingCount = todayAppointments.filter(
+  const ongoingCount = appointments.filter(
     (apt) => apt.status === "ONGOING"
   ).length;
-  const completedCount = todayAppointments.filter(
+  const completedCount = appointments.filter(
     (apt) => apt.status === "COMPLETED"
   ).length;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "SCHEDULED":
-        return "bg-blue-100 text-blue-800";
-      case "ONGOING":
-        return "bg-yellow-200 text-warning-foreground";
-      case "COMPLETED":
-        return "bg-green-300 text-success-foreground";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  if (isProfileLoading || isAppointmentsLoading) {
+    return <div>Loading data...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome back, Dr. Wilson. Here&apos;s your overview for today.
+          Welcome back, {doctorProfile?.name}. Here&apos;s your overview for
+          today.
         </p>
       </div>
 
@@ -66,7 +69,7 @@ export function DashboardOverview({
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments.length}</div>
+            <div className="text-2xl font-bold">{appointments.length}</div>
             <p className="text-xs text-muted-foreground">
               {scheduledCount} scheduled, {ongoingCount} ongoing
             </p>
@@ -120,45 +123,69 @@ export function DashboardOverview({
       {/* Today's Appointments */}
       <Card>
         <CardHeader>
-          <CardTitle>Today&apos;s Schedule</CardTitle>
-          <CardDescription>
-            Your appointments for January 15, 2024
-          </CardDescription>
+          <CardTitle>All Appointments</CardTitle>
+          <CardDescription>All upcoming and past appointments</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {todayAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {appointment.time}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {appointment.patient.name}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {appointment.type} • {appointment.duration} min
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge className={getStatusColor(appointment.status)}>
-                    {appointment.status}
-                  </Badge>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onAppointmentSelect(appointment)}
+            {appointments
+              .sort(
+                (a, b) =>
+                  new Date(a.appointmentDate).getTime() -
+                  new Date(b.appointmentDate).getTime()
+              ) // Sort tăng dần, muốn giảm thì đổi - thành +
+              .map((appointment) => {
+                const apptDate = new Date(appointment.appointmentDate);
+                const hour = String(apptDate.getUTCHours()).padStart(2, "0");
+                const minute = String(apptDate.getUTCMinutes()).padStart(
+                  2,
+                  "0"
+                );
+                const second = String(apptDate.getUTCSeconds()).padStart(
+                  2,
+                  "0"
+                );
+                const timeUTC = `${hour}:${minute}:${second}`;
+                const day = apptDate.toISOString().slice(0, 10);
+
+                return (
+                  <div
+                    key={appointment.appointmentID}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
-                    View Details
-                  </Button>
-                </div>
-              </div>
-            ))}
+                    <div className="flex items-center space-x-4">
+                      <div className="text-sm font-medium text-muted-foreground">
+                        {day} {timeUTC}
+                      </div>
+                      <div>
+                        <div className="font-medium">
+                          {appointment.patient?.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {appointment.medicalService?.name}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge
+                        className={
+                          APPOINTMENT_STATUS_COLORS[appointment.status] ||
+                          APPOINTMENT_STATUS_COLORS.DEFAULT
+                        }
+                      >
+                        {appointment.status}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onAppointmentSelect(appointment)}
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </CardContent>
       </Card>

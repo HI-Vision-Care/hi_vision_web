@@ -1,12 +1,17 @@
 "use client";
 
-import { AppSidebar } from "@/components/appoinment/app-sidebar";
-import { AppointmentDetail } from "@/components/appoinment/appoinment-detail";
-import { AppointmentsList } from "@/components/appoinment/appointments-list";
-import { DashboardHeader } from "@/components/appoinment/dashboard-header";
-import { DashboardOverview } from "@/components/appoinment/dashboard-overview";
+import {
+  AppointmentDetail,
+  AppointmentsList,
+  AppSidebar,
+  DashboardHeader,
+  DashboardOverview,
+  MedicalRecordForm,
+  MedicalRecordsList,
+} from "@/components/appoinment";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Appointment, AppointmentStatus } from "@/types";
+import { mockMedicalRecords } from "@/constants";
+import { Appointment, AppointmentStatus, MedicalRecord } from "@/types";
 import { useState } from "react";
 
 // Mock data
@@ -115,14 +120,22 @@ const mockAppointments: Appointment[] = [
   },
 ];
 
-export default function DoctorDashboard() {
-  const [currentView, setCurrentView] = useState<"overview" | "appointments">(
-    "overview"
-  );
+export default function DoctorDashboardClient() {
+  const [currentView, setCurrentView] = useState<
+    "overview" | "appointments" | "medical-records" | "medical-record-form"
+  >("overview");
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
+    string | null
+  >(null);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [appointments, setAppointments] =
     useState<Appointment[]>(mockAppointments);
+  const [selectedMedicalRecord, setSelectedMedicalRecord] =
+    useState<MedicalRecord | null>(null);
+  const [isCreatingRecord, setIsCreatingRecord] = useState(false);
+  const [medicalRecords, setMedicalRecords] =
+    useState<MedicalRecord[]>(mockMedicalRecords);
 
   const updateAppointmentStatus = (
     appointmentId: string,
@@ -141,6 +154,34 @@ export default function DoctorDashboard() {
     }
   };
 
+  const handleMedicalRecordSelect = (record: MedicalRecord) => {
+    setSelectedMedicalRecord(record);
+    setIsCreatingRecord(false);
+  };
+
+  const handleCreateNewRecord = () => {
+    setSelectedMedicalRecord(null);
+    setIsCreatingRecord(true);
+  };
+
+  const handleBackToMedicalRecords = () => {
+    setSelectedMedicalRecord(null);
+    setIsCreatingRecord(false);
+  };
+
+  const handleSaveMedicalRecord = (record: MedicalRecord) => {
+    if (record.id) {
+      setMedicalRecords((prev) =>
+        prev.map((r) => (r.id === record.id ? record : r))
+      );
+    } else {
+      const newRecord = { ...record, id: `mr${Date.now()}` };
+      setMedicalRecords((prev) => [...prev, newRecord]);
+    }
+    setIsCreatingRecord(false);
+    setSelectedMedicalRecord(record);
+  };
+
   const handleAppointmentSelect = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setCurrentView("appointments");
@@ -150,12 +191,27 @@ export default function DoctorDashboard() {
     setSelectedAppointment(null);
   };
 
+  const handleViewChange = (
+    view:
+      | "overview"
+      | "appointments"
+      | "medical-records"
+      | "medical-record-form",
+    appointmentId?: string
+  ) => {
+    setCurrentView(view);
+    if (appointmentId) {
+      setSelectedAppointmentId(appointmentId);
+    }
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar
         currentView={currentView}
-        onViewChange={setCurrentView}
+        onViewChange={handleViewChange}
         onBackToList={handleBackToList}
+        onBackToMedicalRecords={handleBackToMedicalRecords}
       />
       <SidebarInset>
         <DashboardHeader />
@@ -177,6 +233,37 @@ export default function DoctorDashboard() {
               appointment={selectedAppointment}
               onStatusUpdate={updateAppointmentStatus}
               onBack={handleBackToList}
+              onViewChange={handleViewChange}
+            />
+          )}
+          {currentView === "medical-records" &&
+            !selectedMedicalRecord &&
+            !isCreatingRecord && (
+              <MedicalRecordsList
+                appointmentId={selectedAppointmentId}
+                medicalRecords={medicalRecords}
+                onRecordSelect={handleMedicalRecordSelect}
+                onCreateNew={handleCreateNewRecord}
+              />
+            )}
+          {currentView === "medical-records" &&
+            (selectedMedicalRecord || isCreatingRecord) && (
+              <MedicalRecordForm
+                appointmentId={selectedAppointmentId}
+                record={selectedMedicalRecord}
+                onSave={handleSaveMedicalRecord}
+                onBack={handleBackToMedicalRecords}
+                patients={mockAppointments.map((apt) => apt.patient)}
+              />
+            )}
+
+          {currentView === "medical-record-form" && (
+            <MedicalRecordForm
+              appointmentId={selectedAppointmentId}
+              record={null}
+              onSave={handleSaveMedicalRecord}
+              onBack={() => setCurrentView("appointments")}
+              patients={mockAppointments.map((apt) => apt.patient)}
             />
           )}
         </main>

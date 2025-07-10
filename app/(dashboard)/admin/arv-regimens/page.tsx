@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,47 +18,12 @@ import {
   Plus,
   Download,
 } from "lucide-react";
-import Header from "@/components/admin/header";
-import { getAllArvs } from "@/services/arv/api";
-
-interface ARV {
-  arvId: string;
-  genericName: string;
-  drugClass: string;
-  dosageStrength: string;
-  admRoute: string;
-  rcmDosage: string;
-  fundingSource: string;
-  shelfLife: string;
-  regimenLevel: string;
-  indication?: string[];
-  contraindication?: string[];
-  sideEffect?: string[];
-}
+import { Header } from "@/components/admin";
+import { useGetAllArvs } from "@/services/arv/hooks";
 
 export default function ARVRegimens() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [arvs, setArvs] = useState<ARV[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllArvs();
-        setArvs(data);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to load ARVs", err);
-        setError("Failed to load ARV data. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data: arvs = [], isLoading, isError } = useGetAllArvs();
 
   const filteredArvs = arvs.filter(
     (arv) =>
@@ -87,7 +52,7 @@ export default function ARVRegimens() {
     return colors[level] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Header
@@ -121,7 +86,7 @@ export default function ARVRegimens() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <>
         <Header
@@ -136,7 +101,6 @@ export default function ARVRegimens() {
                 <h3 className="text-lg font-semibold text-red-800 mb-2">
                   Error Loading Data
                 </h3>
-                <p className="text-red-600 mb-4">{error}</p>
                 <Button
                   onClick={() => window.location.reload()}
                   variant="outline"

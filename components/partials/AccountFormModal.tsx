@@ -17,8 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AccountUI } from "@/services/account/types";
-import { updateAccount, createAccount } from "@/services/account/api";
-import { toast } from "sonner";
 
 interface Props {
   open: boolean;
@@ -74,48 +72,27 @@ export default function AccountFormModal({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      if (readOnly) return;
+  const handleSubmit = () => {
+    if (readOnly) return;
 
-      if (isEditMode && initialData?.id) {
-        const payload = {
-          username: formData.username,
-          email: formData.email,
-          phone: formData.phone,
-          avatar: formData.avatar,
-        };
-        await updateAccount(initialData.id, payload);
-        toast.success("Account updated successfully!");
-
-        onSave({
-          ...initialData,
-          ...payload,
-        });
-      } else {
-        await createAccount({
-          email: formData.email,
-          password: formData.password,
-          role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
-        });
-        toast.success("Account created successfully!");
-
-        onSave({
-          id: crypto.randomUUID(), // giả lập ID nếu backend chưa trả về
-          username: formData.email.split("@")[0],
-          email: formData.email,
-          phone: "",
-          avatar: "https://api.dicebear.com/7.x/thumbs/svg?seed=Admin",
-          role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
-          isDeleted: false,
-        });
-      }
-
-      onClose();
-    } catch (error) {
-      console.error("Error saving account:", error);
-      toast.error("Failed to save account.");
+    if (isEditMode) {
+      // Edit mode: trả về đủ thông tin để update
+      const accountData = {
+        ...initialData,
+        ...formData,
+        role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
+      };
+      onSave(accountData);
+    } else {
+      // Create mode: chỉ cần đúng các trường BE yêu cầu (email, password, role)
+      const accountData = {
+        email: formData.email,
+        password: formData.password,
+        role: formData.role as "ADMIN" | "DOCTOR" | "PATIENT",
+      };
+      onSave(accountData);
     }
+    onClose();
   };
 
   return (
