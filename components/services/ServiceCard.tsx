@@ -23,6 +23,7 @@ import {
   User,
 } from "lucide-react";
 import { formatVND } from "@/utils/formatVND";
+import { MedicalService } from "@/services/medical-services/types";
 
 // Helpers to map type
 const getServiceTypeIcon = (type: string) => {
@@ -64,23 +65,7 @@ const getServiceTypeColor = (type: string) => {
 };
 
 export interface ServiceCardProps {
-  service: {
-    serviceID: number;
-    name: string;
-    description: string;
-    price: number;
-    img: string;
-    image: string;
-    type: string;
-    serviceType: string;
-    medicalSpecialty: string;
-    specialty: string;
-    isActive: boolean;
-    isRequireDoctor: boolean;
-    isOnline: boolean;
-    createAt: string;
-    // Các field khác nếu có
-  };
+  service: MedicalService;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ServiceCard } from "@/components/services";
+import { ServiceCard, ServiceCardSkeleton } from "@/components/services";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -118,7 +118,10 @@ export default function ServicesPage() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4">
           {isLoading ? (
-            <div>Loading services...</div>
+            // Hiện 6 skeleton card cho đẹp, số lượng tùy ý
+            Array.from({ length: 6 }).map((_, idx) => (
+              <ServiceCardSkeleton key={idx} />
+            ))
           ) : error ? (
             <div className="text-red-600">
               Failed to load services: {error.message}
