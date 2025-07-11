@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   createLabResult,
   createMedicalRecord,
+  getAllDoctor,
   getAllMedicalRecords,
   getAppointmentsByDoctorId,
   getDoctorProfile,
@@ -10,7 +11,7 @@ import {
   getLabResultsByPatientId,
   getMedicalRecordByAppointmentId,
 } from "./api";
-import { DoctorProfile } from "./types";
+import { DoctorProfile, DoctorResponse } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DoctorAppointment } from "@/types";
@@ -124,3 +125,12 @@ export const useLabResultsByAppointmentId = (
     queryFn: () => getLabResultsByAppointmentId(appointmentId),
     enabled: !!appointmentId && enabled,
   });
+  
+export function useAllDoctors(enabled = true) {
+  return useQuery<DoctorResponse[], Error>({
+    queryKey: ["doctors", "all"],
+    queryFn: getAllDoctor,
+    enabled,
+    staleTime: 1000 * 60 * 5, // cache 5 phút
+  });
+}

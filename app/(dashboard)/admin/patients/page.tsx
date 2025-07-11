@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,50 +14,28 @@ import {
 } from "@/components/ui/select";
 import { Users, Search, Filter, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getAllPatients,
-  updatePatient,
-  deletePatient,
-} from "@/services/patient/api";
-import { PatientUI } from "@/services/patient/types";
+
 import { Header } from "@/components/admin";
 import { ConfirmDeleteModal, PatientFormModal } from "@/components/partials";
+import {
+  useAllPatients,
+  useDeletePatient,
+  useUpdatePatient,
+} from "@/services/patient/hooks";
+import { PatientUI } from "@/services/patient/types";
 
 export default function Patients() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [patients, setPatients] = useState<PatientUI[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState<PatientUI | null>(null);
   const [deletingPatientId, setDeletingPatientId] = useState<string | null>(
     null
   );
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const data = await getAllPatients();
-        const mapped = data.map(
-          (p): PatientUI => ({
-            id: p.patientID,
-            name: p.name,
-            age: calculateAge(p.dob),
-            gender: p.gender ?? "Unknown",
-            phone: p.medNo || "N/A",
-            lastVisit: p.medDate || "",
-            status: "active",
-            dob: p.dob,
-            medDate: p.medDate,
-            medFac: p.medFac || "",
-          })
-        );
-        setPatients(mapped);
-      } catch (err) {
-        console.error("Failed to load patients", err);
-      }
-    };
-    fetchPatients();
-  }, []);
+  const { data: patientsData = [], isLoading, isError } = useAllPatients();
+  const updateMutation = useUpdatePatient();
+  const deleteMutation = useDeletePatient();
 
   const calculateAge = (dob: string) => {
     const birthDate = new Date(dob);
@@ -67,7 +45,22 @@ export default function Patients() {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   };
 
-  const filteredPatients = patients.filter((patient) => {
+  const mappedPatients: PatientUI[] = useMemo(() => {
+    return patientsData.map((p) => ({
+      id: p.patientID,
+      name: p.name,
+      age: calculateAge(p.dob),
+      gender: p.gender ?? "Unknown",
+      phone: p.medNo || "N/A",
+      lastVisit: p.medDate || "",
+      status: "active",
+      dob: p.dob,
+      medDate: p.medDate,
+      medFac: p.medFac || "",
+    }));
+  }, [patientsData]);
+
+  const filteredPatients = mappedPatients.filter((patient) => {
     const name = patient.name ?? "";
     const id = patient.id ?? "";
     const matchesSearch =
@@ -125,120 +118,126 @@ export default function Patients() {
           </Select>
         </div>
 
-        <Card className="bg-white shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Patient List ({filteredPatients.length})</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredPatients.map((patient) => (
-                <div
-                  key={patient.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Users className="h-6 w-6 text-blue-600" />
+        {isLoading ? (
+          <div className="text-gray-500">Loading patients...</div>
+        ) : isError ? (
+          <div className="text-red-500">Failed to load patients.</div>
+        ) : (
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Patient List ({filteredPatients.length})</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredPatients.map((patient) => (
+                  <div
+                    key={patient.id}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Users className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-medium text-lg">
+                              {patient.name}
+                            </h3>
+                            <span className="text-gray-500">
+                              ({patient.id})
+                            </span>
+                            {getStatusBadge(patient.status)}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-2 grid gap-1">
+                            <div>
+                              <span className="font-medium">Age:</span>{" "}
+                              {patient.age} years
+                            </div>
+                            <div>
+                              <span className="font-medium">Gender:</span>{" "}
+                              {patient.gender}
+                            </div>
+                            {patient.phone !== "N/A" && (
+                              <div>
+                                <span className="font-medium">Medical No:</span>{" "}
+                                {patient.phone}
+                              </div>
+                            )}
+                            {patient.medFac && (
+                              <div>
+                                <span className="font-medium">Facility:</span>{" "}
+                                {patient.medFac}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-medium text-lg">
-                            {patient.name}
-                          </h3>
-                          <span className="text-gray-500">({patient.id})</span>
-                          {getStatusBadge(patient.status)}
+
+                      <div className="text-right">
+                        <div className="text-sm text-gray-600 mb-2">
+                          Last visit:{" "}
+                          {patient.lastVisit
+                            ? new Date(patient.lastVisit).toLocaleDateString()
+                            : "N/A"}
                         </div>
 
-                        <div className="text-sm text-gray-600 mt-2 grid gap-1">
-                          <div>
-                            <span className="font-medium">Age:</span>{" "}
-                            {patient.age} years old
-                          </div>
-                          <div>
-                            <span className="font-medium">Gender:</span>{" "}
-                            {patient.gender}
-                          </div>
-                          {patient.phone !== "N/A" && (
-                            <div>
-                              <span className="font-medium">Medical No:</span>{" "}
-                              {patient.phone}
-                            </div>
-                          )}
-                          {patient.medFac && (
-                            <div>
-                              <span className="font-medium">Facility:</span>{" "}
-                              {patient.medFac}
-                            </div>
-                          )}
+                        <div className="flex space-x-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingPatient(patient);
+                              setShowModal(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDeletingPatientId(patient.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <div className="text-sm text-gray-600 mb-2">
-                        Last visit:{" "}
-                        {patient.lastVisit
-                          ? new Date(patient.lastVisit).toLocaleDateString()
-                          : "N/A"}
-                      </div>
-
-                      <div className="flex space-x-2 mt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingPatient(patient);
-                            setShowModal(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDeletingPatientId(patient.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Modal thêm/sửa bệnh nhân */}
       <PatientFormModal
         open={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={() => {
+          setShowModal(false);
+          setEditingPatient(null);
+        }}
         onSave={async (data) => {
           try {
             if (editingPatient) {
-              await updatePatient(data.id, {
-                name: data.name,
-                dob: data.dob,
-                gender: data.gender,
-                medNo: data.phone,
-                medDate: data.medDate,
-                medFac: data.medFac,
+              await updateMutation.mutateAsync({
+                accountId: data.id,
+                payload: {
+                  name: data.name,
+                  dob: data.dob,
+                  gender: data.gender,
+                  medNo: data.phone,
+                  medDate: data.medDate,
+                  medFac: data.medFac,
+                },
               });
               toast.success("Patient updated successfully!");
             } else {
               toast.success("Patient added locally!");
             }
-
-            setPatients((prev) => {
-              const exists = prev.find((p) => p.id === data.id);
-              return exists
-                ? prev.map((p) => (p.id === data.id ? data : p))
-                : [...prev, data];
-            });
           } catch (err) {
             console.error("Failed to save patient", err);
             toast.error("Failed to save patient");
@@ -256,10 +255,7 @@ export default function Patients() {
           if (!deletingPatientId) return;
 
           try {
-            await deletePatient(deletingPatientId);
-            setPatients((prev) =>
-              prev.filter((p) => p.id !== deletingPatientId)
-            );
+            await deleteMutation.mutateAsync(deletingPatientId);
             toast.success("Patient deleted successfully");
           } catch (err) {
             console.error("Delete failed", err);

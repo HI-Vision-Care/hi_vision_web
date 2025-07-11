@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,46 +14,16 @@ import {
 } from "@/components/ui/select";
 import { Clock, Users, AlertCircle, Plus, Calendar } from "lucide-react";
 import Header from "@/components/admin/header";
-import { WorkShift } from "@/services/workShift/types";
-import { getWorkShifts } from "@/services/workShift/api";
 import { useRouter } from "next/navigation";
+import { useWorkShifts } from "@/services/workShift/hooks";
+import { WorkShift } from "@/services/workShift/types";
 
 export default function Shifts() {
   const [selectedMonth, setSelectedMonth] = useState("2025-07");
-  const [selectedWeekday, setSelectedWeekday] = useState("all"); // ✅ sửa default thành 'all'
-  const [shifts, setShifts] = useState<WorkShift[]>([]);
+  const [selectedWeekday, setSelectedWeekday] = useState("all");
   const router = useRouter();
 
-  useEffect(() => {
-    const loadShifts = async () => {
-      try {
-        const data = await getWorkShifts();
-        setShifts(data);
-      } catch (err) {
-        console.error("Failed to fetch shifts", err);
-      }
-    };
-    loadShifts();
-  }, []);
-
-  const shiftStats = [
-    { label: "Total Shifts", value: shifts.length.toString(), color: "blue" },
-    {
-      label: "Booked",
-      value: shifts.filter((s) => s.status === "Booked").length.toString(),
-      color: "green",
-    },
-    {
-      label: "Available",
-      value: shifts.filter((s) => s.status !== "Booked").length.toString(),
-      color: "red",
-    },
-    {
-      label: "With Note",
-      value: shifts.filter((s) => s.note).length.toString(),
-      color: "orange",
-    },
-  ];
+  const { data: shifts = [], isLoading, isError } = useWorkShifts();
 
   const doctors = useMemo(() => {
     const doctorMap = new Map<
@@ -88,6 +58,33 @@ export default function Shifts() {
     return Array.from(doctorMap.values());
   }, [shifts, selectedMonth, selectedWeekday]);
 
+  const shiftStats = useMemo(
+    () => [
+      { label: "Total Shifts", value: shifts.length.toString(), color: "blue" },
+      {
+        label: "Booked",
+        value: shifts.filter((s) => s.status === "Booked").length.toString(),
+        color: "green",
+      },
+      {
+        label: "Available",
+        value: shifts.filter((s) => s.status !== "Booked").length.toString(),
+        color: "red",
+      },
+      {
+        label: "With Note",
+        value: shifts.filter((s) => s.note).length.toString(),
+        color: "orange",
+      },
+    ],
+    [shifts]
+  );
+
+  if (isLoading)
+    return <div className="p-6 text-gray-600">Loading shifts...</div>;
+  if (isError)
+    return <div className="p-6 text-red-600">Failed to load shifts.</div>;
+
   return (
     <>
       <Header
@@ -96,6 +93,7 @@ export default function Shifts() {
       />
 
       <div className="p-6">
+        {/* Filter Controls */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -131,6 +129,7 @@ export default function Shifts() {
           </Button>
         </div>
 
+        {/* Shift Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {shiftStats.map((stat, index) => (
             <Card key={index} className="bg-white shadow-sm">
@@ -152,6 +151,7 @@ export default function Shifts() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Shift Schedule */}
           <div className="lg:col-span-2">
             <Card className="bg-white shadow-sm">
               <CardHeader>
@@ -230,7 +230,7 @@ export default function Shifts() {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   }) || "--"}{" "}
-                                  -
+                                  -{" "}
                                   {end?.toLocaleTimeString([], {
                                     hour: "2-digit",
                                     minute: "2-digit",
@@ -262,6 +262,7 @@ export default function Shifts() {
             </Card>
           </div>
 
+          {/* Available Doctors */}
           <Card className="bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center">

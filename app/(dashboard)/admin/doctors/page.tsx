@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { SideBar, Header } from "@/components/admin";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -25,7 +25,7 @@ import {
   Mail,
   Trash,
 } from "lucide-react";
-import { getAllDoctor, deleteDoctor } from "@/services/doctor/api";
+import { useAllDoctors } from "@/services/doctor/hooks"; // Import the new hook
 import type { DoctorResponse } from "@/services/doctor/types";
 import {
   Dialog,
@@ -38,7 +38,6 @@ import DoctorFormModal from "@/components/partials/DoctorFormModal";
 export default function ManageDoctors() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [doctors, setDoctors] = useState<DoctorResponse[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorResponse | null>(
     null
   );
@@ -46,19 +45,7 @@ export default function ManageDoctors() {
     "view" | "edit" | "delete" | "add" | null
   >(null);
 
-  const fetchDoctors = async () => {
-    try {
-      const data = await getAllDoctor();
-      setDoctors(data);
-    } catch (error) {
-      console.error("Failed to fetch doctors:", error);
-      toast.error("Failed to load doctor list.");
-    }
-  };
-
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
+  const { data: doctors = [], isLoading, isError, refetch } = useAllDoctors(); // Using the hook here
 
   const filteredDoctors = doctors.filter((doctor) => {
     const name = doctor.name ?? "";
@@ -142,7 +129,7 @@ export default function ManageDoctors() {
                 </DialogHeader>
                 <DoctorFormModal
                   mode="add"
-                  onUpdated={fetchDoctors}
+                  onUpdated={refetch}
                   onClose={handleModalClose}
                 />
               </DialogContent>
@@ -156,182 +143,193 @@ export default function ManageDoctors() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
-            {filteredDoctors.map((doctor) => (
-              <Card
-                key={doctor.doctorID}
-                className="bg-white shadow-sm p-4 flex flex-col sm:flex-row items-start gap-4"
-              >
-                <img
-                  src={doctor.avatar}
-                  alt={doctor.name}
-                  className="w-24 h-24 rounded-md object-cover border shadow-sm"
-                />
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{doctor.name}</CardTitle>
-                      <p className="text-sm text-gray-600">
-                        {doctor.specialty}
-                      </p>
-                      <p className="text-xs text-gray-500">{doctor.degrees}</p>
+          {isLoading ? (
+            <p className="text-gray-500 text-center">Loading doctors...</p>
+          ) : isError ? (
+            <p className="text-red-500 text-center">
+              Failed to load doctor list.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+              {filteredDoctors.map((doctor) => (
+                <Card
+                  key={doctor.doctorID}
+                  className="bg-white shadow-sm p-4 flex flex-col sm:flex-row items-start gap-4"
+                >
+                  <img
+                    src={doctor.avatar}
+                    alt={doctor.name}
+                    className="w-24 h-24 rounded-md object-cover border shadow-sm"
+                  />
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{doctor.name}</CardTitle>
+                        <p className="text-sm text-gray-600">
+                          {doctor.specialty}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {doctor.degrees}
+                        </p>
+                      </div>
+                      <div className="hidden sm:block">
+                        {getStatusBadge(doctor.status || "active")}
+                      </div>
                     </div>
-                    <div className="hidden sm:block">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm text-gray-600 pt-2">
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span>{doctor.phone ?? "N/A"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-gray-400" />
+                        <span>{doctor.email ?? "N/A"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-gray-400" />
+                        <span>{doctor.gender}</span>
+                      </div>
+                    </div>
+                    <div className="block sm:hidden pt-2">
                       {getStatusBadge(doctor.status || "active")}
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm text-gray-600 pt-2">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-400" />
-                      <span>{doctor.phone ?? "N/A"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-400" />
-                      <span>{doctor.email ?? "N/A"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-gray-400" />
-                      <span>{doctor.gender}</span>
-                    </div>
-                  </div>
-                  <div className="block sm:hidden pt-2">
-                    {getStatusBadge(doctor.status || "active")}
-                  </div>
-                  <div className="flex justify-end gap-2 pt-4">
-                    {/* View Modal */}
-                    <Dialog
-                      open={
-                        modalType === "view" &&
-                        selectedDoctor?.doctorID === doctor.doctorID
-                      }
-                      onOpenChange={handleModalClose}
-                    >
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Doctor Details</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <strong>Name:</strong> {selectedDoctor?.name}
-                          </p>
-                          <p>
-                            <strong>Specialty:</strong>{" "}
-                            {selectedDoctor?.specialty}
-                          </p>
-                          <p>
-                            <strong>Degrees:</strong> {selectedDoctor?.degrees}
-                          </p>
-                          <p>
-                            <strong>Gender:</strong> {selectedDoctor?.gender}
-                          </p>
-                          <p>
-                            <strong>Email:</strong>{" "}
-                            {selectedDoctor?.email ?? "N/A"}
-                          </p>
-                          <p>
-                            <strong>Phone:</strong>{" "}
-                            {selectedDoctor?.phone ?? "N/A"}
-                          </p>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* Edit Modal */}
-                    <Dialog
-                      open={
-                        modalType === "edit" &&
-                        selectedDoctor?.doctorID === doctor.doctorID
-                      }
-                      onOpenChange={handleModalClose}
-                    >
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Edit Doctor</DialogTitle>
-                        </DialogHeader>
-                        <DoctorFormModal
-                          doctor={selectedDoctor!}
-                          mode="edit"
-                          onUpdated={fetchDoctors}
-                          onClose={handleModalClose}
-                        />
-                      </DialogContent>
-                    </Dialog>
-
-                    {/* Delete Modal */}
-                    <Dialog
-                      open={
-                        modalType === "delete" &&
-                        selectedDoctor?.doctorID === doctor.doctorID
-                      }
-                      onOpenChange={handleModalClose}
-                    >
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Delete Doctor</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 text-sm">
-                          <p>
-                            Are you sure you want to delete{" "}
-                            <strong>{selectedDoctor?.name}</strong>?
-                          </p>
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              onClick={handleModalClose}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              className="bg-red-600 hover:bg-red-700 text-white"
-                              onClick={async () => {
-                                try {
-                                  await deleteDoctor(selectedDoctor!.doctorID);
-                                  toast.success("Doctor deleted successfully!");
-                                  fetchDoctors();
-                                  handleModalClose();
-                                } catch (error) {
-                                  toast.error("Failed to delete doctor.");
-                                  console.error(error);
-                                }
-                              }}
-                            >
-                              Confirm Delete
-                            </Button>
+                    <div className="flex justify-end gap-2 pt-4">
+                      {/* View Modal */}
+                      <Dialog
+                        open={
+                          modalType === "view" &&
+                          selectedDoctor?.doctorID === doctor.doctorID
+                        }
+                        onOpenChange={handleModalClose}
+                      >
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Doctor Details</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-2 text-sm">
+                            <p>
+                              <strong>Name:</strong> {selectedDoctor?.name}
+                            </p>
+                            <p>
+                              <strong>Specialty:</strong>{" "}
+                              {selectedDoctor?.specialty}
+                            </p>
+                            <p>
+                              <strong>Degrees:</strong>{" "}
+                              {selectedDoctor?.degrees}
+                            </p>
+                            <p>
+                              <strong>Gender:</strong> {selectedDoctor?.gender}
+                            </p>
+                            <p>
+                              <strong>Email:</strong>{" "}
+                              {selectedDoctor?.email ?? "N/A"}
+                            </p>
+                            <p>
+                              <strong>Phone:</strong>{" "}
+                              {selectedDoctor?.phone ?? "N/A"}
+                            </p>
                           </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                        </DialogContent>
+                      </Dialog>
 
-                    {/* Action Buttons */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-                      onClick={() => handleOpenModal(doctor, "view")}
-                    >
-                      <Eye className="w-4 h-4" /> View
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-                      onClick={() => handleOpenModal(doctor, "edit")}
-                    >
-                      <Edit className="w-4 h-4" /> Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 text-red-600 border-red-200 hover:bg-red-50"
-                      onClick={() => handleOpenModal(doctor, "delete")}
-                    >
-                      <Trash className="w-4 h-4" /> Delete
-                    </Button>
+                      {/* Edit Modal */}
+                      <Dialog
+                        open={
+                          modalType === "edit" &&
+                          selectedDoctor?.doctorID === doctor.doctorID
+                        }
+                        onOpenChange={handleModalClose}
+                      >
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit Doctor</DialogTitle>
+                          </DialogHeader>
+                          <DoctorFormModal
+                            doctor={selectedDoctor!}
+                            mode="edit"
+                            onUpdated={refetch}
+                            onClose={handleModalClose}
+                          />
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Delete Modal */}
+                      <Dialog
+                        open={
+                          modalType === "delete" &&
+                          selectedDoctor?.doctorID === doctor.doctorID
+                        }
+                        onOpenChange={handleModalClose}
+                      >
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Delete Doctor</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 text-sm">
+                            <p>
+                              Are you sure you want to delete{" "}
+                              <strong>{selectedDoctor?.name}</strong>?
+                            </p>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={handleModalClose}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                // onClick={async () => {
+                                //   try {
+                                //     await deleteDoctor(selectedDoctor!.doctorID);
+                                //     toast.success("Doctor deleted successfully!");
+                                //     refetch(); // Refetch data after delete
+                                //     handleModalClose();
+                                //   } catch (error) {
+                                //     toast.error("Failed to delete doctor.");
+                                //     console.error(error);
+                                //   }
+                                // }}
+                              >
+                                Confirm Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Action Buttons */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                        onClick={() => handleOpenModal(doctor, "view")}
+                      >
+                        <Eye className="w-4 h-4" /> View
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 text-yellow-600 border-yellow-200 hover:bg-yellow-50"
+                        onClick={() => handleOpenModal(doctor, "edit")}
+                      >
+                        <Edit className="w-4 h-4" /> Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => handleOpenModal(doctor, "delete")}
+                      >
+                        <Trash className="w-4 h-4" /> Delete
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

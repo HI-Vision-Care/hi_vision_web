@@ -200,6 +200,7 @@ export default function Appointments() {
                             <Badge>
                               {appointment.isAnonymous ? "Anonymous" : "Normal"}
                             </Badge>
+                            <Badge>{appointment.status ?? "Null"}</Badge>
                           </div>
 
                           <div className="flex items-center space-x-4 text-sm text-gray-600">
