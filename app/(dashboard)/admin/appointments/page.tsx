@@ -200,6 +200,7 @@ export default function Appointments() {
                             <Badge>
                               {appointment.isAnonymous ? "Anonymous" : "Normal"}
                             </Badge>
+                            <Badge>{appointment.status ?? "Null"}</Badge>
                           </div>
 
                           <div className="flex items-center space-x-4 text-sm text-gray-600">
@@ -241,34 +242,53 @@ export default function Appointments() {
 
           {/* Modal xem chi tiết */}
           {showDetailModal && selectedAppt && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                <h3 className="text-xl font-bold mb-4">Appointment Details</h3>
-                <p>
-                  <strong>Patient ID:</strong> {selectedAppt.patientID}
-                </p>
-                <p>
-                  <strong>Doctor ID:</strong> {selectedAppt.doctorID}
-                </p>
-                <p>
-                  <strong>Service ID:</strong> {selectedAppt.serviceID}
-                </p>
-                <p>
-                  <strong>Time:</strong>{" "}
-                  {new Date(selectedAppt.appointmentDate).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Anonymous:</strong>{" "}
-                  {selectedAppt.isAnonymous ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Note:</strong> {selectedAppt.note || "No note"}
-                </p>
-                <p>
-                  <strong>URL Link:</strong> {selectedAppt.urlLink || "N/A"}
-                </p>
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 animate-fade-in">
+                <h3 className="text-2xl font-semibold text-blue-700 border-b pb-2">
+                  Appointment Details
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm text-gray-700">
+                  <div>
+                    <span className="font-medium text-gray-500">
+                      Patient ID:
+                    </span>{" "}
+                    {selectedAppt.patientID}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">
+                      Doctor ID:
+                    </span>{" "}
+                    {selectedAppt.doctorID}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">
+                      Service ID:
+                    </span>{" "}
+                    {selectedAppt.serviceID}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">Time:</span>{" "}
+                    {new Date(selectedAppt.appointmentDate).toLocaleString()}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">
+                      Anonymous:
+                    </span>{" "}
+                    {selectedAppt.isAnonymous ? "Yes" : "No"}
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-500">Note:</span>{" "}
+                    {selectedAppt.note || "No note"}
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="font-medium text-gray-500">URL Link:</span>{" "}
+                    <span className="break-words text-blue-600">
+                      {selectedAppt.urlLink || "N/A"}
+                    </span>
+                  </div>
+                </div>
                 <Button
-                  className="mt-4 w-full"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
                   onClick={() => setShowDetailModal(false)}
                 >
                   Close

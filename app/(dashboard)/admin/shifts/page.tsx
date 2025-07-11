@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,45 +14,16 @@ import {
 } from "@/components/ui/select";
 import { Clock, Users, AlertCircle, Plus, Calendar } from "lucide-react";
 import Header from "@/components/admin/header";
-import { WorkShift } from "@/services/workShift/types";
-import { getWorkShifts } from "@/services/workShift/api";
 import { useRouter } from "next/navigation";
+import { useWorkShifts } from "@/services/workShift/hooks";
+import { WorkShift } from "@/services/workShift/types";
 
 export default function Shifts() {
   const [selectedMonth, setSelectedMonth] = useState("2025-07");
-  const [shifts, setShifts] = useState<WorkShift[]>([]);
+  const [selectedWeekday, setSelectedWeekday] = useState("all");
   const router = useRouter();
 
-  useEffect(() => {
-    const loadShifts = async () => {
-      try {
-        const data = await getWorkShifts();
-        setShifts(data);
-      } catch (err) {
-        console.error("Failed to fetch shifts", err);
-      }
-    };
-    loadShifts();
-  }, []);
-
-  const shiftStats = [
-    { label: "Total Shifts", value: shifts.length.toString(), color: "blue" },
-    {
-      label: "Booked",
-      value: shifts.filter((s) => s.status === "Booked").length.toString(),
-      color: "green",
-    },
-    {
-      label: "Available",
-      value: shifts.filter((s) => s.status !== "Booked").length.toString(),
-      color: "red",
-    },
-    {
-      label: "With Note",
-      value: shifts.filter((s) => s.note).length.toString(),
-      color: "orange",
-    },
-  ];
+  const { data: shifts = [], isLoading, isError } = useWorkShifts();
 
   const doctors = useMemo(() => {
     const doctorMap = new Map<
@@ -62,10 +33,15 @@ export default function Shifts() {
 
     for (const shift of shifts) {
       const doctor = shift.doctor;
-      if (!doctor) continue;
+      if (!doctor || !shift.date) continue;
 
-      const shiftMonth = format(new Date(shift.date), "yyyy-MM");
+      const date = new Date(shift.date);
+      const shiftMonth = format(date, "yyyy-MM");
+      const shiftWeekday = date.getDay().toString();
+
       if (shiftMonth !== selectedMonth) continue;
+      if (selectedWeekday !== "all" && shiftWeekday !== selectedWeekday)
+        continue;
 
       const key = doctor.doctorID;
       if (!doctorMap.has(key)) {
@@ -80,7 +56,34 @@ export default function Shifts() {
     }
 
     return Array.from(doctorMap.values());
-  }, [shifts, selectedMonth]);
+  }, [shifts, selectedMonth, selectedWeekday]);
+
+  const shiftStats = useMemo(
+    () => [
+      { label: "Total Shifts", value: shifts.length.toString(), color: "blue" },
+      {
+        label: "Booked",
+        value: shifts.filter((s) => s.status === "Booked").length.toString(),
+        color: "green",
+      },
+      {
+        label: "Available",
+        value: shifts.filter((s) => s.status !== "Booked").length.toString(),
+        color: "red",
+      },
+      {
+        label: "With Note",
+        value: shifts.filter((s) => s.note).length.toString(),
+        color: "orange",
+      },
+    ],
+    [shifts]
+  );
+
+  if (isLoading)
+    return <div className="p-6 text-gray-600">Loading shifts...</div>;
+  if (isError)
+    return <div className="p-6 text-red-600">Failed to load shifts.</div>;
 
   return (
     <>
@@ -90,7 +93,7 @@ export default function Shifts() {
       />
 
       <div className="p-6">
-        {/* Controls */}
+        {/* Filter Controls */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
@@ -102,14 +105,31 @@ export default function Shifts() {
                 <SelectItem value="2025-08">August 2025</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={selectedWeekday} onValueChange={setSelectedWeekday}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All Days" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Days</SelectItem>
+                <SelectItem value="0">Sunday</SelectItem>
+                <SelectItem value="1">Monday</SelectItem>
+                <SelectItem value="2">Tuesday</SelectItem>
+                <SelectItem value="3">Wednesday</SelectItem>
+                <SelectItem value="4">Thursday</SelectItem>
+                <SelectItem value="5">Friday</SelectItem>
+                <SelectItem value="6">Saturday</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
           <Button className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             Add Shift
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Shift Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {shiftStats.map((stat, index) => (
             <Card key={index} className="bg-white shadow-sm">
@@ -141,91 +161,108 @@ export default function Shifts() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {shifts.map((shift) => (
-                    <div
-                      key={shift.id}
-                      className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-center">
-                            <div className="text-sm text-gray-500">
-                              {new Date(shift.date).toLocaleDateString(
-                                "en-US",
-                                { weekday: "short" }
-                              )}
-                            </div>
-                            <div className="text-lg font-bold">
-                              {new Date(shift.date).getDate()}
-                            </div>
-                          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {shifts
+                    .filter((shift) => {
+                      if (!shift.date) return false;
+                      const date = new Date(shift.date);
+                      const shiftMonth = format(date, "yyyy-MM");
+                      const shiftWeekday = date.getDay().toString();
 
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <Badge variant="default">{shift.slot}</Badge>
-                              {shift.note
-                                ?.toLowerCase()
-                                .includes("emergency") && (
-                                <Badge
-                                  variant="destructive"
-                                  className="flex items-center"
-                                >
-                                  <AlertCircle className="h-3 w-3 mr-1" />
-                                  Emergency
-                                </Badge>
-                              )}
-                            </div>
+                      return (
+                        shiftMonth === selectedMonth &&
+                        (selectedWeekday === "all" ||
+                          shiftWeekday === selectedWeekday)
+                      );
+                    })
+                    .map((shift) => {
+                      const date = shift.date ? new Date(shift.date) : null;
+                      const start = shift.startTime
+                        ? new Date(shift.startTime)
+                        : null;
+                      const end = shift.endTime
+                        ? new Date(shift.endTime)
+                        : null;
 
-                            {shift.doctor?.name && (
-                              <div className="text-sm text-gray-800 mt-1">
-                                Doctor:{" "}
-                                <span className="font-medium">
-                                  {shift.doctor.name}
-                                </span>
+                      return (
+                        <div
+                          key={shift.id}
+                          className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                              <div className="text-center">
+                                <div className="text-sm text-gray-500">
+                                  {date?.toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                  }) || "N/A"}
+                                </div>
+                                <div className="text-lg font-bold">
+                                  {date?.getDate() || "--"}
+                                </div>
                               </div>
-                            )}
 
-                            <div className="text-sm text-gray-600 mt-1">
-                              {new Date(shift.startTime).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              )}{" "}
-                              -{" "}
-                              {new Date(shift.endTime).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              <div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="default">{shift.slot}</Badge>
+                                  {shift.note
+                                    ?.toLowerCase()
+                                    .includes("emergency") && (
+                                    <Badge
+                                      variant="destructive"
+                                      className="flex items-center"
+                                    >
+                                      <AlertCircle className="h-3 w-3 mr-1" />{" "}
+                                      Emergency
+                                    </Badge>
+                                  )}
+                                </div>
+                                {shift.doctor?.name && (
+                                  <div className="text-sm text-gray-800 mt-1">
+                                    Doctor:{" "}
+                                    <span className="font-medium">
+                                      {shift.doctor.name}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="text-sm text-gray-600 mt-1">
+                                  {start?.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }) || "--"}{" "}
+                                  -{" "}
+                                  {end?.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }) || "--"}
+                                </div>
+                                <div className="font-medium mt-1">
+                                  {shift.note || "No note"}
+                                </div>
+                              </div>
                             </div>
-                            <div className="font-medium mt-1">
-                              {shift.note || "No note"}
+
+                            <div className="text-right">
+                              <Badge
+                                variant={
+                                  shift.status === "Đã đặt"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
+                                {shift.status}
+                              </Badge>
                             </div>
                           </div>
                         </div>
-
-                        <div className="text-right">
-                          <Badge
-                            variant={
-                              shift.status === "Đã đặt"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {shift.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Doctor Availability */}
+          {/* Available Doctors */}
           <Card className="bg-white shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center">
