@@ -11,3 +11,7 @@ export async function bookConsultationGuest(
   );
   return data;
 }
+
+export async function completeConsultation(staffID: string, patientID: string) {
+    return axiosInstance.patch(`/consultation/complete/${staffID}?patientID=${patientID}`);
+}

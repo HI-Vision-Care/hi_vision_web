@@ -62,9 +62,14 @@ export interface WorkShift {
 
 export interface ConsultationRequest {
   phone: string;
-  name: string;
+  name: string | "anonimus";
   note: string;
 }
 
-
-
+export interface ConsultationRequire {
+  name: string | "anonimus";
+  status: string;
+  note: string;
+  accountID: string;
+  createdAt: string;
+}

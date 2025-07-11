@@ -295,3 +295,6 @@ export type MedicalRecordWithLabResultsProps = {
   medicalRecord: MedicalRecordByAppointmentResponse;
   appointment: Appointment;
 };
+
+
+
