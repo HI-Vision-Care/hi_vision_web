@@ -10,3 +10,4 @@ export { default as WorkshiftForm } from "./worfshift-form";
 export { default as MedicationForm } from "./medication-form";
 export { default as MedicationsList } from "./medication-list";
 export { default as MedicalRecordWithLabResults } from "./medicalrecord-labresults";
+export { default as AddLabResultModal } from "./AddLabResultModal";

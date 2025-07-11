@@ -90,36 +90,36 @@ export default function AppointmentDetail({
           {appointment.status}
         </Badge>
 
+        {appointment.status === "ONGOING" && !appointment.isRecordCreated && (
+          <Button
+            variant="outline"
+            className="bg-primary text-white hover:bg-primary/80"
+            onClick={() =>
+              onViewChange({
+                view: "medical-record-form",
+                appointmentId: appointment.appointmentID,
+              })
+            }
+          >
+            New Record
+          </Button>
+        )}
         {appointment.status === "ONGOING" && (
-          <>
-            <Button
-              variant="outline"
-              className="bg-primary text-white hover:bg-primary/80"
-              onClick={() =>
-                onViewChange({
-                  view: "medical-record-form",
-                  appointmentId: appointment.appointmentID,
-                })
-              }
-            >
-              New Record
-            </Button>
-            <Button
-              variant="outline"
-              className="bg-primary text-white hover:bg-primary/80"
-              onClick={() =>
-                onViewChange({
-                  view: "medications",
-                  appointmentId: appointment.appointmentID,
-                  patientId: appointment.patient?.patientID,
-                  createNew: true,
-                  prescribedBy: appointment.doctor?.name,
-                })
-              }
-            >
-              Create prescription
-            </Button>
-          </>
+          <Button
+            variant="outline"
+            className="bg-primary text-white hover:bg-primary/80"
+            onClick={() =>
+              onViewChange({
+                view: "medications",
+                appointmentId: appointment.appointmentID,
+                patientId: appointment.patient?.patientID,
+                createNew: true,
+                prescribedBy: appointment.doctor?.name,
+              })
+            }
+          >
+            Create prescription
+          </Button>
         )}
       </div>
 
@@ -248,6 +248,14 @@ export default function AppointmentDetail({
                 <MedicalRecordWithLabResults
                   medicalRecord={medicalRecord}
                   appointment={appointment}
+                  onEditMedicalRecord={() => {
+                    // Code điều hướng hoặc mở modal form edit ở đây
+                    onViewChange({
+                      view: "edit-medical-record",
+                      appointmentId: appointment.appointmentID,
+                      medicalRecordId: medicalRecord.recordId, // hoặc tuỳ structure
+                    });
+                  }}
                 />
               )}
             </CardContent>

@@ -6,8 +6,6 @@ import {
   PlusCircle,
   Trash2,
   Pill,
-  User,
-  Stethoscope,
   AlertCircle,
   Info,
 } from "lucide-react";
@@ -33,6 +31,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetAllArvs } from "@/services/arv/hooks";
 import { useCreatePrescription } from "@/services/prescription/hooks";
+import { useGetAllRegimensArv } from "@/services/regimen/hooks";
 
 interface MedicationFormProps {
   initialPatientId: string;
@@ -53,9 +52,14 @@ export default function MedicationForm({
   ]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Get Regimen Data
+  const { data: regimenData, isLoading: isRegimenLoading } =
+    useGetAllRegimensArv();
+  const [selectedRegimen, setSelectedRegimen] = useState<string>("");
+
   const { mutate: createPrescription, isPending } =
     useCreatePrescription(onBack);
-  const doctorName = prescribedBy || "Dr. John Doe";
+  const doctorName = prescribedBy || "";
 
   const handleArvChange = (
     idx: number,
@@ -109,9 +113,12 @@ export default function MedicationForm({
     (row) => row.arvID && row.dosage && row.duration
   );
 
+  // ----------- BẮT ĐẦU PHẦN REGIMEN ĐỀ XUẤT ----------
+  // Nếu response chỉ có 1 regimen thì giữ code dưới, nếu là array thì lặp lại trong SelectItem
+
   return (
     <TooltipProvider>
-      <div className="min-h-screen  p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header Section */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -142,41 +149,96 @@ export default function MedicationForm({
             </div>
           </div>
 
-          {/* Patient & Doctor Information */}
-          <Card className="shadow-sm border-0 bg-white ">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-3 text-gray-800">
-                <User className="h-5 w-5 text-gray-600" />
-                Patient & Physician Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Patient ID
-                  </Label>
-                  <Input
-                    value={initialPatientId}
-                    disabled
-                    className="bg-gray-50 border-gray-200 text-gray-800 font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4" />
-                    Prescribing Physician
-                  </Label>
-                  <Input
-                    value={doctorName}
-                    disabled
-                    className="bg-gray-50 border-gray-200 text-gray-800"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Select Regimen */}
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <Label className="text-sm font-semibold text-gray-700 mb-2 block">
+              Recommended Regimen
+            </Label>
+            <Select value={selectedRegimen} onValueChange={setSelectedRegimen}>
+              <SelectTrigger className="bg-white border-gray-300 mt-2">
+                <SelectValue
+                  placeholder={
+                    isRegimenLoading ? "Loading regimens..." : "Select regimen"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {regimenData?.regiment && (
+                  <SelectItem value={regimenData.regiment.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {regimenData.regiment.regimenName}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {regimenData.regiment.indication}
+                      </span>
+                    </div>
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {/* Gợi ý thuốc của regimen */}
+            {selectedRegimen && regimenData?.arvs?.length > 0 && (
+              <Card className="mt-6 border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex gap-2 items-center text-blue-800">
+                    <Pill className="h-5 w-5 text-blue-600" /> Suggested Drugs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {regimenData.arvs.map((arv) => {
+                      const isAdded = arvRows.some(
+                        (row) => row.arvID === arv.arvId
+                      );
+                      return (
+                        <div
+                          key={arv.arvId}
+                          className="flex items-center justify-between p-3 rounded border bg-white"
+                        >
+                          <div>
+                            <div className="font-semibold">
+                              {arv.genericName}{" "}
+                              <span className="text-xs text-gray-400">
+                                ({arv.dosageStrength})
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {arv.drugClass} • {arv.rcmDosage}
+                            </div>
+                          </div>
+                          <Button
+                            variant={isAdded ? "secondary" : "outline"}
+                            size="sm"
+                            className={`border-green-300 ${
+                              isAdded
+                                ? "bg-green-100 text-green-500 cursor-not-allowed"
+                                : "text-green-700"
+                            }`}
+                            onClick={() => {
+                              if (!isAdded) {
+                                setArvRows((prev) => [
+                                  ...prev,
+                                  {
+                                    arvID: arv.arvId,
+                                    dosage: arv.rcmDosage || "",
+                                    duration: "",
+                                  },
+                                ]);
+                              }
+                            }}
+                            disabled={isAdded}
+                          >
+                            {isAdded ? "Added" : "Add"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Medication List */}
           <Card className="shadow-sm border-0 bg-white">
@@ -250,7 +312,6 @@ export default function MedicationForm({
                           <Select
                             value={row.arvID}
                             onValueChange={(val) => {
-                              // Auto-fill dosage khi chọn thuốc!
                               handleArvChange(idx, "arvID", val);
                               const autoArv = arvs?.find(
                                 (a) => a.arvId === val

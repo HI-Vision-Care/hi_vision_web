@@ -161,6 +161,7 @@ export interface DoctorAppointment {
   note: string;
   paymentStatus: string | null;
   createAt: string; // ISO date string
+  isRecordCreated: boolean;
 }
 
 export interface AppointmentDetailProps {
@@ -220,6 +221,7 @@ export interface AppointmentDetailProps {
     status: string;
     urlLink?: string;
     paymentStatus?: string | null;
+    isCreatedAt: string;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
@@ -294,7 +296,5 @@ interface MedicalRecordByAppointmentResponse {
 export type MedicalRecordWithLabResultsProps = {
   medicalRecord: MedicalRecordByAppointmentResponse;
   appointment: Appointment;
+  onEditMedicalRecord?: () => void;
 };
-
-
-

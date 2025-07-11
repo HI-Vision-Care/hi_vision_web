@@ -1,13 +1,24 @@
 import { useState } from "react";
 import { useLabResultsByAppointmentId } from "@/services/doctor/hooks";
-import { ChevronDown, ChevronUp, FlaskConical } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Pencil,
+  PlusCircle,
+} from "lucide-react";
 import { MedicalRecordWithLabResultsProps } from "@/types";
+import { Button } from "../ui/button";
+import AddLabResultModal from "./AddLabResultModal";
 
 const MedicalRecordWithLabResults = ({
   medicalRecord,
   appointment,
+  onEditMedicalRecord,
 }: MedicalRecordWithLabResultsProps) => {
   const [open, setOpen] = useState(false);
+
+  const [openAddLabModal, setOpenAddLabModal] = useState(false);
 
   const {
     data: labResults = [],
@@ -38,18 +49,45 @@ const MedicalRecordWithLabResults = ({
             <div className="mt-1 text-sm">Note: {medicalRecord.note}</div>
           )}
         </div>
-        <button className="ml-3">
-          {open ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
+        <div className="flex items-center gap-2">
+          {/* Nút Edit Medical Record */}
+          {onEditMedicalRecord && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditMedicalRecord();
+              }}
+              title="Edit medical record"
+            >
+              <Pencil className="h-5 w-5" />
+            </Button>
           )}
-        </button>
+          {/* Toggle mở/đóng */}
+          <button className="ml-3">
+            {open ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
+
       {open && (
         <div className="mt-3 border-t pt-2">
           <div className="flex items-center gap-2 text-sm font-semibold mb-2">
             <FlaskConical className="h-4 w-4" /> Lab Results
+            {/* Nút Add Lab Result */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={() => setOpenAddLabModal(true)}
+            >
+              <PlusCircle className="h-4 w-4 mr-1" /> Add Lab Result
+            </Button>
           </div>
           {isLoading ? (
             <div>Loading lab results...</div>
@@ -91,6 +129,11 @@ const MedicalRecordWithLabResults = ({
           )}
         </div>
       )}
+      <AddLabResultModal
+        recordId={medicalRecord.recordId}
+        open={openAddLabModal}
+        onClose={() => setOpenAddLabModal(false)}
+      />
     </div>
   );
 };
