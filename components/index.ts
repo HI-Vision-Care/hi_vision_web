@@ -7,3 +7,4 @@ export * from "./partials";
 export * from "./doctor";
 export * from "./home";
 export * from "./services";
+export * from "./consultant";
