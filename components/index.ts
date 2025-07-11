@@ -6,3 +6,4 @@ export * from "./Chatbot";
 export * from "./partials";
 export * from "./doctor";
 export * from "./home";
+export * from "./services";

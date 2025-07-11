@@ -11,7 +11,6 @@ const Layout = async ({ children }: { children: ReactNode }) => {
     <div className="root-layout ">
       <div className="container w-[80%] !m-auto">
         <HeaderHome />
-
         {children}
       </div>
 
