@@ -267,6 +267,7 @@ export interface MedicalRecordFormProps {
   appointmentId: string;
   record: MedicalRecord | null;
   onBack: () => void;
+  doctorName?: string;
 }
 
 // Trong file types.ts hoặc đầu file page.tsx

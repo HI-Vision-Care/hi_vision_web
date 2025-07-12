@@ -113,6 +113,10 @@ export default function MedicationForm({
     (row) => row.arvID && row.dosage && row.duration
   );
 
+  const selectedRegimenObj = regimenData?.find(
+    (r) => r.regiment.id === selectedRegimen
+  );
+
   // ----------- BẮT ĐẦU PHẦN REGIMEN ĐỀ XUẤT ----------
   // Nếu response chỉ có 1 regimen thì giữ code dưới, nếu là array thì lặp lại trong SelectItem
 
@@ -158,14 +162,13 @@ export default function MedicationForm({
               value={selectedRegimen}
               onValueChange={(value) => {
                 setSelectedRegimen(value);
-                // Auto điền thuốc của regimen này
                 const found = regimenData?.find((r) => r.regiment.id === value);
                 if (found && found.arvs.length > 0) {
                   setArvRows(
                     found.arvs.map((arv) => ({
                       arvID: arv.arvId,
                       dosage: arv.rcmDosage || "",
-                      duration: "", // Chừa trống cho bác sĩ điền
+                      duration: "",
                     }))
                   );
                 } else {
@@ -178,13 +181,21 @@ export default function MedicationForm({
                   placeholder={
                     isRegimenLoading ? "Loading regimens..." : "Select regimen"
                   }
-                />
+                >
+                  {/* Custom hiển thị chỉ regimenName khi đã chọn */}
+                  {selectedRegimenObj
+                    ? selectedRegimenObj.regiment.regimenName
+                    : null}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {(regimenData || []).map(({ regiment }) => (
                   <SelectItem key={regiment.id} value={regiment.id}>
                     <div>
                       <div className="font-medium">{regiment.regimenName}</div>
+                      <div className="text-xs text-gray-500">
+                        {regiment.indication}
+                      </div>
                     </div>
                   </SelectItem>
                 ))}
