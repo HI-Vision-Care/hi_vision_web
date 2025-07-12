@@ -154,7 +154,25 @@ export default function MedicationForm({
             <Label className="text-sm font-semibold text-gray-700 mb-2 block">
               Recommended Regimen
             </Label>
-            <Select value={selectedRegimen} onValueChange={setSelectedRegimen}>
+            <Select
+              value={selectedRegimen}
+              onValueChange={(value) => {
+                setSelectedRegimen(value);
+                // Auto điền thuốc của regimen này
+                const found = regimenData?.find((r) => r.regiment.id === value);
+                if (found && found.arvs.length > 0) {
+                  setArvRows(
+                    found.arvs.map((arv) => ({
+                      arvID: arv.arvId,
+                      dosage: arv.rcmDosage || "",
+                      duration: "", // Chừa trống cho bác sĩ điền
+                    }))
+                  );
+                } else {
+                  setArvRows([{ arvID: "", dosage: "", duration: "" }]);
+                }
+              }}
+            >
               <SelectTrigger className="bg-white border-gray-300 mt-2">
                 <SelectValue
                   placeholder={
@@ -163,18 +181,13 @@ export default function MedicationForm({
                 />
               </SelectTrigger>
               <SelectContent>
-                {regimenData?.regiment && (
-                  <SelectItem value={regimenData.regiment.id}>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {regimenData.regiment.regimenName}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {regimenData.regiment.indication}
-                      </span>
+                {(regimenData || []).map(({ regiment }) => (
+                  <SelectItem key={regiment.id} value={regiment.id}>
+                    <div>
+                      <div className="font-medium">{regiment.regimenName}</div>
                     </div>
                   </SelectItem>
-                )}
+                ))}
               </SelectContent>
             </Select>
             {/* Gợi ý thuốc của regimen */}
