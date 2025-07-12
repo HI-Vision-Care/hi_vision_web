@@ -11,3 +11,4 @@ export { default as MedicationForm } from "./medication-form";
 export { default as MedicationsList } from "./medication-list";
 export { default as MedicalRecordWithLabResults } from "./medicalrecord-labresults";
 export { default as AddLabResultModal } from "./AddLabResultModal";
+export { default as UnderlyingDiseasesModal } from "./UnderlyingDiseasesModal";

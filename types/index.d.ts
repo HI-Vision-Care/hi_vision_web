@@ -124,6 +124,7 @@ export interface DoctorAppointment {
     medNo: string;
     medDate: string;
     medFac: string;
+    underlyingDiseases: string;
   };
   doctor: {
     doctorID: string;
@@ -184,6 +185,7 @@ export interface AppointmentDetailProps {
       medNo: string;
       medDate: string;
       medFac: string;
+      underlyingDiseases: Array;
     };
     doctor: {
       doctorID: string;
@@ -221,7 +223,7 @@ export interface AppointmentDetailProps {
     status: string;
     urlLink?: string;
     paymentStatus?: string | null;
-    isCreatedAt: string;
+    isRecordCreated: string;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;

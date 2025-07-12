@@ -4,36 +4,41 @@ import type React from "react";
 
 import { useEffect, useState } from "react";
 import { useCreateLabResult } from "@/services/doctor/hooks";
-import {
-  X,
-  Calendar,
-  User,
-  TestTube,
-  FileText,
-  Activity,
-  Ruler,
-} from "lucide-react";
+import { X, Calendar, TestTube, FileText, Activity, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { HIV_TEST_TYPES, UNIT_OPTIONS } from "@/constants";
 
 const initialForm = {
   testType: "",
+  testTypeOther: "",
   resultText: "",
   resultValue: "",
   unit: "",
+  unitOther: "",
   referenceRange: "",
   testDate: "",
   performedBy: "",
+  testTime: "",
 };
 
 const AddLabResultModal = ({
   recordId,
   open,
   onClose,
+  performedByDefault,
 }: {
   recordId: string;
   open: boolean;
+  performedByDefault?: string;
   onClose: () => void;
 }) => {
   const [form, setForm] = useState(initialForm);
@@ -56,15 +61,33 @@ const AddLabResultModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let testDateISO = "";
-    if (form.testDate) {
-      testDateISO = form.testDate + "T00:00:00.000Z";
-    }
+    const now = new Date();
+    const [hh = "00", min = "00"] = form.testTime.split(":");
+
+    // 1. Tạo date theo local
+    const localDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      parseInt(hh),
+      parseInt(min),
+      0,
+      0
+    );
+
+    // 2. Lấy timezone offset (phút)
+    const timezoneOffset = localDate.getTimezoneOffset(); // ở VN là -420
+    // 3. Chuyển sang UTC bằng cách trừ offset (theo ms)
+    const utcDate = new Date(localDate.getTime() - timezoneOffset * 60000);
+
+    // 4. Convert sang ISO string
+    const testDateISO = utcDate.toISOString();
 
     createLabResult({
       ...form,
       testDate: testDateISO,
       recordId,
+      performedBy: performedByDefault || "",
     });
   };
 
@@ -116,54 +139,58 @@ const AddLabResultModal = ({
                 >
                   Test Type *
                 </Label>
-                <Input
-                  id="testType"
-                  name="testType"
-                  placeholder="e.g., HIV-1/2 Antibody, Viral Load"
+                <Select
                   value={form.testType}
-                  onChange={handleChange}
-                  required
-                  className="h-10"
-                />
+                  onValueChange={(value) =>
+                    setForm({ ...form, testType: value, testTypeOther: "" })
+                  }
+                >
+                  <SelectTrigger className="h-10 w-full border rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <SelectValue placeholder="Select HIV Test Type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HIV_TEST_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* Nếu chọn "Other", cho phép nhập tay */}
+                {form.testType === "Other" && (
+                  <Input
+                    id="testTypeOther"
+                    name="testTypeOther"
+                    placeholder="Enter test type"
+                    value={form.testTypeOther || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, testTypeOther: e.target.value })
+                    }
+                    className="h-10 mt-2"
+                    required
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label
-                  htmlFor="testDate"
+                  htmlFor="testTime"
                   className="text-sm font-medium text-gray-700 flex items-center gap-1"
                 >
                   <Calendar className="h-3 w-3" />
-                  Test Date *
+                  Test Time *
                 </Label>
                 <Input
-                  id="testDate"
-                  name="testDate"
-                  type="date"
-                  value={form.testDate}
+                  id="testTime"
+                  name="testTime"
+                  type="time"
+                  value={form.testTime}
                   onChange={handleChange}
                   required
                   className="h-10"
+                  step="60" // phút, nếu muốn từng phút
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="performedBy"
-                className="text-sm font-medium text-gray-700 flex items-center gap-1"
-              >
-                <User className="h-3 w-3" />
-                Performed By *
-              </Label>
-              <Input
-                id="performedBy"
-                name="performedBy"
-                placeholder="Laboratory name or technician"
-                value={form.performedBy}
-                onChange={handleChange}
-                required
-                className="h-10"
-              />
             </div>
           </div>
 
@@ -185,11 +212,15 @@ const AddLabResultModal = ({
                 <Input
                   id="resultValue"
                   name="resultValue"
-                  placeholder="e.g., Positive, 1250"
+                  type="number" // Thêm dòng này
+                  placeholder="e.g., 1250"
                   value={form.resultValue}
                   onChange={handleChange}
                   required
                   className="h-10"
+                  inputMode="numeric" // Thêm cho mobile dễ nhập số
+                  pattern="[0-9]*" // Chỉ cho số nguyên, nếu muốn số thực thì bỏ dòng này
+                  min={0} // Nếu chỉ cho nhập số dương, thêm min=0
                 />
               </div>
 
@@ -201,14 +232,36 @@ const AddLabResultModal = ({
                   <Ruler className="h-3 w-3" />
                   Unit
                 </Label>
-                <Input
-                  id="unit"
-                  name="unit"
-                  placeholder="e.g., copies/mL, mg/dL"
+                <Select
                   value={form.unit}
-                  onChange={handleChange}
-                  className="h-10"
-                />
+                  onValueChange={(value) =>
+                    setForm({ ...form, unit: value, unitOther: "" })
+                  }
+                >
+                  <SelectTrigger className="h-10 w-full border rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <SelectValue placeholder="Select unit..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNIT_OPTIONS.map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {unit}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.unit === "Other" && (
+                  <Input
+                    id="unitOther"
+                    name="unitOther"
+                    placeholder="Enter unit"
+                    value={form.unitOther || ""}
+                    onChange={(e) =>
+                      setForm({ ...form, unitOther: e.target.value })
+                    }
+                    className="h-10 mt-2"
+                    required
+                  />
+                )}
               </div>
 
               <div className="space-y-2">

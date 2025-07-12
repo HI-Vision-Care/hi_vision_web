@@ -105,11 +105,31 @@ const MedicalRecordWithLabResults = ({
                   <div>
                     <div className="font-medium">{result.testType}</div>
                     <div className="text-xs text-muted-foreground">
-                      Date:{" "}
+                      Date & Time:{" "}
                       {result.testDate
-                        ? new Date(result.testDate).toLocaleDateString("vi-VN")
+                        ? (() => {
+                            const d = new Date(result.testDate);
+                            const hh = d
+                              .getUTCHours()
+                              .toString()
+                              .padStart(2, "0");
+                            const mm = d
+                              .getUTCMinutes()
+                              .toString()
+                              .padStart(2, "0");
+                            const dd = d
+                              .getUTCDate()
+                              .toString()
+                              .padStart(2, "0");
+                            const MM = (d.getUTCMonth() + 1)
+                              .toString()
+                              .padStart(2, "0");
+                            const yyyy = d.getUTCFullYear();
+                            return `${hh}:${mm} ${dd}/${MM}/${yyyy}`;
+                          })()
                         : "--"}
                     </div>
+
                     <div className="text-xs text-muted-foreground">
                       Reference: {result.referenceRange || "--"}
                     </div>
@@ -132,6 +152,7 @@ const MedicalRecordWithLabResults = ({
       <AddLabResultModal
         recordId={medicalRecord.recordId}
         open={openAddLabModal}
+        performedByDefault={appointment.doctor?.name}
         onClose={() => setOpenAddLabModal(false)}
       />
     </div>
