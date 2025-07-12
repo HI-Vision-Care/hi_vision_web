@@ -999,3 +999,23 @@ export const mockMedications = [
     updatedAt: "2024-01-10T14:00:00Z",
   },
 ];
+
+export const HIV_TEST_TYPES = [
+  "HIV-1/2 Antibody",
+  "HIV-1/2 Antigen/Antibody Combo",
+  "HIV Viral Load (RNA PCR)",
+  "CD4 Cell Count",
+  "HIV-1 Genotype Resistance",
+  "HIV Rapid Test",
+  "HIV Western Blot",
+  "Other",
+];
+
+export const UNIT_OPTIONS = [
+  "copies/mL",
+  "cells/mm³",
+  "IU/mL",
+  "mg/dL",
+  "ng/mL",
+  "Other",
+];

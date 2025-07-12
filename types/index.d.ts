@@ -124,6 +124,7 @@ export interface DoctorAppointment {
     medNo: string;
     medDate: string;
     medFac: string;
+    underlyingDiseases: string;
   };
   doctor: {
     doctorID: string;
@@ -161,6 +162,7 @@ export interface DoctorAppointment {
   note: string;
   paymentStatus: string | null;
   createAt: string; // ISO date string
+  isRecordCreated: boolean;
 }
 
 export interface AppointmentDetailProps {
@@ -183,6 +185,7 @@ export interface AppointmentDetailProps {
       medNo: string;
       medDate: string;
       medFac: string;
+      underlyingDiseases: Array;
     };
     doctor: {
       doctorID: string;
@@ -220,6 +223,7 @@ export interface AppointmentDetailProps {
     status: string;
     urlLink?: string;
     paymentStatus?: string | null;
+    isRecordCreated: string;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
@@ -263,6 +267,7 @@ export interface MedicalRecordFormProps {
   appointmentId: string;
   record: MedicalRecord | null;
   onBack: () => void;
+  doctorName?: string;
 }
 
 // Trong file types.ts hoặc đầu file page.tsx
@@ -294,7 +299,5 @@ interface MedicalRecordByAppointmentResponse {
 export type MedicalRecordWithLabResultsProps = {
   medicalRecord: MedicalRecordByAppointmentResponse;
   appointment: Appointment;
+  onEditMedicalRecord?: () => void;
 };
-
-
-

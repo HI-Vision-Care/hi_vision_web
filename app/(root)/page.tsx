@@ -6,7 +6,7 @@ import { HomeSwiper } from "@/components/partials";
 
 const Home = () => {
   return (
-    <div className="w-full mt-10 mb-10">
+    <div className=" mt-10 mb-10 container w-[80%] !m-auto">
       {/* SECTION 1: HERO */}
       <section className="flex flex-col md:flex-row w-full">
         {/* LEFT */}
