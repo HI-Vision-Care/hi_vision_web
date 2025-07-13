@@ -110,25 +110,25 @@ export default function AppointmentDetail({
             New Record
           </Button>
         )}
-        {appointment.status === "ONGOING" && (
-          <Button
-            variant="outline"
-            className="bg-primary text-white hover:bg-primary/80"
-            onClick={() =>
-              onViewChange({
-                view: "medications",
-                appointmentId: appointment.appointmentID,
-                patientId: appointment.patient?.patientID,
-                createNew: true,
-                prescribedBy: appointment.doctor?.name,
-              })
-            }
-          >
-            Create prescription
-          </Button>
-        )}
+        {appointment.status === "ONGOING" &&
+          !appointment.isPrescriptionCreated && (
+            <Button
+              variant="outline"
+              className="bg-primary text-white hover:bg-primary/80"
+              onClick={() =>
+                onViewChange({
+                  view: "medications",
+                  appointmentId: appointment.appointmentID,
+                  patientId: appointment.patient?.patientID,
+                  createNew: true,
+                  prescribedBy: appointment.doctor?.name,
+                })
+              }
+            >
+              Create prescription
+            </Button>
+          )}
       </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -254,14 +254,6 @@ export default function AppointmentDetail({
                 <MedicalRecordWithLabResults
                   medicalRecord={medicalRecord}
                   appointment={appointment}
-                  onEditMedicalRecord={() => {
-                    // Code điều hướng hoặc mở modal form edit ở đây
-                    onViewChange({
-                      view: "edit-medical-record",
-                      appointmentId: appointment.appointmentID,
-                      medicalRecordId: medicalRecord.recordId, // hoặc tuỳ structure
-                    });
-                  }}
                 />
               )}
             </CardContent>
@@ -466,7 +458,6 @@ export default function AppointmentDetail({
           </Card>
         </div>
       </div>
-
       <UnderlyingDiseasesModal
         open={openDiseaseModal}
         onOpenChange={setOpenDiseaseModal}

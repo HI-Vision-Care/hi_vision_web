@@ -1019,3 +1019,16 @@ export const UNIT_OPTIONS = [
   "ng/mL",
   "Other",
 ];
+
+export const DURATION_OPTIONS = [
+  "5",
+  "7",
+  "10",
+  "14",
+  "21",
+  "28",
+  "30",
+  "60",
+  "90",
+  "Other",
+];

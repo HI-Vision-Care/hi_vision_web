@@ -14,7 +14,6 @@ import AddLabResultModal from "./AddLabResultModal";
 const MedicalRecordWithLabResults = ({
   medicalRecord,
   appointment,
-  onEditMedicalRecord,
 }: MedicalRecordWithLabResultsProps) => {
   const [open, setOpen] = useState(false);
 
@@ -50,20 +49,6 @@ const MedicalRecordWithLabResults = ({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* Nút Edit Medical Record */}
-          {onEditMedicalRecord && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditMedicalRecord();
-              }}
-              title="Edit medical record"
-            >
-              <Pencil className="h-5 w-5" />
-            </Button>
-          )}
           {/* Toggle mở/đóng */}
           <button className="ml-3">
             {open ? (

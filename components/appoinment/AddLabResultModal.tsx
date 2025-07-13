@@ -45,7 +45,7 @@ const AddLabResultModal = ({
 
   const {
     mutate: createLabResult,
-    isLoading,
+    isPending,
     isSuccess,
   } = useCreateLabResult(onClose);
 
@@ -219,7 +219,6 @@ const AddLabResultModal = ({
                   required
                   className="h-10"
                   inputMode="numeric" // Thêm cho mobile dễ nhập số
-                  pattern="[0-9]*" // Chỉ cho số nguyên, nếu muốn số thực thì bỏ dòng này
                   min={0} // Nếu chỉ cho nhập số dương, thêm min=0
                 />
               </div>
@@ -308,16 +307,16 @@ const AddLabResultModal = ({
               variant="outline"
               onClick={onClose}
               className="px-6 h-10 bg-transparent"
-              disabled={isLoading}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={isLoading}
+              disabled={isPending}
             >
-              {isLoading ? (
+              {isPending ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   Saving...

@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
@@ -40,6 +39,8 @@ import {
 
 import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
 import { hivTestTypes, UNIT_OPTIONS } from "@/constants";
+import { validateLabResult, validateMedicalRecord } from "@/utils/validate";
+import { toast } from "sonner";
 
 function isoToLocalDatetime(isoString: string) {
   if (!isoString) return "";
@@ -104,10 +105,15 @@ export default function MedicalRecordForm({
   };
 
   const addLabResult = () => {
-    if (!labResult.testType || !labResult.resultValue) return;
+    const errorMsg = validateLabResult(labResult);
+
+    if (errorMsg) {
+      toast.error(errorMsg);
+      return;
+    }
 
     if (!createdRecordId) {
-      alert("Chưa có recordId, hãy lưu Medical Record trước.");
+      toast.error("Chưa có recordId, hãy lưu Medical Record trước.");
       return;
     }
 
@@ -160,6 +166,12 @@ export default function MedicalRecordForm({
   const handleSave = () => {
     if (!formData.diagnosis) return;
 
+    const errorMsg = validateMedicalRecord(formData);
+    if (errorMsg) {
+      toast.error(errorMsg);
+      return;
+    }
+
     createMedicalRecord(
       {
         appointmentId: appointmentId ?? record?.appointmentId,
@@ -169,9 +181,8 @@ export default function MedicalRecordForm({
       {
         onSuccess: (data) => {
           if (data?.recordId) {
-            setCreatedRecordId(data.recordId); // Lưu lại cho LabResult
+            setCreatedRecordId(data.recordId);
           }
-          // onBack(); // Chỉ back khi cần, hoặc chuyển qua bước thêm LabResult
         },
         onError: () => {},
       }
@@ -217,6 +228,19 @@ export default function MedicalRecordForm({
                     }
                     rows={3}
                   />
+                  {/* Inline error for diagnosis */}
+                  {formData.diagnosis !== undefined &&
+                    formData.diagnosis.trim().length > 0 &&
+                    formData.diagnosis.trim().length < 4 && (
+                      <div className="text-red-500 text-xs mt-1">
+                        Diagnosis must be at least 4 characters.
+                      </div>
+                    )}
+                  {formData.diagnosis && formData.diagnosis.length > 500 && (
+                    <div className="text-red-500 text-xs mt-1">
+                      Diagnosis must be under 500 characters.
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="notes">Notes</Label>
@@ -227,6 +251,12 @@ export default function MedicalRecordForm({
                     onChange={(e) => handleInputChange("note", e.target.value)}
                     rows={3}
                   />
+                  {/* Inline error for note */}
+                  {formData.note && formData.note.length > 1000 && (
+                    <div className="text-red-500 text-xs mt-1">
+                      Notes must be under 1000 characters.
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
