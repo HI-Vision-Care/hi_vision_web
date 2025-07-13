@@ -60,6 +60,7 @@ export interface Appointment {
     medNo: string;
     medDate: string;
     medFac: string;
+    underlyingDiseases: Array;
   };
   doctor: {
     doctorID: string;
@@ -97,6 +98,8 @@ export interface Appointment {
   status: string;
   urlLink?: string;
   paymentStatus?: string | null;
+  isRecordCreated: string;
+  isPrescriptionCreated: boolean;
 }
 
 export type AppointmentStatus =
@@ -124,6 +127,7 @@ export interface DoctorAppointment {
     medNo: string;
     medDate: string;
     medFac: string;
+    underlyingDiseases: string;
   };
   doctor: {
     doctorID: string;
@@ -154,13 +158,15 @@ export interface DoctorAppointment {
     isOnline: boolean;
     createAt: string;
   };
-  appointmentDate: string; // ISO date string
+  appointmentDate: string;
   status: string;
   isAnonymous: boolean;
   urlLink: string;
   note: string;
   paymentStatus: string | null;
-  createAt: string; // ISO date string
+  createAt: string;
+  isRecordCreated: boolean;
+  isPrescriptionCreated: boolean;
 }
 
 export interface AppointmentDetailProps {
@@ -183,6 +189,7 @@ export interface AppointmentDetailProps {
       medNo: string;
       medDate: string;
       medFac: string;
+      underlyingDiseases: Array;
     };
     doctor: {
       doctorID: string;
@@ -220,6 +227,8 @@ export interface AppointmentDetailProps {
     status: string;
     urlLink?: string;
     paymentStatus?: string | null;
+    isRecordCreated: string;
+    isPrescriptionCreated: boolean;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
   onBack: () => void;
@@ -263,6 +272,7 @@ export interface MedicalRecordFormProps {
   appointmentId: string;
   record: MedicalRecord | null;
   onBack: () => void;
+  doctorName?: string;
 }
 
 // Trong file types.ts hoặc đầu file page.tsx
@@ -295,6 +305,3 @@ export type MedicalRecordWithLabResultsProps = {
   medicalRecord: MedicalRecordByAppointmentResponse;
   appointment: Appointment;
 };
-
-
-

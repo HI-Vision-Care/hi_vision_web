@@ -28,6 +28,8 @@ import { useMedicalRecordByAppointmentId } from "@/services/doctor/hooks";
 import Image from "next/image";
 import { useArvPrescriptionsByPatientId } from "@/services/prescription/hooks";
 import MedicalRecordWithLabResults from "./medicalrecord-labresults";
+import { useState } from "react";
+import UnderlyingDiseasesModal from "./UnderlyingDiseasesModal";
 
 function formatAppointmentTimeUTC(dateStr: string) {
   const date = new Date(dateStr);
@@ -64,6 +66,10 @@ export default function AppointmentDetail({
     error: arvError,
   } = useArvPrescriptionsByPatientId(patientId);
 
+  const [openDiseaseModal, setOpenDiseaseModal] = useState(false);
+
+  const underlyingDiseases = appointment.patient?.underlyingDiseases || [];
+
   const isAnonymous = appointment.isAnonymous;
 
   return (
@@ -90,20 +96,22 @@ export default function AppointmentDetail({
           {appointment.status}
         </Badge>
 
-        {appointment.status === "ONGOING" && (
-          <>
-            <Button
-              variant="outline"
-              className="bg-primary text-white hover:bg-primary/80"
-              onClick={() =>
-                onViewChange({
-                  view: "medical-record-form",
-                  appointmentId: appointment.appointmentID,
-                })
-              }
-            >
-              New Record
-            </Button>
+        {appointment.status === "ONGOING" && !appointment.isRecordCreated && (
+          <Button
+            variant="outline"
+            className="bg-primary text-white hover:bg-primary/80"
+            onClick={() =>
+              onViewChange({
+                view: "medical-record-form",
+                appointmentId: appointment.appointmentID,
+              })
+            }
+          >
+            New Record
+          </Button>
+        )}
+        {appointment.status === "ONGOING" &&
+          !appointment.isPrescriptionCreated && (
             <Button
               variant="outline"
               className="bg-primary text-white hover:bg-primary/80"
@@ -119,10 +127,8 @@ export default function AppointmentDetail({
             >
               Create prescription
             </Button>
-          </>
-        )}
+          )}
       </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -261,6 +267,14 @@ export default function AppointmentDetail({
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Patient Information
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                  onClick={() => setOpenDiseaseModal(true)}
+                >
+                  Underlying Diseases
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -444,6 +458,12 @@ export default function AppointmentDetail({
           </Card>
         </div>
       </div>
+      <UnderlyingDiseasesModal
+        open={openDiseaseModal}
+        onOpenChange={setOpenDiseaseModal}
+        diseases={underlyingDiseases}
+        patientName={appointment.patient?.name}
+      />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -186,6 +185,7 @@ export default function DoctorDashboard() {
                 appointmentId={selectedMedicalRecord?.appointmentId ?? ""}
                 record={selectedMedicalRecord}
                 onBack={handleBackToMedicalRecords}
+                doctorName={profile?.name || ""}
               />
             )}
 
@@ -194,6 +194,7 @@ export default function DoctorDashboard() {
               appointmentId={selectedAppointmentId ?? ""}
               record={null}
               onBack={() => setCurrentView("appointments")}
+              doctorName={profile?.name || ""}
             />
           )}
           {currentView === "schedule" &&
@@ -226,7 +227,7 @@ export default function DoctorDashboard() {
           {currentView === "medications" &&
             (selectedMedication || isCreatingMedication) && (
               <MedicationForm
-                onBack={handleBackToList}
+                onBack={() => setCurrentView("appointments")}
                 initialPatientId={selectedPatientId || ""}
                 prescribedBy={prescribedBy}
               />

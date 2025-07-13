@@ -6,8 +6,6 @@ import {
   PlusCircle,
   Trash2,
   Pill,
-  User,
-  Stethoscope,
   AlertCircle,
   Info,
 } from "lucide-react";
@@ -33,6 +31,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetAllArvs } from "@/services/arv/hooks";
 import { useCreatePrescription } from "@/services/prescription/hooks";
+import { useGetAllRegimensArv } from "@/services/regimen/hooks";
+import { DURATION_OPTIONS } from "@/constants";
 
 interface MedicationFormProps {
   initialPatientId: string;
@@ -53,9 +53,15 @@ export default function MedicationForm({
   ]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Get Regimen Data
+  const { data: regimenData, isLoading: isRegimenLoading } =
+    useGetAllRegimensArv();
+  const [selectedRegimen, setSelectedRegimen] = useState<string>("");
+
   const { mutate: createPrescription, isPending } =
     useCreatePrescription(onBack);
-  const doctorName = prescribedBy || "Dr. John Doe";
+  const doctorName = prescribedBy || "";
+  console.log(prescribedBy);
 
   const handleArvChange = (
     idx: number,
@@ -109,9 +115,16 @@ export default function MedicationForm({
     (row) => row.arvID && row.dosage && row.duration
   );
 
+  const selectedRegimenObj = regimenData?.find(
+    (r) => r.regiment.id === selectedRegimen
+  );
+
+  // ----------- BẮT ĐẦU PHẦN REGIMEN ĐỀ XUẤT ----------
+  // Nếu response chỉ có 1 regimen thì giữ code dưới, nếu là array thì lặp lại trong SelectItem
+
   return (
     <TooltipProvider>
-      <div className="min-h-screen  p-6">
+      <div className="min-h-screen p-6">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header Section */}
           <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -142,41 +155,116 @@ export default function MedicationForm({
             </div>
           </div>
 
-          {/* Patient & Doctor Information */}
-          <Card className="shadow-sm border-0 bg-white ">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-lg">
-              <CardTitle className="flex items-center gap-3 text-gray-800">
-                <User className="h-5 w-5 text-gray-600" />
-                Patient & Physician Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Patient ID
-                  </Label>
-                  <Input
-                    value={initialPatientId}
-                    disabled
-                    className="bg-gray-50 border-gray-200 text-gray-800 font-mono"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4" />
-                    Prescribing Physician
-                  </Label>
-                  <Input
-                    value={doctorName}
-                    disabled
-                    className="bg-gray-50 border-gray-200 text-gray-800"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Select Regimen */}
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <Label className="text-sm font-semibold text-gray-700 mb-2 block">
+              Recommended Regimen
+            </Label>
+            <Select
+              value={selectedRegimen}
+              onValueChange={(value) => {
+                setSelectedRegimen(value);
+                const found = regimenData?.find((r) => r.regiment.id === value);
+                if (found && found.arvs.length > 0) {
+                  setArvRows(
+                    found.arvs.map((arv) => ({
+                      arvID: arv.arvId,
+                      dosage: arv.rcmDosage || "",
+                      duration: "",
+                    }))
+                  );
+                } else {
+                  setArvRows([{ arvID: "", dosage: "", duration: "" }]);
+                }
+              }}
+            >
+              <SelectTrigger className="bg-white border-gray-300 mt-2">
+                <SelectValue
+                  placeholder={
+                    isRegimenLoading ? "Loading regimens..." : "Select regimen"
+                  }
+                >
+                  {/* Custom hiển thị chỉ regimenName khi đã chọn */}
+                  {selectedRegimenObj
+                    ? selectedRegimenObj.regiment.regimenName
+                    : null}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {(regimenData || []).map(({ regiment }) => (
+                  <SelectItem key={regiment.id} value={regiment.id}>
+                    <div>
+                      <div className="font-medium">{regiment.regimenName}</div>
+                      <div className="text-xs text-gray-500">
+                        {regiment.indication}
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Gợi ý thuốc của regimen */}
+            {selectedRegimen && regimenData?.arvs?.length > 0 && (
+              <Card className="mt-6 border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex gap-2 items-center text-blue-800">
+                    <Pill className="h-5 w-5 text-blue-600" /> Suggested Drugs
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {regimenData.arvs.map((arv) => {
+                      const isAdded = arvRows.some(
+                        (row) => row.arvID === arv.arvId
+                      );
+                      return (
+                        <div
+                          key={arv.arvId}
+                          className="flex items-center justify-between p-3 rounded border bg-white"
+                        >
+                          <div>
+                            <div className="font-semibold">
+                              {arv.genericName}{" "}
+                              <span className="text-xs text-gray-400">
+                                ({arv.dosageStrength})
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {arv.drugClass} • {arv.rcmDosage}
+                            </div>
+                          </div>
+                          <Button
+                            variant={isAdded ? "secondary" : "outline"}
+                            size="sm"
+                            className={`border-green-300 ${
+                              isAdded
+                                ? "bg-green-100 text-green-500 cursor-not-allowed"
+                                : "text-green-700"
+                            }`}
+                            onClick={() => {
+                              if (!isAdded) {
+                                setArvRows((prev) => [
+                                  ...prev,
+                                  {
+                                    arvID: arv.arvId,
+                                    dosage: arv.rcmDosage || "",
+                                    duration: "",
+                                  },
+                                ]);
+                              }
+                            }}
+                            disabled={isAdded}
+                          >
+                            {isAdded ? "Added" : "Add"}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Medication List */}
           <Card className="shadow-sm border-0 bg-white">
@@ -250,7 +338,6 @@ export default function MedicationForm({
                           <Select
                             value={row.arvID}
                             onValueChange={(val) => {
-                              // Auto-fill dosage khi chọn thuốc!
                               handleArvChange(idx, "arvID", val);
                               const autoArv = arvs?.find(
                                 (a) => a.arvId === val
@@ -319,15 +406,47 @@ export default function MedicationForm({
                           <Label className="text-sm font-semibold text-gray-700">
                             Duration (days) *
                           </Label>
-                          <Input
-                            placeholder="e.g., 30"
-                            type="number"
-                            value={row.duration}
-                            onChange={(e) =>
-                              handleArvChange(idx, "duration", e.target.value)
+                          <Select
+                            value={
+                              DURATION_OPTIONS.includes(row.duration)
+                                ? row.duration
+                                : "Other"
                             }
-                            className="bg-white border-gray-300"
-                          />
+                            onValueChange={(value) => {
+                              if (value === "Other") {
+                                handleArvChange(idx, "duration", "");
+                              } else {
+                                handleArvChange(idx, "duration", value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-white border-gray-300">
+                              <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DURATION_OPTIONS.map((d) => (
+                                <SelectItem key={d} value={d}>
+                                  {d === "Other"
+                                    ? "Other (enter manually)"
+                                    : `${d} days`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {(!DURATION_OPTIONS.includes(row.duration) ||
+                            row.duration === "") && (
+                            <Input
+                              placeholder="Enter duration (days)"
+                              type="number"
+                              value={row.duration}
+                              onChange={(e) =>
+                                handleArvChange(idx, "duration", e.target.value)
+                              }
+                              className="bg-white border-gray-300 mt-2"
+                              min={1}
+                              max={365}
+                            />
+                          )}
                         </div>
                       </div>
 

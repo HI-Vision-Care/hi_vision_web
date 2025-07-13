@@ -19,7 +19,7 @@ export interface Doctor {
 
 export interface WorkShift {
   id?: number;
-  doctor?: Doctor; // ✅ thêm dòng này
+  doctor?: Doctor; 
   slot?: string;
   date?: string;
   startTime?: string;

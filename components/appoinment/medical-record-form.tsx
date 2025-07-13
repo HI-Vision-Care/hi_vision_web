@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
@@ -39,7 +38,9 @@ import {
 } from "@/services/doctor/hooks";
 
 import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
-import { APPOINTMENT_STATUS_COLORS, hivTestTypes } from "@/constants";
+import { hivTestTypes, UNIT_OPTIONS } from "@/constants";
+import { validateLabResult, validateMedicalRecord } from "@/utils/validate";
+import { toast } from "sonner";
 
 function isoToLocalDatetime(isoString: string) {
   if (!isoString) return "";
@@ -53,6 +54,7 @@ export default function MedicalRecordForm({
   appointmentId,
   record,
   onBack,
+  doctorName,
 }: MedicalRecordFormProps) {
   const [createdRecordId, setCreatedRecordId] = useState<string | null>(
     record?.recordId ?? null
@@ -69,9 +71,6 @@ export default function MedicalRecordForm({
     notes: "",
     treatmentPlan: "",
     followUpDate: "",
-    hivStage: "Stage 1",
-    cd4Count: undefined,
-    viralLoad: undefined,
     labResults: [],
     createdBy: "Dr. Sarah Wilson",
     lastModified: new Date().toISOString(),
@@ -85,7 +84,6 @@ export default function MedicalRecordForm({
     referenceRange: "",
     testDate: new Date().toISOString().split("T")[0],
     performedBy: "",
-    status: "normal",
   });
 
   const [showLabForm, setShowLabForm] = useState(false);
@@ -107,10 +105,15 @@ export default function MedicalRecordForm({
   };
 
   const addLabResult = () => {
-    if (!labResult.testType || !labResult.resultValue) return;
+    const errorMsg = validateLabResult(labResult);
+
+    if (errorMsg) {
+      toast.error(errorMsg);
+      return;
+    }
 
     if (!createdRecordId) {
-      alert("Chưa có recordId, hãy lưu Medical Record trước.");
+      toast.error("Chưa có recordId, hãy lưu Medical Record trước.");
       return;
     }
 
@@ -124,7 +127,7 @@ export default function MedicalRecordForm({
         referenceRange: labResult.referenceRange || "",
         testDate:
           labResult.testDate && new Date(labResult.testDate).toISOString(),
-        performedBy: labResult.performedBy || "Lab Technician",
+        performedBy: doctorName || "",
       },
       {
         onSuccess: () => {
@@ -163,6 +166,12 @@ export default function MedicalRecordForm({
   const handleSave = () => {
     if (!formData.diagnosis) return;
 
+    const errorMsg = validateMedicalRecord(formData);
+    if (errorMsg) {
+      toast.error(errorMsg);
+      return;
+    }
+
     createMedicalRecord(
       {
         appointmentId: appointmentId ?? record?.appointmentId,
@@ -172,9 +181,8 @@ export default function MedicalRecordForm({
       {
         onSuccess: (data) => {
           if (data?.recordId) {
-            setCreatedRecordId(data.recordId); // Lưu lại cho LabResult
+            setCreatedRecordId(data.recordId);
           }
-          // onBack(); // Chỉ back khi cần, hoặc chuyển qua bước thêm LabResult
         },
         onError: () => {},
       }
@@ -192,13 +200,6 @@ export default function MedicalRecordForm({
           <h1 className="text-3xl font-bold tracking-tight">
             {record ? "Edit Medical Record" : "New Medical Record"}
           </h1>
-          <p className="text-muted-foreground">
-            {record
-              ? `Last modified: ${new Date(
-                  record.lastModified
-                ).toLocaleString()}`
-              : "Create a new HIV treatment record"}
-          </p>
         </div>
         <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
           <Save className="h-4 w-4 mr-2" />
@@ -227,6 +228,19 @@ export default function MedicalRecordForm({
                     }
                     rows={3}
                   />
+                  {/* Inline error for diagnosis */}
+                  {formData.diagnosis !== undefined &&
+                    formData.diagnosis.trim().length > 0 &&
+                    formData.diagnosis.trim().length < 4 && (
+                      <div className="text-red-500 text-xs mt-1">
+                        Diagnosis must be at least 4 characters.
+                      </div>
+                    )}
+                  {formData.diagnosis && formData.diagnosis.length > 500 && (
+                    <div className="text-red-500 text-xs mt-1">
+                      Diagnosis must be under 500 characters.
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="notes">Notes</Label>
@@ -237,261 +251,261 @@ export default function MedicalRecordForm({
                     onChange={(e) => handleInputChange("note", e.target.value)}
                     rows={3}
                   />
+                  {/* Inline error for note */}
+                  {formData.note && formData.note.length > 1000 && (
+                    <div className="text-red-500 text-xs mt-1">
+                      Notes must be under 1000 characters.
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
+
           {/* Lab Results Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <TestTube className="h-5 w-5" />
-                  Laboratory Results
-                </CardTitle>
-                <Button
-                  onClick={() => setShowLabForm(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Lab Result
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {showLabForm && (
-                <Card className="mb-6">
-                  <CardHeader>
-                    <CardTitle className="text-lg">
-                      {editingLabId ? "Edit Lab Result" : "Add Lab Result"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="testType">Test Type</Label>
-                        <Select
-                          value={labResult.testType}
-                          onValueChange={(value) =>
-                            handleLabResultChange("testType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select test type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {hivTestTypes.map((test) => (
-                              <SelectItem key={test} value={test}>
-                                {test}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+          {createdRecordId ? (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TestTube className="h-5 w-5" />
+                    Laboratory Results
+                  </CardTitle>
+                  <Button
+                    onClick={() => setShowLabForm(true)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Lab Result
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {showLabForm && (
+                  <Card className="mb-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        {editingLabId ? "Edit Lab Result" : "Add Lab Result"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="testType">Test Type</Label>
+                          <Select
+                            value={labResult.testType}
+                            onValueChange={(value) =>
+                              handleLabResultChange("testType", value)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select test type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {hivTestTypes.map((test) => (
+                                <SelectItem key={test} value={test}>
+                                  {test}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="testDate">Test Date</Label>
+                          <Input
+                            id="testDate"
+                            type="datetime-local"
+                            value={
+                              labResult.testDate
+                                ? isoToLocalDatetime(labResult.testDate) // khi edit, convert ISO về local
+                                : ""
+                            }
+                            onChange={(e) => {
+                              // Lưu lại đúng local string cho input
+                              handleLabResultChange("testDate", e.target.value);
+                            }}
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <Label htmlFor="testDate">Test Date</Label>
-                        <Input
-                          id="testDate"
-                          type="datetime-local"
-                          value={
-                            labResult.testDate
-                              ? isoToLocalDatetime(labResult.testDate) // khi edit, convert ISO về local
-                              : ""
-                          }
-                          onChange={(e) => {
-                            // Lưu lại đúng local string cho input
-                            handleLabResultChange("testDate", e.target.value);
-                          }}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="resultValue">Result Value</Label>
-                        <Input
-                          id="resultValue"
-                          placeholder="e.g., 650, &lt;50, Negative"
-                          value={labResult.resultValue}
-                          onChange={(e) =>
-                            handleLabResultChange("resultValue", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="unit">Unit</Label>
-                        <Input
-                          id="unit"
-                          placeholder="e.g., cells/μL, copies/mL"
-                          value={labResult.unit}
-                          onChange={(e) =>
-                            handleLabResultChange("unit", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="referenceRange">Reference Range</Label>
-                        <Input
-                          id="referenceRange"
-                          placeholder="e.g., 500-1200, &lt;50"
-                          value={labResult.referenceRange}
-                          onChange={(e) =>
-                            handleLabResultChange(
-                              "referenceRange",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="performedBy">Performed By</Label>
-                        <Input
-                          id="performedBy"
-                          placeholder="Lab technician or facility"
-                          value={labResult.performedBy}
-                          onChange={(e) =>
-                            handleLabResultChange("performedBy", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="status">Status</Label>
-                        <Select
-                          value={labResult.status}
-                          onValueChange={(value) =>
-                            handleLabResultChange("status", value as any)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="normal">Normal</SelectItem>
-                            <SelectItem value="abnormal">Abnormal</SelectItem>
-                            <SelectItem value="critical">Critical</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="resultText">Additional Notes</Label>
-                      <Textarea
-                        id="resultText"
-                        placeholder="Additional interpretation or notes about the result..."
-                        value={labResult.resultText}
-                        onChange={(e) =>
-                          handleLabResultChange("resultText", e.target.value)
-                        }
-                        rows={2}
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={addLabResult}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        {editingLabId ? "Update Result" : "Add Result"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowLabForm(false);
-                          setEditingLabId(null);
-                          setLabResult({
-                            testType: "",
-                            resultText: "",
-                            resultValue: "",
-                            unit: "",
-                            referenceRange: "",
-                            testDate: new Date().toISOString().split("T")[0],
-                            performedBy: "",
-                            status: "normal",
-                          });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {formData.labResults && formData.labResults.length > 0 ? (
-                <div className="border rounded-lg">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Test Type</TableHead>
-                        <TableHead>Result</TableHead>
-                        <TableHead>Reference Range</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {formData.labResults.map((lab) => (
-                        <TableRow key={lab.id}>
-                          <TableCell className="font-medium">
-                            {lab.testType}
-                          </TableCell>
-                          <TableCell>
-                            {lab.resultValue} {lab.unit}
-                          </TableCell>
-                          <TableCell>{lab.referenceRange}</TableCell>
-                          <TableCell>
-                            {new Date(lab.testDate).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                APPOINTMENT_STATUS_COLORS[lab.status] ||
-                                APPOINTMENT_STATUS_COLORS.DEFAULT
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="resultValue">Result Value</Label>
+                          <Input
+                            id="resultValue"
+                            placeholder="e.g., 650, &lt;50"
+                            value={labResult.resultValue}
+                            onChange={(e) =>
+                              handleLabResultChange(
+                                "resultValue",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="unit">Unit</Label>
+                          <Select
+                            value={labResult.unit}
+                            onValueChange={(value) =>
+                              handleLabResultChange("unit", value)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {UNIT_OPTIONS.map((unit) => (
+                                <SelectItem key={unit} value={unit}>
+                                  {unit}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {labResult.unit === "Other" && (
+                            <Input
+                              className="mt-2"
+                              placeholder="Enter unit"
+                              value={labResult.unitOther || ""}
+                              onChange={(e) =>
+                                handleLabResultChange(
+                                  "unitOther",
+                                  e.target.value
+                                )
                               }
-                            >
-                              {lab.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => editLabResult(lab)}
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteLabResult(lab.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                            />
+                          )}
+                        </div>
+
+                        <div>
+                          <Label htmlFor="referenceRange">
+                            Reference Range
+                          </Label>
+                          <Input
+                            id="referenceRange"
+                            placeholder="e.g., 500-1200, &lt;50"
+                            value={labResult.referenceRange}
+                            onChange={(e) =>
+                              handleLabResultChange(
+                                "referenceRange",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="resultText">Additional Notes</Label>
+                        <Textarea
+                          id="resultText"
+                          placeholder="Additional interpretation or notes about the result..."
+                          value={labResult.resultText}
+                          onChange={(e) =>
+                            handleLabResultChange("resultText", e.target.value)
+                          }
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={addLabResult}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          {editingLabId ? "Update Result" : "Add Result"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowLabForm(false);
+                            setEditingLabId(null);
+                            setLabResult({
+                              testType: "",
+                              resultText: "",
+                              resultValue: "",
+                              unit: "",
+                              referenceRange: "",
+                              testDate: new Date().toISOString().split("T")[0],
+                              performedBy: "",
+                              status: "normal",
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {formData.labResults && formData.labResults.length > 0 ? (
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Test Type</TableHead>
+                          <TableHead>Result</TableHead>
+                          <TableHead>Reference Range</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <TestTube className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No lab results added yet</p>
-                  <p className="text-sm">
-                    Click &quot;Add Lab Result&quot; to get started
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {formData.labResults.map((lab) => (
+                          <TableRow key={lab.id}>
+                            <TableCell className="font-medium">
+                              {lab.testType}
+                            </TableCell>
+                            <TableCell>
+                              {lab.resultValue} {lab.unit}
+                            </TableCell>
+                            <TableCell>{lab.referenceRange}</TableCell>
+                            <TableCell>
+                              {new Date(lab.testDate).toLocaleDateString()}
+                            </TableCell>
+
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => editLabResult(lab)}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deleteLabResult(lab.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <TestTube className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No lab results added yet</p>
+                    <p className="text-sm">
+                      Click &quot;Add Lab Result&quot; to get started
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <TestTube className="h-8 w-8 mx-auto mb-3 opacity-50" />
+              <p>Save the medical record before adding laboratory results.</p>
+            </div>
+          )}
         </div>
 
         {/* HIV-Specific Information Sidebar */}

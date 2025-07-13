@@ -169,45 +169,43 @@ export const CORE_VALUES = [
 
 export const TEAM_MEMBERS = [
   {
-    name: "Sarah Chen",
+    name: "Kim Cuong",
     role: "CEO & Founder",
     bio: "Former VP of Engineering at Google with 15+ years in tech leadership.",
-    image: "/placeholder.svg?height=300&width=300",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/movie-management-c2908.appspot.com/o/cuong.jpg?alt=media&token=4efba439-0c33-4d74-a92c-26ee99eee284",
     linkedin: "#",
   },
   {
-    name: "Michael Rodriguez",
+    name: "Dang Khoa",
     role: "CTO",
     bio: "Ex-Amazon architect specializing in scalable cloud infrastructure.",
-    image: "/placeholder.svg?height=300&width=300",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/movie-management-c2908.appspot.com/o/khoa.jpg?alt=media&token=4ae3da49-1ed9-41f2-a146-0475c499035e",
     linkedin: "#",
   },
   {
-    name: "Emily Johnson",
-    role: "Head of Product",
+    name: "Cong Thanh",
+    role: "Lead Back End",
     bio: "Product strategy expert with a track record of launching successful SaaS products.",
-    image: "/placeholder.svg?height=300&width=300",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/movie-management-c2908.appspot.com/o/thanh2.jpg?alt=media&token=432cb218-ad68-485e-b370-8a5183e63cf7",
     linkedin: "#",
   },
   {
-    name: "David Kim",
+    name: "Anh Minh",
     role: "Head of Design",
     bio: "Award-winning designer focused on creating intuitive user experiences.",
-    image: "/placeholder.svg?height=300&width=300",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/movie-management-c2908.appspot.com/o/minh.jpg?alt=media&token=241d0dfd-b491-457f-9ab5-70354ded772f",
     linkedin: "#",
   },
   {
-    name: "Lisa Thompson",
+    name: "Minh Hieu",
     role: "VP of Sales",
     bio: "Sales leader with expertise in helping businesses scale and grow.",
-    image: "/placeholder.svg?height=300&width=300",
-    linkedin: "#",
-  },
-  {
-    name: "James Wilson",
-    role: "Head of Customer Success",
-    bio: "Customer advocate ensuring our clients achieve their goals with our platform.",
-    image: "/placeholder.svg?height=300&width=300",
+    image:
+      "https://firebasestorage.googleapis.com/v0/b/movie-management-c2908.appspot.com/o/hieu.jpg?alt=media&token=deddda83-ca5c-44ac-9e58-03f6fc588583",
     linkedin: "#",
   },
 ];
@@ -1000,4 +998,37 @@ export const mockMedications = [
     createdAt: "2024-01-10T14:00:00Z",
     updatedAt: "2024-01-10T14:00:00Z",
   },
+];
+
+export const HIV_TEST_TYPES = [
+  "HIV-1/2 Antibody",
+  "HIV-1/2 Antigen/Antibody Combo",
+  "HIV Viral Load (RNA PCR)",
+  "CD4 Cell Count",
+  "HIV-1 Genotype Resistance",
+  "HIV Rapid Test",
+  "HIV Western Blot",
+  "Other",
+];
+
+export const UNIT_OPTIONS = [
+  "copies/mL",
+  "cells/mm³",
+  "IU/mL",
+  "mg/dL",
+  "ng/mL",
+  "Other",
+];
+
+export const DURATION_OPTIONS = [
+  "5",
+  "7",
+  "10",
+  "14",
+  "21",
+  "28",
+  "30",
+  "60",
+  "90",
+  "Other",
 ];

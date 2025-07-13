@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   createLabResult,
   createMedicalRecord,
+  getAllDoctor,
   getAllMedicalRecords,
   getAppointmentsByDoctorId,
   getDoctorProfile,
@@ -10,10 +11,10 @@ import {
   getLabResultsByPatientId,
   getMedicalRecordByAppointmentId,
 } from "./api";
-import { DoctorProfile } from "./types";
+import { DoctorProfile, DoctorResponse } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { DoctorAppointment } from "@/types";
+import { DoctorAppointment, LabResult } from "@/types";
 
 export const useGetAppointmentsByDoctorId = (
   doctorID: string,
@@ -68,16 +69,7 @@ export function useCreateMedicalRecord() {
 export function useCreateLabResult(onSuccess?: () => void) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: {
-      recordId: string;
-      testType: string;
-      resultText: string;
-      resultValue: string;
-      unit: string;
-      referenceRange: string;
-      testDate: string;
-      performedBy: string;
-    }) => createLabResult(data),
+    mutationFn: (data: LabResult) => createLabResult(data),
     onSuccess: () => {
       // invalidate lab results list hoặc medical record nếu cần
       queryClient.invalidateQueries(["labResults"]);
@@ -124,3 +116,12 @@ export const useLabResultsByAppointmentId = (
     queryFn: () => getLabResultsByAppointmentId(appointmentId),
     enabled: !!appointmentId && enabled,
   });
+
+export function useAllDoctors(enabled = true) {
+  return useQuery<DoctorResponse[], Error>({
+    queryKey: ["doctors", "all"],
+    queryFn: getAllDoctor,
+    enabled,
+    staleTime: 1000 * 60 * 5, // cache 5 phút
+  });
+}

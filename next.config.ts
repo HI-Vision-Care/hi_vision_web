@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "i.pinimg.com",
         port: "",
       },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        port: "",
+      },
     ],
   },
   eslint: {
