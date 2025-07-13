@@ -28,8 +28,12 @@ export default function Appointments() {
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
-      appointment.patientID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.doctorID.toLowerCase().includes(searchTerm.toLowerCase());
+      appointment.patient.patientID
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      appointment.doctor.doctorID
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     const matchesStatus =
       statusFilter === "all" || appointment.paymentStatus === statusFilter;
@@ -195,7 +199,7 @@ export default function Appointments() {
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-medium text-lg">
-                              Pid: {appointment.patientID}
+                              Pid: {appointment.patient.patientID}
                             </h3>
                             <Badge>
                               {appointment.isAnonymous ? "Anonymous" : "Normal"}
@@ -205,11 +209,13 @@ export default function Appointments() {
 
                           <div className="flex items-center space-x-4 text-sm text-gray-600">
                             <div className="flex items-center space-x-1">
-                              <span>Did: {appointment.doctorID}</span>
+                              <span>Did: {appointment.doctor.doctorID}</span>
                             </div>
                             <div className="flex items-center space-x-1">
                               <Clock className="h-4 w-4" />
-                              <span>{appointment.serviceID}</span>
+                              <span>
+                                {appointment.medicalService.serviceID}
+                              </span>
                             </div>
                           </div>
 
@@ -252,19 +258,19 @@ export default function Appointments() {
                     <span className="font-medium text-gray-500">
                       Patient ID:
                     </span>{" "}
-                    {selectedAppt.patientID}
+                    {selectedAppt.patient.patientID}
                   </div>
                   <div>
                     <span className="font-medium text-gray-500">
                       Doctor ID:
                     </span>{" "}
-                    {selectedAppt.doctorID}
+                    {selectedAppt.doctor.doctorID}
                   </div>
                   <div>
                     <span className="font-medium text-gray-500">
                       Service ID:
                     </span>{" "}
-                    {selectedAppt.serviceID}
+                    {selectedAppt.medicalService.serviceID}
                   </div>
                   <div>
                     <span className="font-medium text-gray-500">Time:</span>{" "}

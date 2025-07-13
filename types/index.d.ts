@@ -1,5 +1,6 @@
 // define the interface
 export interface Patient {
+  patientID: string;
   id: string;
   name: string;
   age: number;
