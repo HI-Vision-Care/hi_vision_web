@@ -22,6 +22,22 @@ import {
   ConsultationRequireQueue,
 } from "@/components/consultant";
 
+
+import { useState, useEffect } from "react"
+import { Calendar, Clock, Users, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Client } from "@stomp/stompjs"
+import SockJS from "sockjs-client"
+import axiosInstance from "@/config/axios"
+import ChatInterface from "@/components/consultant/chat-interface"
+import ConsultationRequireQueue from "@/components/consultant/consultationqueue"
+import { useRef } from "react"
+import { useAccountId } from "@/hooks/useAccountId"
+import { ConsultationRequire } from "@/services/consultant/types"
+// Mock data for consultation sessions
+
 const mockSessions = [
   {
     id: 1,
@@ -234,21 +250,17 @@ export default function ConsultationDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Upcoming</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {upcomingSessions}
-                  </p>
-                  <p className="text-xs text-gray-500">Sessions this week</p>
-                </div>
-                <Users className="w-8 h-8 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
+                {/* Chat and Queue Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Chat Interface */}
+                    <div className="lg:col-span-2">
+                        <ChatInterface
+                            selectedPatientRequire={selectedPatient}
+                            onConsultationComplete={() => setSelectedPatient(null)}
+                        />
+                    </div>
+
 
         {/* Chat and Queue Section */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

@@ -1,8 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import type { ConsultationRequire } from "@/services/auth/types";
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { ConsultationRequire } from "@/services/consultant/types"
+
 
 interface ConsultationRequireQueueProps {
   requires: ConsultationRequire[];

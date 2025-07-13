@@ -25,7 +25,8 @@ const adminNavigation = [
   { name: "All Patients", href: "/admin/patients", icon: Users },
   { name: "ARV Regimens", href: "/admin/arv-regimens", icon: Pill },
   { name: "Appointments", href: "/admin/appointments", icon: Calendar },
-   { name: "Consultants", href: "/admin/consultant", icon: Calendar },
+  { name: "Consultants", href: "/admin/consultant", icon: Calendar },
+  { name: "Post-Management", href: "/admin/post-management", icon: LayoutDashboard },
   // { name: "Schedule", href: "/admin/schedule", icon: Clock },
   { name: "Shift Management", href: "/admin/shifts", icon: Clock },
 ];
