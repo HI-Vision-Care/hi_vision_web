@@ -84,7 +84,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
             alt={service.name}
             width={300}
             height={200}
-            className="w-full h-48 object-cover rounded-t-lg"
+            className="w-full h-48 object-contain rounded-t-lg"
           />
           <div className="absolute top-4 left-4 flex gap-2">
             <Badge className={getServiceTypeColor(service.type)}>
@@ -161,12 +161,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
               {formatVND(service.price)}
             </span>
           </div>
-          <Button
+          {/* <Button
             className="bg-blue-600 hover:bg-blue-700"
             disabled={!service.isActive}
           >
             {service.isActive ? "Book Now" : "Unavailable"}
-          </Button>
+          </Button> */}
         </div>
       </CardFooter>
     </Card>
