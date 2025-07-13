@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useEffect, useState } from "react";
 import { useCreateLabResult } from "@/services/doctor/hooks";
-import { X, Calendar, TestTube, FileText, Activity, Ruler } from "lucide-react";
+import { X, TestTube, FileText, Activity, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,6 @@ const initialForm = {
   unit: "",
   unitOther: "",
   referenceRange: "",
-  testDate: "",
   performedBy: "",
   testTime: "",
 };
@@ -61,27 +60,7 @@ const AddLabResultModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const now = new Date();
-    const [hh = "00", min = "00"] = form.testTime.split(":");
-
-    // 1. Tạo date theo local
-    const localDate = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      parseInt(hh),
-      parseInt(min),
-      0,
-      0
-    );
-
-    // 2. Lấy timezone offset (phút)
-    const timezoneOffset = localDate.getTimezoneOffset(); // ở VN là -420
-    // 3. Chuyển sang UTC bằng cách trừ offset (theo ms)
-    const utcDate = new Date(localDate.getTime() - timezoneOffset * 60000);
-
-    // 4. Convert sang ISO string
-    const testDateISO = utcDate.toISOString();
+    const testDateISO = new Date().toISOString();
 
     createLabResult({
       ...form,
@@ -131,7 +110,7 @@ const AddLabResultModal = ({
               Test Information
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label
                   htmlFor="testType"
@@ -171,26 +150,6 @@ const AddLabResultModal = ({
                   />
                 )}
               </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="testTime"
-                  className="text-sm font-medium text-gray-700 flex items-center gap-1"
-                >
-                  <Calendar className="h-3 w-3" />
-                  Test Time *
-                </Label>
-                <Input
-                  id="testTime"
-                  name="testTime"
-                  type="time"
-                  value={form.testTime}
-                  onChange={handleChange}
-                  required
-                  className="h-10"
-                  step="60" // phút, nếu muốn từng phút
-                />
-              </div>
             </div>
           </div>
 
@@ -212,14 +171,13 @@ const AddLabResultModal = ({
                 <Input
                   id="resultValue"
                   name="resultValue"
-                  type="number" // Thêm dòng này
-                  placeholder="e.g., 1250"
+                  type="number"
+                  placeholder="e.g., 0.13"
                   value={form.resultValue}
                   onChange={handleChange}
                   required
                   className="h-10"
-                  inputMode="numeric" // Thêm cho mobile dễ nhập số
-                  min={0} // Nếu chỉ cho nhập số dương, thêm min=0
+                  step="any"
                 />
               </div>
 
