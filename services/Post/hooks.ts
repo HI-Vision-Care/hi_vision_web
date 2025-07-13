@@ -1,11 +1,9 @@
-import { useState } from "react";
 import axiosInstance from "@/config/axios";
 import type {
   BlogPostBasic,
   BlogPostDetail,
   BlogPostRequest,
   ContentRequest,
-  CreateBlogPostPayload,
 } from "@/services/Post/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -46,20 +44,16 @@ export const useUpdateBlogPost = () => {
       blogPostRequest: BlogPostRequest;
       contentRequests: ContentRequest[];
     }) => {
-      await axiosInstance.put(
-        `/blog-post/update/${blogID}/${accountID}`,
-        {
-          blogPostRequest,
-          contentRequests,
-        }
-      );
+      await axiosInstance.put(`/blog-post/update/${blogID}/${accountID}`, {
+        blogPostRequest,
+        contentRequests,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
     },
   });
 };
-
 
 export const useCreateBlogPost = () => {
   const queryClient = useQueryClient();
@@ -73,13 +67,10 @@ export const useCreateBlogPost = () => {
       blogPostRequest: BlogPostRequest;
       contentRequests: ContentRequest[];
     }) => {
-      const res = await axiosInstance.post(
-        `/blog-post/create/${accountID}`,
-        {
-          blogPostRequest,
-          contentRequests,
-        }
-      );
+      const res = await axiosInstance.post(`/blog-post/create/${accountID}`, {
+        blogPostRequest,
+        contentRequests,
+      });
       return res.data;
     },
     onSuccess: () => {
@@ -87,4 +78,3 @@ export const useCreateBlogPost = () => {
     },
   });
 };
-
