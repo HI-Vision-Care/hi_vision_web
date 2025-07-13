@@ -1,21 +1,20 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type React from "react"
 
-import { Eye, Edit3, Plus, X, ImageIcon, FileText, Tag, Type } from "lucide-react"
+import { Eye, Edit3, Plus, FileText, Clock, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
 // Import your BlogPostPreview component
-
-// Import types từ project của bạn
 import type { BlogPostRequest, ContentRequest } from "@/services/Post/types"
-import { useCreateBlogPost } from "@/services/Post/hooks"
+import { useCreateBlogPost, useGetBlogPostDetail, useUpdateBlogPost } from "@/services/Post/hooks"
 import { useAccountId } from "@/hooks/useAccountId"
 import BlogPostPreview from "@/components/post/preview"
+import PostEditForm from "@/components/post/PostEditForm"
+import RecentPostList from "@/components/post/RecentPostList"
 
 const defaultContent: ContentRequest = {
     header: "",
@@ -23,7 +22,7 @@ const defaultContent: ContentRequest = {
     photo: "",
 }
 
-export default function NewPostPage() {
+export default function BlogPostManagementPage() {
     const [post, setPost] = useState<BlogPostRequest>({
         title: "",
         banner: "",
@@ -32,10 +31,17 @@ export default function NewPostPage() {
     const [contents, setContents] = useState<ContentRequest[]>([{ ...defaultContent }])
     const [loading, setLoading] = useState(false)
     const [msg, setMsg] = useState("")
-    const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit")
-
+    const [activeTab, setActiveTab] = useState<"edit" | "preview" | "recent">("recent")
     const staffAccountId = useAccountId()
     const { mutate: createBlogPost } = useCreateBlogPost()
+    const [editingPostId, setEditingPostId] = useState<number | null>(null)
+    const { data: editingDetail } = useGetBlogPostDetail(editingPostId ?? "")
+    const { mutate: updateBlogPost } = useUpdateBlogPost()
+
+    const handleEditPost = (postId: number) => {
+        setEditingPostId(postId)
+        setActiveTab("edit")
+    }
 
     const handlePostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPost({ ...post, [e.target.name]: e.target.value })
@@ -52,251 +58,258 @@ export default function NewPostPage() {
         setContents(contents.filter((_, i) => i !== idx))
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         setMsg("")
         setLoading(true)
-        try {
-            if (!staffAccountId) return setMsg("Bạn chưa nhập AccountID")
-            await createBlogPost(staffAccountId, {
-                blogPostRequest: post,
-                contentRequests: contents,
-            })
-            setMsg("Đăng bài thành công!")
-            setPost({ title: "", banner: "", topic: "" })
-            setContents([{ ...defaultContent }])
-            setActiveTab("edit")
-        } catch (error) {
-            console.error("Error creating blog post:", error)
-            setMsg("Đăng bài thất bại!")
-        } finally {
+
+        if (!staffAccountId) {
+            setMsg("Please enter your Account ID")
             setLoading(false)
+            return
+        }
+
+        if (editingPostId) {
+            updateBlogPost(
+                {
+                    accountID: staffAccountId,
+                    blogID: editingPostId,
+                    blogPostRequest: post,
+                    contentRequests: contents,
+                },
+                {
+                    onSuccess: () => {
+                        setMsg("Blog post updated successfully!")
+                        setPost({ title: "", banner: "", topic: "" })
+                        setContents([{ ...defaultContent }])
+                        setActiveTab("edit")
+                        setEditingPostId(null)
+                        setLoading(false)
+                    },
+                    onError: () => {
+                        setMsg("Failed to update blog post!")
+                        setLoading(false)
+                    },
+                },
+            )
+        } else {
+            createBlogPost(
+                {
+                    accountID: staffAccountId,
+                    blogPostRequest: post,
+                    contentRequests: contents,
+                },
+                {
+                    onSuccess: () => {
+                        setMsg("Blog post published successfully!")
+                        setPost({ title: "", banner: "", topic: "" })
+                        setContents([{ ...defaultContent }])
+                        setActiveTab("edit")
+                        setLoading(false)
+                    },
+                    onError: () => {
+                        setMsg("Failed to publish blog post!")
+                        setLoading(false)
+                    },
+                },
+            )
         }
     }
 
-    return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-6xl mx-auto px-4">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Tạo bài viết mới</h1>
-                    <p className="text-gray-600">Tạo và xem trước bài viết của bạn trước khi đăng</p>
-                </div>
+    const resetForm = () => {
+        setPost({ title: "", banner: "", topic: "" })
+        setContents([{ ...defaultContent }])
+        setEditingPostId(null)
+        setMsg("")
+    }
 
-                {/* Custom Tab Implementation */}
-                <div className="space-y-6">
-                    <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg max-w-md">
-                        <button
-                            onClick={() => setActiveTab("edit")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "edit" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                                }`}
-                        >
-                            <Edit3 className="w-4 h-4" />
-                            Chỉnh sửa
-                        </button>
-                        <button
-                            onClick={() => setActiveTab("preview")}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === "preview" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                                }`}
-                        >
-                            <Eye className="w-4 h-4" />
-                            Xem trước
-                        </button>
+    useEffect(() => {
+        if (editingDetail) {
+            setPost({
+                title: editingDetail.title,
+                banner: editingDetail.banner,
+                topic: editingDetail.topic,
+            })
+            setContents(editingDetail.contents)
+        }
+    }, [editingDetail])
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Header Section */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-4xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 rounded-lg">
+                                    <BookOpen className="w-8 h-8 text-blue-600" />
+                                </div>
+                                {editingPostId ? "Edit Blog Post" : "Create New Blog Post"}
+                            </h1>
+                            <p className="text-gray-600 text-lg">
+                                {editingPostId
+                                    ? "Update your blog post and preview changes before saving"
+                                    : "Create and preview your blog post before publishing"}
+                            </p>
+                        </div>
+                        {editingPostId && (
+                            <Button variant="outline" onClick={resetForm} className="flex items-center gap-2 bg-transparent">
+                                <Plus className="w-4 h-4" />
+                                New Post
+                            </Button>
+                        )}
                     </div>
 
-                    {activeTab === "edit" && (
-                        <div className="space-y-6">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Basic Information */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2">
-                                            <FileText className="w-5 h-5" />
-                                            Thông tin cơ bản
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="title" className="flex items-center gap-2">
-                                                <Type className="w-4 h-4" />
-                                                Tiêu đề bài viết
-                                            </Label>
-                                            <Input
-                                                id="title"
-                                                name="title"
-                                                value={post.title}
-                                                onChange={handlePostChange}
-                                                placeholder="Nhập tiêu đề hấp dẫn cho bài viết của bạn"
-                                                required
-                                                className="text-lg"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="banner" className="flex items-center gap-2">
-                                                <ImageIcon className="w-4 h-4" />
-                                                Ảnh bìa (URL)
-                                            </Label>
-                                            <Input
-                                                id="banner"
-                                                name="banner"
-                                                value={post.banner}
-                                                onChange={handlePostChange}
-                                                placeholder="https://example.com/image.jpg"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label htmlFor="topic" className="flex items-center gap-2">
-                                                <Tag className="w-4 h-4" />
-                                                Chủ đề
-                                            </Label>
-                                            <Input
-                                                id="topic"
-                                                name="topic"
-                                                value={post.topic}
-                                                onChange={handlePostChange}
-                                                placeholder="Ví dụ: Công nghệ, Du lịch, Ẩm thực..."
-                                                required
-                                            />
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Content Blocks */}
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex items-center justify-between">
-                                            <CardTitle>Nội dung bài viết</CardTitle>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={addContent}
-                                                className="flex items-center gap-2 bg-transparent"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                                Thêm khối nội dung
-                                            </Button>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        {contents.map((content, idx) => (
-                                            <Card key={idx} className="relative">
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <h4 className="text-sm font-medium text-gray-700">Khối nội dung {idx + 1}</h4>
-                                                        {contents.length > 1 && (
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => removeContent(idx)}
-                                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                            >
-                                                                <X className="w-4 h-4" />
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </CardHeader>
-                                                <CardContent className="space-y-3 pt-0">
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor={`header-${idx}`}>Tiêu đề phụ</Label>
-                                                        <Input
-                                                            id={`header-${idx}`}
-                                                            value={content.header}
-                                                            onChange={(e) => handleContentChange(idx, "header", e.target.value)}
-                                                            placeholder="Tiêu đề cho phần này (tùy chọn)"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor={`body-${idx}`}>Nội dung</Label>
-                                                        <Textarea
-                                                            id={`body-${idx}`}
-                                                            value={content.body}
-                                                            onChange={(e) => handleContentChange(idx, "body", e.target.value)}
-                                                            placeholder="Viết nội dung cho phần này..."
-                                                            className="min-h-[120px] resize-y"
-                                                        />
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor={`photo-${idx}`}>Ảnh minh họa (URL)</Label>
-                                                        <Input
-                                                            id={`photo-${idx}`}
-                                                            value={content.photo}
-                                                            onChange={(e) => handleContentChange(idx, "photo", e.target.value)}
-                                                            placeholder="https://example.com/image.jpg (tùy chọn)"
-                                                        />
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-
-                                {/* Submit Section */}
-                                <Card>
-                                    <CardContent className="pt-6">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => setActiveTab("preview")}
-                                                    className="flex items-center gap-2"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                    Xem trước
-                                                </Button>
-                                            </div>
-                                            <Button type="submit" disabled={loading} className="flex items-center gap-2 min-w-[120px]">
-                                                {loading ? "Đang đăng..." : "Đăng bài"}
-                                            </Button>
-                                        </div>
-                                        {msg && (
-                                            <div
-                                                className={`mt-4 p-3 rounded-md text-sm font-medium ${msg.includes("thành công")
-                                                        ? "bg-green-50 text-green-800 border border-green-200"
-                                                        : "bg-red-50 text-red-800 border border-red-200"
-                                                    }`}
-                                            >
-                                                {msg}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </form>
+                    {editingPostId && (
+                        <div className="mt-4">
+                            <Badge variant="secondary" className="text-sm">
+                                <Edit3 className="w-3 h-3 mr-1" />
+                                Editing Post ID: {editingPostId}
+                            </Badge>
                         </div>
+                    )}
+                </div>
+
+                {/* Navigation Tabs */}
+                <Card className="mb-6">
+                    <CardContent className="p-6">
+                        <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl max-w-fit">
+                            <button
+                                onClick={() => setActiveTab("recent")}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === "recent"
+                                    ? "bg-white text-blue-600 shadow-md ring-1 ring-blue-100"
+                                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <Clock className="w-4 h-4" />
+                                Recent Posts
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("edit")}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === "edit"
+                                    ? "bg-white text-blue-600 shadow-md ring-1 ring-blue-100"
+                                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <Edit3 className="w-4 h-4" />
+                                Editor
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("preview")}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === "preview"
+                                    ? "bg-white text-blue-600 shadow-md ring-1 ring-blue-100"
+                                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                                    }`}
+                            >
+                                <Eye className="w-4 h-4" />
+                                Preview
+                            </button>
+
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Tab Content */}
+                <div className="space-y-6">
+                    {activeTab === "edit" && (
+                        <PostEditForm
+                            post={post}
+                            contents={contents}
+                            loading={loading}
+                            msg={msg}
+                            onPostChange={handlePostChange}
+                            onContentChange={handleContentChange}
+                            addContent={addContent}
+                            removeContent={removeContent}
+                            onSubmit={handleSubmit}
+                            setActiveTab={setActiveTab}
+                            isEditing={!!editingPostId}
+                        />
                     )}
 
                     {activeTab === "preview" && (
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-semibold">Xem trước bài viết</h2>
-                                <div className="flex items-center gap-2">
-                                    <Button variant="outline" onClick={() => setActiveTab("edit")} className="flex items-center gap-2">
-                                        <Edit3 className="w-4 h-4" />
-                                        Chỉnh sửa
-                                    </Button>
-                                    <Button onClick={handleSubmit} disabled={loading} className="flex items-center gap-2">
-                                        {loading ? "Đang đăng..." : "Đăng bài"}
-                                    </Button>
-                                </div>
-                            </div>
-                            <BlogPostPreview post={post} contents={contents} />
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Eye className="w-5 h-5 text-blue-600" />
+                                            Blog Post Preview
+                                        </CardTitle>
+                                        <div className="flex items-center gap-3">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setActiveTab("edit")}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Edit3 className="w-4 h-4" />
+                                                Back to Editor
+                                            </Button>
+                                            <Button
+                                                onClick={handleSubmit}
+                                                disabled={loading}
+                                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                        {editingPostId ? "Updating..." : "Publishing..."}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileText className="w-4 h-4" />
+                                                        {editingPostId ? "Update Post" : "Publish Post"}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <Separator />
+                                <CardContent className="p-0">
+                                    <BlogPostPreview post={post} contents={contents} />
+                                </CardContent>
+                            </Card>
+
                             {msg && (
-                                <div
-                                    className={`p-3 rounded-md text-sm font-medium ${msg.includes("thành công")
-                                            ? "bg-green-50 text-green-800 border border-green-200"
-                                            : "bg-red-50 text-red-800 border border-red-200"
+                                <Card
+                                    className={`border-l-4 ${msg.includes("successfully") || msg.includes("success")
+                                        ? "border-l-green-500 bg-green-50"
+                                        : "border-l-red-500 bg-red-50"
                                         }`}
                                 >
-                                    {msg}
-                                </div>
+                                    <CardContent className="p-4">
+                                        <div
+                                            className={`flex items-center gap-2 text-sm font-medium ${msg.includes("successfully") || msg.includes("success") ? "text-green-800" : "text-red-800"
+                                                }`}
+                                        >
+                                            <div
+                                                className={`w-2 h-2 rounded-full ${msg.includes("successfully") || msg.includes("success") ? "bg-green-500" : "bg-red-500"
+                                                    }`}
+                                            />
+                                            {msg}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             )}
                         </div>
+                    )}
+
+                    {activeTab === "recent" && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Clock className="w-5 h-5 text-blue-600" />
+                                    Recent Blog Posts
+                                </CardTitle>
+                                <p className="text-gray-600">View and edit your recently published blog posts</p>
+                            </CardHeader>
+                            <Separator />
+                            <CardContent className="p-6">
+                                <RecentPostList onEdit={handleEditPost} />
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
             </div>
