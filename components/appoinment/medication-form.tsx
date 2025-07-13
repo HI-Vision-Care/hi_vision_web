@@ -32,6 +32,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetAllArvs } from "@/services/arv/hooks";
 import { useCreatePrescription } from "@/services/prescription/hooks";
 import { useGetAllRegimensArv } from "@/services/regimen/hooks";
+import { DURATION_OPTIONS } from "@/constants";
 
 interface MedicationFormProps {
   initialPatientId: string;
@@ -60,6 +61,7 @@ export default function MedicationForm({
   const { mutate: createPrescription, isPending } =
     useCreatePrescription(onBack);
   const doctorName = prescribedBy || "";
+  console.log(prescribedBy);
 
   const handleArvChange = (
     idx: number,
@@ -404,15 +406,47 @@ export default function MedicationForm({
                           <Label className="text-sm font-semibold text-gray-700">
                             Duration (days) *
                           </Label>
-                          <Input
-                            placeholder="e.g., 30"
-                            type="number"
-                            value={row.duration}
-                            onChange={(e) =>
-                              handleArvChange(idx, "duration", e.target.value)
+                          <Select
+                            value={
+                              DURATION_OPTIONS.includes(row.duration)
+                                ? row.duration
+                                : "Other"
                             }
-                            className="bg-white border-gray-300"
-                          />
+                            onValueChange={(value) => {
+                              if (value === "Other") {
+                                handleArvChange(idx, "duration", "");
+                              } else {
+                                handleArvChange(idx, "duration", value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-white border-gray-300">
+                              <SelectValue placeholder="Select duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DURATION_OPTIONS.map((d) => (
+                                <SelectItem key={d} value={d}>
+                                  {d === "Other"
+                                    ? "Other (enter manually)"
+                                    : `${d} days`}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {(!DURATION_OPTIONS.includes(row.duration) ||
+                            row.duration === "") && (
+                            <Input
+                              placeholder="Enter duration (days)"
+                              type="number"
+                              value={row.duration}
+                              onChange={(e) =>
+                                handleArvChange(idx, "duration", e.target.value)
+                              }
+                              className="bg-white border-gray-300 mt-2"
+                              min={1}
+                              max={365}
+                            />
+                          )}
                         </div>
                       </div>
 

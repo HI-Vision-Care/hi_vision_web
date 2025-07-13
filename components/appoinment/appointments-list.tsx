@@ -26,7 +26,6 @@ interface AppointmentListProps {
 export default function AppointmentsList({
   onAppointmentSelect,
 }: AppointmentListProps) {
-  // Lấy accountId → doctorProfile → doctorID → appointments
   const accountId = useAccountId();
   const { data: doctorProfile, isLoading: isProfileLoading } =
     useGetDoctorProfile(accountId || "");

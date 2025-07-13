@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -228,7 +227,7 @@ export default function DoctorDashboard() {
           {currentView === "medications" &&
             (selectedMedication || isCreatingMedication) && (
               <MedicationForm
-                onBack={handleBackToList}
+                onBack={() => setCurrentView("appointments")}
                 initialPatientId={selectedPatientId || ""}
                 prescribedBy={prescribedBy}
               />
