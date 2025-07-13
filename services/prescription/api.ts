@@ -2,6 +2,7 @@ import axiosInstance from "@/config/axios";
 import {
   AddArvToPresPayloadList,
   AddArvToPresResponse,
+  ArvPrescriptionListResponse,
   PrescriptionCreatePayload,
   PrescriptionResponse,
 } from "./types";
@@ -30,8 +31,8 @@ export async function addArvToPrescription(
 
 export async function getArvPrescriptionsByPatientId(
   patientId: string
-): Promise<AddArvToPresResponse[]> {
-  const { data } = await axiosInstance.get<AddArvToPresResponse[]>(
+): Promise<ArvPrescriptionListResponse> {
+  const { data } = await axiosInstance.get<ArvPrescriptionListResponse>(
     `/prescription/arv/${patientId}`
   );
   return data;

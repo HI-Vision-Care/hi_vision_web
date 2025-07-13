@@ -61,7 +61,7 @@ export default function AppointmentDetail({
   } = useMedicalRecordByAppointmentId(appointment.appointmentID);
 
   const {
-    data: arvPrescriptions = [],
+    data: arvPrescriptions,
     isLoading: isArvLoading,
     error: arvError,
   } = useArvPrescriptionsByPatientId(patientId);
@@ -71,6 +71,8 @@ export default function AppointmentDetail({
   const underlyingDiseases = appointment.patient?.underlyingDiseases || [];
 
   const isAnonymous = appointment.isAnonymous;
+
+  console.log("arvPrescriptions", arvPrescriptions);
 
   return (
     <div className="space-y-6">
@@ -379,10 +381,7 @@ export default function AppointmentDetail({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span role="img" aria-label="pill">
-                  <Pill className="h-5 w-5" />
-                </span>{" "}
-                ARV Prescriptions
+                <Pill className="h-5 w-5" /> ARV Prescriptions
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -392,60 +391,62 @@ export default function AppointmentDetail({
                 <div className="text-red-500">
                   Failed to load ARV prescriptions.
                 </div>
-              ) : arvPrescriptions.length === 0 ? (
+              ) : !arvPrescriptions?.arvList?.length ? (
                 <div>No ARV prescriptions found.</div>
               ) : (
                 <div className="space-y-4">
-                  {arvPrescriptions.map((item) => (
-                    <div key={item.id} className="border rounded-lg p-3">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  {arvPrescriptions.arvList.map((arv, idx) => (
+                    <div
+                      key={arv.arvId || idx}
+                      className="border rounded-lg p-3"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
-                          <div className="font-semibold text-lg text-primary">
-                            {item.arv?.genericName || "Unknown Drug"}
-                            {item.arv?.dosageStrength ? (
-                              <span className="ml-2 text-xs text-muted-foreground">
-                                {item.arv.dosageStrength}
+                          <div className="font-semibold text-lg text-primary flex items-center gap-2">
+                            {arv.genericName || "Unknown Drug"}
+                            {arv.dosageStrength && (
+                              <span className="text-xs text-muted-foreground">
+                                ({arv.dosageStrength})
                               </span>
-                            ) : null}
+                            )}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Class: {item.arv?.drugClass || "—"} • Route:{" "}
-                            {item.arv?.admRoute || "—"}
+                            Class: {arv.drugClass || "—"}
+                            {" • "}Route: {arv.admRoute || "—"}
                           </div>
                           <div className="text-sm mt-1">
                             <span className="font-medium">Dosage:</span>{" "}
-                            {item.dosage || item.arv?.rcmDosage || "--"}
-                            {item.duration ? (
+                            {arv.rcmDosage || "--"}
+                          </div>
+                          <div className="text-xs mt-1">
+                            Funding: {arv.fundingSource || "--"}
+                            {arv.regimenLevel && (
                               <>
-                                {" • "}
-                                <span className="font-medium">
-                                  Duration:
-                                </span>{" "}
-                                {item.duration} day
-                                {Number(item.duration) > 1 ? "s" : ""}
+                                {" • "}Level: {arv.regimenLevel}
                               </>
-                            ) : null}
+                            )}
                           </div>
                         </div>
                         <div className="mt-2 md:mt-0 text-right">
                           <div className="text-xs text-muted-foreground">
                             Prescribed by:{" "}
                             <span className="font-semibold">
-                              {item.prescription?.prescribeBy || "--"}
+                              {arvPrescriptions.prescription?.prescribeBy ||
+                                "--"}
                             </span>
                           </div>
                           <div className="text-xs text-muted-foreground">
                             Date:{" "}
-                            {item.prescription?.date
+                            {arvPrescriptions.prescription?.date
                               ? new Date(
-                                  item.prescription.date
+                                  arvPrescriptions.prescription.date
                                 ).toLocaleDateString("vi-VN")
                               : "--"}
                           </div>
                           <div className="text-xs">
                             Status:{" "}
                             <span className="font-medium">
-                              {item.prescription?.status || "--"}
+                              {arvPrescriptions.prescription?.status || "--"}
                             </span>
                           </div>
                         </div>

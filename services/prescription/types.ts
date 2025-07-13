@@ -95,3 +95,8 @@ export interface AddArvToPresResponse {
   prescription: PrescriptionSimple;
   arv: Arv;
 }
+
+export interface ArvPrescriptionListResponse {
+  prescription: PrescriptionSimple;
+  arvList: Arv[];
+}
