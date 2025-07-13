@@ -3,19 +3,20 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import { Send, Phone, Video, MoreVertical, Search, Paperclip, Smile } from "lucide-react"
+import { Send, MoreVertical, Search, Paperclip, Smile } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Client } from "@stomp/stompjs"
 import SockJS from "sockjs-client"
-import { completeConsultation } from "@/services/consultant/consultant"
+import { completeConsultation, getOnGoingConsultations } from "@/services/consultant/consultant"
 import { useAccountId } from "@/hooks/useAccountId"
+import { ConsultationRequire } from "@/services/consultant/types"
 
 interface Message {
     id: string
-    senderId: string
+    accountID: string
     senderName: string
     content: string
     timestamp: Date
@@ -24,38 +25,84 @@ interface Message {
 }
 
 interface ChatUser {
-    id: string
+    accountID: string
     name: string
     avatar?: string
     isOnline: boolean
     lastMessage?: string
     lastMessageTime?: string
     unreadCount?: number
-}
-
-interface ConsultationRequire {
-    accountID: string
-    name: string
     note: string
 }
+
+
 
 interface ChatInterfaceProps {
     onUserSelect?: (user: ChatUser) => void
     selectedUser?: ChatUser | null
-    selectedPatient?: ConsultationRequire | null
     onConsultationComplete?: () => void;
+    selectedPatientRequire: ConsultationRequire | null;
 }
 
-export default function ChatInterface({ onUserSelect, selectedUser, selectedPatient , onConsultationComplete }: ChatInterfaceProps) {
+export default function ChatInterface({ onUserSelect, selectedPatientRequire, onConsultationComplete }: ChatInterfaceProps) {
     const [chatUsers, setChatUsers] = useState<ChatUser[]>([])
     const staffAccountId = useAccountId();
     const [messages, setMessages] = useState<Message[]>([])
-
+    const [selectedPatient, setSelectedPatient] = useState<ChatUser | null>(null)
     const [currentMessage, setCurrentMessage] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
-    const [activeChat, setActiveChat] = useState<ChatUser | null>(chatUsers[0])
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const stompClientRef = useRef<Client | null>(null)
+
+    useEffect(() => {
+        if (!staffAccountId) return;
+
+        getOnGoingConsultations(staffAccountId)
+            .then((data) => {
+                if (!data) return;
+                const users: ChatUser[] = data.map((item) => ({
+                    accountID: item.accPatient.id,
+                    name: item.accPatient.username,
+                    avatar: item.accPatient.avatar,
+                    isOnline: true,
+                    note: item.note,
+                    lastMessageTime: item.createdAt,
+                    unreadCount: 0,
+                }));
+                setChatUsers(users);
+
+                // Chọn luôn patient đầu tiên nếu có
+                if (users.length > 0) {
+                    setSelectedPatient(users[0]);
+                }
+            })
+            .catch((err) => {
+                console.error("Lỗi lấy danh sách khách hàng đang nhắn tin:", err);
+            });
+    }, [staffAccountId]);
+
+
+    // Convert ConsultationRequire → ChatUser
+    useEffect(() => {
+        if (!selectedPatientRequire) return;
+        const newUser: ChatUser = {
+            accountID: selectedPatientRequire.accountID,
+            name: selectedPatientRequire.name,
+            avatar: "/placeholder.svg",      // Có thể truyền từ cha nếu muốn
+            isOnline: true,
+            note: selectedPatientRequire.note,
+            lastMessage: selectedPatientRequire.note,
+            lastMessageTime: selectedPatientRequire.createdAt,
+            unreadCount: 0,
+        };
+        // Nếu user này chưa có trong chatUsers thì thêm vào
+        setChatUsers((prev) => {
+            if (prev.some(u => u.accountID === newUser.accountID)) return prev;
+            return [newUser, ...prev];
+        });
+        setSelectedPatient(newUser);
+    }, [selectedPatientRequire]);
+
     const [hasMounted, setHasMounted] = useState(false);
     useEffect(() => { setHasMounted(true); }, []);
     // Auto scroll to bottom when new messages arrive
@@ -65,24 +112,23 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
 
     // Add new patient to chat when selected from queue
     useEffect(() => {
-        if (selectedPatient && !chatUsers.find((u) => u.id === selectedPatient.accountID)) {
+        if (selectedPatient && !chatUsers.find((u) => u.accountID === selectedPatient.accountID)) {
             const newChatUser: ChatUser = {
-                id: selectedPatient.accountID,
+                accountID: selectedPatient.accountID,
                 name: selectedPatient.name,
                 avatar: "/placeholder.svg?height=40&width=40",
                 isOnline: true,
-                lastMessage: selectedPatient.note || "Khách hàng cần tư vấn",
+                note: selectedPatient.note || "Khách hàng cần tư vấn",
                 lastMessageTime: "now",
                 unreadCount: 1,
             }
             setChatUsers((prev) => [newChatUser, ...prev])
-            setActiveChat(newChatUser)
         }
     }, [selectedPatient, chatUsers])
 
     // WebSocket connection for real-time chat
     useEffect(() => {
-        if (!activeChat || !selectedPatient) return
+        if (!selectedPatient) return
 
         const socket = new SockJS("http://192.168.2.7:8080/HiVision/ws")
         const stompClient = new Client({
@@ -101,7 +147,7 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
                     // Tạo message FE với field đúng kiểu
                     const msg: Message = {
                         id: Date.now().toString(), // Hoặc lấy id BE nếu có
-                        senderId: "", // Nếu BE có thì lấy, không thì để rỗng hoặc dùng senderName
+                        accountID: msgFromServer.staffAccountId, // Nếu BE có thì lấy, không thì để rỗng hoặc dùng senderName
                         senderName: msgFromServer.senderName,
                         content: msgFromServer.message, // Map đúng field!
                         timestamp: msgFromServer.date ? new Date(msgFromServer.date) : new Date(),
@@ -122,13 +168,14 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
         return () => {
             stompClient.deactivate()
         }
-    }, [activeChat, selectedPatient])
+    }, [selectedPatient])
 
     const sendMessage = () => {
-        if (!currentMessage.trim() || !activeChat || !stompClientRef.current || !selectedPatient) return
+        if (!currentMessage.trim() || !stompClientRef.current || !selectedPatient) return
 
         const payload = {
             senderName: "Tư vấn viên",
+            accountID: staffAccountId,
             message: currentMessage, // ĐÚNG FIELD CHO BE
             status: "", // Nếu cần
             date: new Date().toISOString()
@@ -146,7 +193,7 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
         // Update last message in chat list
         setChatUsers((prev) =>
             prev.map((user) =>
-                user.id === activeChat.id ? { ...user, lastMessage: currentMessage, lastMessageTime: "now" } : user,
+                user.accountID === selectedPatient.accountID ? { ...user, lastMessage: currentMessage, lastMessageTime: "now" } : user,
             ),
         )
     }
@@ -170,11 +217,11 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
 
     useEffect(() => {
         if (!chatUsers.length) {
-            setActiveChat(null);
-        } else if (!activeChat || !chatUsers.find(u => u.id === activeChat.id)) {
-            setActiveChat(chatUsers[0]);
+            setSelectedPatient(null);
+        } else if (!selectedPatient || !chatUsers.find(u => u.accountID === selectedPatient.accountID)) {
+            setSelectedPatient(chatUsers[0]);
         }
-    }, [chatUsers, activeChat]);
+    }, [chatUsers, selectedPatient]);
 
 
     return (
@@ -206,12 +253,12 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
                 <div className="flex-1 overflow-y-auto">
                     {filteredUsers.map((user) => (
                         <div
-                            key={user.id}
+                            key={user.accountID}
                             onClick={() => {
-                                setActiveChat(user)
+                                setSelectedPatient(user)
                                 onUserSelect?.(user)
                             }}
-                            className={`p-3 hover:bg-gray-800 cursor-pointer border-l-2 ${activeChat?.id === user.id ? "bg-gray-800 border-blue-500" : "border-transparent"
+                            className={`p-3 hover:bg-gray-800 cursor-pointer border-l-2 ${selectedPatient?.accountID === user.accountID ? "bg-gray-800 border-blue-500" : "border-transparent"
                                 }`}
                         >
                             <div className="flex items-center space-x-3">
@@ -244,23 +291,23 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
 
             {/* Chat Area */}
             <div className="flex-1 flex flex-col">
-                {activeChat ? (
+                {selectedPatient ? (
                     <>
                         {/* Chat Header */}
                         <div className="p-4 border-b bg-white flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <div className="relative">
                                     <Avatar className="w-10 h-10">
-                                        <AvatarImage src={activeChat.avatar || "/placeholder.svg"} />
-                                        <AvatarFallback>{activeChat.name.charAt(0)}</AvatarFallback>
+                                        <AvatarImage src={selectedPatient.avatar || "/placeholder.svg"} />
+                                        <AvatarFallback>{selectedPatient.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    {activeChat.isOnline && (
+                                    {selectedPatient.isOnline && (
                                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold">{activeChat.name}</h3>
-                                    <p className="text-sm text-gray-500">{activeChat.isOnline ? "Active now" : "Offline"}</p>
+                                    <h3 className="font-semibold">{selectedPatient.name}</h3>
+                                    <p className="text-sm text-gray-500">{selectedPatient.isOnline ? "Active now" : "Offline"}</p>
                                 </div>
                             </div>
 
@@ -269,17 +316,18 @@ export default function ChatInterface({ onUserSelect, selectedUser, selectedPati
                                     variant="destructive"
                                     size="sm"
                                     onClick={async () => {
-                                        if (!activeChat || !staffAccountId) return;
+                                        if (!selectedPatient || !staffAccountId) return;
                                         try {
-                                            await completeConsultation(staffAccountId, activeChat.id);
+                                            await completeConsultation(staffAccountId, selectedPatient.accountID);
                                             setChatUsers(prev => {
-                                                const newList = prev.filter(user => user.id !== activeChat.id);
+                                                const newList = prev.filter(user => user.accountID !== selectedPatient.accountID);
                                                 // Đặt activeChat mới đúng theo newList
-                                                setActiveChat(newList.length > 0 ? newList[0] : null);
+                                                setSelectedPatient(newList.length > 0 ? newList[0] : null);
+
                                                 return newList;
                                             });
                                             setMessages([]);
-                                           onConsultationComplete?.(); 
+                                            onConsultationComplete?.();
                                             alert("Tư vấn đã kết thúc!");
                                         } catch (err) {
                                             alert("Kết thúc thất bại!");

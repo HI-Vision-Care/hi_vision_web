@@ -5,7 +5,6 @@ import { Calendar, Clock, Users, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { ConsultationRequire } from "@/services/auth/types"
 import { Client } from "@stomp/stompjs"
 import SockJS from "sockjs-client"
 import axiosInstance from "@/config/axios"
@@ -13,6 +12,7 @@ import ChatInterface from "@/components/consultant/chat-interface"
 import ConsultationRequireQueue from "@/components/consultant/consultationqueue"
 import { useRef } from "react"
 import { useAccountId } from "@/hooks/useAccountId"
+import { ConsultationRequire } from "@/services/consultant/types"
 // Mock data for consultation sessions
 const mockSessions = [
     {
@@ -235,7 +235,7 @@ export default function ConsultationDashboard() {
                     {/* Chat Interface */}
                     <div className="lg:col-span-2">
                         <ChatInterface
-                            selectedPatient={selectedPatient}
+                            selectedPatientRequire={selectedPatient}
                             onConsultationComplete={() => setSelectedPatient(null)}
                         />
                     </div>

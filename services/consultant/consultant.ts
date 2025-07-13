@@ -1,5 +1,5 @@
 import axiosInstance from "@/config/axios";
-import { ConsultationRequest } from "../auth/types";
+import { ConsultationRequest, OnGoingConsultation } from "./types";
 
 // Nếu backend trả về chính xác { phone, name, note }
 export async function bookConsultationGuest(
@@ -14,4 +14,9 @@ export async function bookConsultationGuest(
 
 export async function completeConsultation(staffID: string, patientID: string) {
     return axiosInstance.patch(`/consultation/complete/${staffID}?patientID=${patientID}`);
+}
+
+export async function getOnGoingConsultations(staffID: string): Promise<OnGoingConsultation[]> {
+  const res = await axiosInstance.get(`/consultation/on-going/${staffID}`);
+  return res.data;
 }
