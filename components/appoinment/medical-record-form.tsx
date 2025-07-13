@@ -42,14 +42,6 @@ import { hivTestTypes, UNIT_OPTIONS } from "@/constants";
 import { validateLabResult, validateMedicalRecord } from "@/utils/validate";
 import { toast } from "sonner";
 
-function isoToLocalDatetime(isoString: string) {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
-}
-
 export default function MedicalRecordForm({
   appointmentId,
   record,
@@ -82,7 +74,6 @@ export default function MedicalRecordForm({
     resultValue: "",
     unit: "",
     referenceRange: "",
-    testDate: new Date().toISOString().split("T")[0],
     performedBy: "",
   });
 
@@ -125,8 +116,7 @@ export default function MedicalRecordForm({
         resultValue: labResult.resultValue!,
         unit: labResult.unit || "",
         referenceRange: labResult.referenceRange || "",
-        testDate:
-          labResult.testDate && new Date(labResult.testDate).toISOString(),
+        testDate: new Date().toISOString(),
         performedBy: doctorName || "",
       },
       {
@@ -290,7 +280,7 @@ export default function MedicalRecordForm({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4">
                         <div>
                           <Label htmlFor="testType">Test Type</Label>
                           <Select
@@ -310,22 +300,6 @@ export default function MedicalRecordForm({
                               ))}
                             </SelectContent>
                           </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="testDate">Test Date</Label>
-                          <Input
-                            id="testDate"
-                            type="datetime-local"
-                            value={
-                              labResult.testDate
-                                ? isoToLocalDatetime(labResult.testDate) // khi edit, convert ISO về local
-                                : ""
-                            }
-                            onChange={(e) => {
-                              // Lưu lại đúng local string cho input
-                              handleLabResultChange("testDate", e.target.value);
-                            }}
-                          />
                         </div>
                       </div>
 
