@@ -2,20 +2,20 @@
 import { useState } from "react"
 import type React from "react"
 
-import Image from "next/image"
-
 import { Eye, Edit3, Plus, X, ImageIcon, FileText, Tag, Type } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+
+// Import your BlogPostPreview component
 
 // Import types từ project của bạn
 import type { BlogPostRequest, ContentRequest } from "@/services/Post/types"
 import { useCreateBlogPost } from "@/services/Post/hooks"
 import { useAccountId } from "@/hooks/useAccountId"
+import BlogPostPreview from "@/components/post/preview"
 
 const defaultContent: ContentRequest = {
     header: "",
@@ -73,65 +73,6 @@ export default function NewPostPage() {
             setLoading(false)
         }
     }
-
-    const PreviewComponent = () => (
-        <div className="max-w-4xl mx-auto">
-            <article className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                {/* Banner */}
-                {post.banner && (
-                    <div className="aspect-video w-full bg-gray-100 overflow-hidden relative">
-                        <Image
-                            src={post.banner || "/placeholder.svg"}
-                            alt="Banner"
-                            fill
-                            className="object-cover"
-                            onError={(e) => {
-                                const target = e.target as HTMLImageElement
-                                target.src = "/placeholder.svg?height=400&width=800"
-                            }}
-                        />
-                    </div>
-                )}
-
-                {/* Header */}
-                <div className="p-6 border-b">
-                    <div className="flex items-center gap-2 mb-3">
-                        {post.topic && <Badge variant="secondary">{post.topic}</Badge>}
-                    </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{post.title || "Tiêu đề bài viết"}</h1>
-                    <div className="text-sm text-gray-500">{new Date().toLocaleDateString("vi-VN")}</div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 space-y-8">
-                    {contents.map((content, idx) => (
-                        <div key={idx} className="space-y-4">
-                            {content.header && <h2 className="text-xl font-semibold text-gray-800">{content.header}</h2>}
-                            {content.body && (
-                                <div className="prose prose-gray max-w-none">
-                                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{content.body}</p>
-                                </div>
-                            )}
-                            {content.photo && (
-                                <div className="my-6 relative aspect-video">
-                                    <Image
-                                        src={content.photo || "/placeholder.svg"}
-                                        alt={`Illustration ${idx + 1}`}
-                                        fill
-                                        className="object-cover rounded-lg shadow-sm"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement
-                                            target.src = "/placeholder.svg?height=300&width=600"
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </article>
-        </div>
-    )
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -344,7 +285,7 @@ export default function NewPostPage() {
                                     </Button>
                                 </div>
                             </div>
-                            <PreviewComponent />
+                            <BlogPostPreview post={post} contents={contents} />
                             {msg && (
                                 <div
                                     className={`p-3 rounded-md text-sm font-medium ${msg.includes("thành công")
