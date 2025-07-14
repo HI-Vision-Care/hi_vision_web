@@ -37,3 +37,12 @@ export async function getArvPrescriptionsByPatientId(
   );
   return data;
 }
+
+export const getPreARVPrescription = async (
+  appointmentID: string
+): Promise<ArvPrescriptionListResponse> => {
+  const response = await axiosInstance.get(
+    `/prescription/pre-arv/${appointmentID}`
+  );
+  return response.data;
+};

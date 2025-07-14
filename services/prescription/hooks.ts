@@ -3,12 +3,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   AddArvToPresPayloadList,
   AddArvToPresResponse,
+  ArvPrescriptionListResponse,
   PrescriptionCreatePayload,
 } from "./types";
 import {
   addArvToPrescription,
   createPrescription,
   getArvPrescriptionsByPatientId,
+  getPreARVPrescription,
 } from "./api";
 import { toast } from "sonner";
 
@@ -61,5 +63,13 @@ export function useArvPrescriptionsByPatientId(
     queryFn: () => getArvPrescriptionsByPatientId(patientId),
     enabled: !!patientId,
     ...options,
+  });
+}
+
+export function usePreARVPrescription(appointmentID: string) {
+  return useQuery<ArvPrescriptionListResponse>({
+    queryKey: ["pre-arv-prescription", appointmentID],
+    queryFn: () => getPreARVPrescription(appointmentID),
+    enabled: !!appointmentID,
   });
 }
