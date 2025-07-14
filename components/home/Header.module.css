@@ -1,0 +1,21 @@
+.customUnderline {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.customUnderline::after {
+  content: "";
+  position: absolute;
+  bottom: 0; /* nằm dưới chữ */
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: #60a5fa; /* Tailwind's blue-400 */
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.customUnderline:hover::after {
+  width: 70%;
+}

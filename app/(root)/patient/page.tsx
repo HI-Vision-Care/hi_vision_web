@@ -1,7 +1,12 @@
-import React from "react";
+import { FeaturesSection, HelpSection } from "@/components/home";
 
 const Home = () => {
-  return <div>Home</div>;
+  return (
+    <div>
+      <FeaturesSection />
+      <HelpSection />
+    </div>
+  );
 };
 
 export default Home;
