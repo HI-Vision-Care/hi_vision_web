@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, UserIcon, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import styles from "@/components/home/Header.module.css";
 import { desktopNav, mobileNav } from "@/constants";
 import {
   DropdownMenu,
@@ -89,9 +88,21 @@ const HeaderHome = () => {
           <Link
             key={item.href}
             href={item.href}
-            className={`${styles.customUnderline} custom-btn py-2 px-3`}
+            className="relative group inline-block cursor-pointer py-2 px-3"
           >
-            <h3>{item.label}</h3>
+            <h3 className="relative z-10">{item.label}</h3>
+            <span
+              className="
+      pointer-events-none
+      absolute left-1/2 bottom-0
+      h-[3px] w-0
+      bg-blue-400
+      transition-all duration-300 ease-in-out
+      -translate-x-1/2
+      group-hover:w-[70%]
+      rounded-full
+    "
+            ></span>
           </Link>
         ))}
 
