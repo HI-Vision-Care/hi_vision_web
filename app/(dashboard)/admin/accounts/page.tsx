@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -58,6 +57,8 @@ export default function Accounts() {
         return <Badge className="bg-blue-100 text-blue-800">Doctor</Badge>;
       case "PATIENT":
         return <Badge className="bg-green-100 text-green-800">Patient</Badge>;
+      case "STAFF":
+        return <Badge className="bg-orange-100 text-orange-400">Staff</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }

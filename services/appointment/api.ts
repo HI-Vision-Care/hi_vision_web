@@ -38,3 +38,19 @@ export const getAppointmentsByDoctorId = async (
   const res = await axiosInstance.get(`/doctor/view-appointment/${doctorID}`);
   return res.data;
 };
+
+export const cancelAppointmentByStaff = async (
+  appointmentId: string
+): Promise<void> => {
+  await axiosInstance.put(`/staff/cancel-appointment/${appointmentId}`);
+};
+
+export const updateAppointmentPaymentStatus = async (
+  appointmentId: string,
+  staffId: string
+): Promise<string> => {
+  const res = await axiosInstance.patch(
+    `/appointment/update-payment-status/${appointmentId}?staffId=${staffId}`
+  );
+  return res.data;
+};

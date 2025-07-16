@@ -3,12 +3,22 @@ export interface DoctorResponse {
   name: string;
   gender: string;
   specialty: string;
-  degrees: string;
-  avatar: string;
-  email: string;
-  phone: string;
-  status: "active" | "on_leave" | "inactive";
+  degrees?: string;
+  status?: "active" | "on_leave" | "inactive";
+  avatar?: string;
+  email?: string;
+  phone?: string;
+  account?: {
+    id: string;
+    username: string;
+    email?: string;
+    phone?: string;
+    avatar?: string;
+    role?: string;
+    isDeleted?: boolean;
+  };
 }
+
 // types.ts
 export interface DoctorUpdateRequest {
   fullName: string;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { SideBar, Header } from "@/components/admin";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,7 @@ export default function ManageDoctors() {
   const filteredDoctors = doctors.filter((doctor) => {
     const name = doctor.name ?? "";
     const specialty = doctor.specialty ?? "";
-    const email = doctor.email ?? "";
+    const email = doctor.account.email ?? "";
 
     const matchesSearch =
       name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,11 +178,11 @@ export default function ManageDoctors() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm text-gray-600 pt-2">
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-gray-400" />
-                        <span>{doctor.phone ?? "N/A"}</span>
+                        <span>{doctor.account.phone ?? "N/A"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-gray-400" />
-                        <span>{doctor.email ?? "N/A"}</span>
+                        <span>{doctor.account.email ?? "N/A"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <UserCheck className="w-4 h-4 text-gray-400" />

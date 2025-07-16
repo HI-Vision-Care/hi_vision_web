@@ -29,7 +29,6 @@ const HeaderHome = () => {
   const accountId = useAccountId();
   const { data: profile } = useGetUserProfile(accountId, role);
 
-  // Ưu tiên dùng avatar/info từ profile
   const avatarUrl =
     profile?.account?.avatar ||
     profile?.avatar || // nếu BE trả ra ở 2 chỗ khác nhau
@@ -61,6 +60,8 @@ const HeaderHome = () => {
     switch (role) {
       case "ADMIN":
         return "/admin";
+      case "STAFF":
+        return "/admin/appointments";
       case "DOCTOR":
         return "/doctor-dashboard";
       case "PATIENT":

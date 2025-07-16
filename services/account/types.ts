@@ -39,6 +39,19 @@ export interface PatientProfile {
   avatar: string;
 }
 
+export interface StaffProfile {
+  doctorID: string;
+  staffId?: string;
+  account: PatientAccount;
+  name: string;
+  dob: string; // ISO string
+  gender: string;
+  medNo: string;
+  medDate: string; // ISO string
+  medFac: string;
+  avatar: string;
+}
+
 export interface DoctorProfile {
   doctorID: string;
   account: AccountUI; // hoặc tương tự PatientProfile

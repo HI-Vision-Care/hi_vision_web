@@ -3,11 +3,13 @@
 // Import thêm:
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  cancelAppointmentByStaff,
   completeAppointment,
   confirmAppointmentByDoctor,
   getAllAppointments,
   getAppointmentsByDoctorId,
   updateAppointment,
+  updateAppointmentPaymentStatus,
 } from "./api";
 import { DoctorAppointment } from "@/types";
 import { Appointment } from "./types";
@@ -91,6 +93,47 @@ export function useCompleteAppointment(onSuccess?: () => void) {
         error?.response?.data?.message ||
           error?.message ||
           "Error completing appointment"
+      );
+    },
+  });
+}
+
+export function useCancelAppointmentByStaff() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (appointmentId: string) =>
+      cancelAppointmentByStaff(appointmentId),
+    onSuccess: () => {
+      toast.success("Appointment cancelled successfully!");
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    },
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.message || "Failed to cancel appointment!"
+      );
+    },
+  });
+}
+
+export function useUpdateAppointmentPaymentStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      appointmentId,
+      staffId,
+    }: {
+      appointmentId: string;
+      staffId: string;
+    }) => updateAppointmentPaymentStatus(appointmentId, staffId),
+    onSuccess: () => {
+      toast.success("Payment status updated!");
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+    },
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.message || "Failed to update payment status!"
       );
     },
   });
