@@ -29,7 +29,7 @@ export function middleware(req: NextRequest) {
   }
 
   // Phân quyền truy cập theo role
-  if (url.startsWith("/admin") && role !== "ADMIN") {
+  if (url.startsWith("/admin") && !(role === "ADMIN" || role === "STAFF")) {
     return NextResponse.redirect(new URL("/403", req.url));
   }
   if (url.startsWith("/doctor-dashboard") && role !== "DOCTOR") {

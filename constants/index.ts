@@ -14,6 +14,9 @@ import {
   UserCheck,
   Home,
   Calendar,
+  User2,
+  Pill,
+  LayoutDashboard,
 } from "lucide-react";
 
 //navigation sidebar doctor-dashboard
@@ -33,6 +36,35 @@ export const navigation = [
     icon: Clock,
     view: "schedule" as const,
   },
+];
+
+//Admin Sidebar
+
+export const adminNavigation = [
+  // { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Manage Accounts", href: "/admin/accounts", icon: User2 },
+  { name: "Manage Doctors", href: "/admin/doctors", icon: UserCheck },
+  { name: "All Patients", href: "/admin/patients", icon: Users },
+  { name: "ARV Regimens", href: "/admin/arv-regimens", icon: Pill },
+  { name: "Appointments", href: "/admin/appointments", icon: Calendar },
+  { name: "Consultants", href: "/admin/consultant", icon: Calendar },
+  {
+    name: "Post-Management",
+    href: "/admin/post-management",
+    icon: LayoutDashboard,
+  },
+  { name: "Shift Management", href: "/admin/shifts", icon: Clock },
+];
+
+export const staffNavigation = [
+  { name: "Appointments", href: "/admin/appointments", icon: Calendar },
+  { name: "Consultants", href: "/admin/consultant", icon: Calendar },
+  {
+    name: "Post-Management",
+    href: "/admin/post-management",
+    icon: LayoutDashboard,
+  },
+  { name: "Shift Management", href: "/admin/shifts", icon: Clock },
 ];
 
 //Routes
