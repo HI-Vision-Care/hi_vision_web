@@ -24,10 +24,8 @@ import {
 } from "@/services/appointment/hooks";
 import type { AppointmentDetailProps } from "@/types";
 import { APPOINTMENT_STATUS_COLORS } from "@/constants";
-import { useMedicalRecordByAppointmentId } from "@/services/doctor/hooks";
 import Image from "next/image";
 import { useArvPrescriptionsByPatientId } from "@/services/prescription/hooks";
-import MedicalRecordWithLabResults from "./medicalrecord-labresults";
 import { useState } from "react";
 import UnderlyingDiseasesModal from "./UnderlyingDiseasesModal";
 import MedicalRecordForm from "./medical-record-form";
@@ -53,8 +51,6 @@ export default function AppointmentDetail({
 }: AppointmentDetailProps) {
   const { mutate: confirmAppointment } = useConfirmAppointmentByDoctor(onBack);
   const { mutate: completeAppointment } = useCompleteAppointment(onBack);
-
-
 
   const {
     data: arvPrescriptions,
@@ -109,7 +105,8 @@ export default function AppointmentDetail({
           </Button>
         )}
         {appointment.status === "ONGOING" &&
-          !appointment.isPrescriptionCreated && (
+          !appointment.isPrescriptionCreated &&
+          appointment.isRecordCreated && (
             <Button
               variant="outline"
               className="bg-primary text-white hover:bg-primary/80"
@@ -230,25 +227,25 @@ export default function AppointmentDetail({
             </CardContent>
           </Card>
 
-          {/* Lab Results */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Medical Record
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-
-              <MedicalRecordForm
-                appointmentId={appointment.appointmentID}
-                record={null}
-                doctorName={appointment.doctor?.name || ""}
-                testItems={appointment.medicalService.testItems}
-              />
-
-            </CardContent>
-          </Card>
+          {/* Lab Results - Chỉ hiện khi status là ONGOING */}
+          {appointment.status === "ONGOING" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Medical Record
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MedicalRecordForm
+                  appointmentId={appointment.appointmentID}
+                  record={null}
+                  doctorName={appointment.doctor?.name || ""}
+                  testItems={appointment.medicalService.testItems}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -321,10 +318,10 @@ export default function AppointmentDetail({
                   {isAnonymous
                     ? "Hidden"
                     : appointment.patient?.dob
-                      ? new Date(appointment.patient.dob).toLocaleDateString(
+                    ? new Date(appointment.patient.dob).toLocaleDateString(
                         "vi-VN"
                       )
-                      : "N/A"}
+                    : "N/A"}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -346,10 +343,10 @@ export default function AppointmentDetail({
                     {isAnonymous
                       ? "Hidden"
                       : appointment.patient?.medDate
-                        ? new Date(
+                      ? new Date(
                           appointment.patient.medDate
                         ).toLocaleDateString("vi-VN")
-                        : "N/A"}
+                      : "N/A"}
                   </p>
                 </div>
               </div>
@@ -428,8 +425,8 @@ export default function AppointmentDetail({
                             Date:{" "}
                             {arvPrescriptions.prescription?.date
                               ? new Date(
-                                arvPrescriptions.prescription.date
-                              ).toLocaleDateString("vi-VN")
+                                  arvPrescriptions.prescription.date
+                                ).toLocaleDateString("vi-VN")
                               : "--"}
                           </div>
                           <div className="text-xs">
