@@ -32,17 +32,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetAllArvs } from "@/services/arv/hooks";
 import { useCreatePrescription } from "@/services/prescription/hooks";
 import { useGetAllRegimensArv } from "@/services/regimen/hooks";
-import { DURATION_OPTIONS } from "@/constants";
+import { appointmentStats, DURATION_OPTIONS } from "@/constants";
 
 interface MedicationFormProps {
-  initialPatientId: string;
+  AppontmentId: string;
   prescribedBy?: string;
   onSuccess?: () => void;
   onBack?: () => void;
 }
 
 export default function MedicationForm({
-  initialPatientId,
+  AppontmentId,
   prescribedBy,
   onSuccess,
   onBack,
@@ -84,14 +84,14 @@ export default function MedicationForm({
     );
 
   const handleSubmit = () => {
-    if (!initialPatientId) return alert("Thiếu thông tin bệnh nhân!");
+    if (! AppontmentId) return alert("Thiếu thông tin appointment!");
     if (arvRows.some((row) => !row.arvID || !row.dosage || !row.duration)) {
       return alert("Vui lòng nhập đầy đủ thông tin các thuốc!");
     }
     setSubmitting(true);
     createPrescription(
       {
-        patientId: initialPatientId,
+        AppointmentId:  AppontmentId,
         payload: {
           prescriptionRequest: { prescribeBy: doctorName },
           arvRequests: arvRows.map((row) => ({

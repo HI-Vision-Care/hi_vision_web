@@ -78,3 +78,50 @@ export const useCreateBlogPost = () => {
     },
   });
 };
+
+export function useHideBlogPost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (blogID: number) => {
+      await axiosInstance.patch(`/blog-post/hide/${blogID}`);
+      return blogID;
+    },
+    onSuccess: (blogID) => {
+      // Sau khi ẩn, cập nhật lại cache (nếu cần)
+      queryClient.invalidateQueries({ queryKey: ["blogPosts"] });
+      queryClient.invalidateQueries({ queryKey: ["blogPost", blogID] });
+    },
+  });
+}
+
+// PATCH /blog-post/show/{blogID}
+export function useShowBlogPost() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (blogID: number) => {
+      await axiosInstance.patch(`/blog-post/show/${blogID}`);
+      return blogID;
+    },
+    onSuccess: (blogID) => {
+      queryClient.invalidateQueries({ queryKey: ["blogPosts"] });
+      queryClient.invalidateQueries({ queryKey: ["blogPost", blogID] });
+    },
+  });
+}
+
+
+export const useDeleteBlogPost = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (blogID: number) => {
+      const response = await axiosInstance.delete(`/blog-post/${blogID}`)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blog-posts"] })
+    },
+  })
+}

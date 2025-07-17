@@ -3,522 +3,235 @@
 
 import { useState, useEffect } from "react";
 import {
-  ArrowLeft,
-  Save,
-  Plus,
-  Trash2,
-  Activity,
-  TestTube,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-
-import {
-  useCreateLabResult,
-  useCreateMedicalRecord,
-} from "@/services/doctor/hooks";
-
-import { LabResult, MedicalRecord, MedicalRecordFormProps } from "@/types";
-import { hivTestTypes, UNIT_OPTIONS } from "@/constants";
-import { validateLabResult, validateMedicalRecord } from "@/utils/validate";
+import { TestTube } from "lucide-react";
+import { useCreateMedicalRecord, useMedicalRecordByAppointmentId } from "@/services/doctor/hooks";
 import { toast } from "sonner";
+import { validateMedicalRecord } from "@/utils/validate";
+import { LabResult, MedicalRecordFormProps } from "@/types";
 
 export default function MedicalRecordForm({
   appointmentId,
   record,
-  onBack,
   doctorName,
+  testItems,
 }: MedicalRecordFormProps) {
   const [createdRecordId, setCreatedRecordId] = useState<string | null>(
     record?.recordId ?? null
   );
-  const { mutate: createLabResult } = useCreateLabResult(onBack);
-
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
+  // const { mutate: createLabResult } = useCreateLabResult();
 
-  const [formData, setFormData] = useState<Partial<MedicalRecord>>({
-    patientId: "",
-    patientName: "",
-    recordDate: new Date().toISOString().split("T")[0],
-    diagnosis: "",
-    notes: "",
-    treatmentPlan: "",
-    followUpDate: "",
-    labResults: [],
-    createdBy: "Dr. Sarah Wilson",
-    lastModified: new Date().toISOString(),
-  });
+  const {
+    data: medicalRecord,
+    isLoading: isMedicalRecordLoading,
+    error: medicalRecordError,
+  } = useMedicalRecordByAppointmentId(appointmentId);
+  // Medical record
+  const [diagnosis, setDiagnosis] = useState("");
+  const [notes, setNotes] = useState("");
+  // Lab Results mapped from testItems
+  const [labResults, setLabResults] = useState<LabResult[]>([]);
 
-  const [labResult, setLabResult] = useState<Partial<LabResult>>({
-    testType: "",
-    resultText: "",
-    resultValue: "",
-    unit: "",
-    referenceRange: "",
-    performedBy: "",
-  });
-
-  const [showLabForm, setShowLabForm] = useState(false);
-  const [editingLabId, setEditingLabId] = useState<string | null>(null);
-
-  // Nếu edit record, update lại state
   useEffect(() => {
-    if (record && record.recordId) {
-      setCreatedRecordId(record.recordId);
+    if (medicalRecord) {
+      setDiagnosis(medicalRecord.diagnosis || "");
+      setNotes(medicalRecord.note || "");
+      setLabResults(
+        (medicalRecord.labResults ?? []).map((lab: LabResult) => ({
+          ...lab,
+          performedBy: lab.performedBy || doctorName || "",
+        }))
+      );
+    } else {
+      // Nếu không có medicalRecord, lấy testItems để nhập mới
+      setDiagnosis("");
+      setNotes("");
+      setLabResults(
+        testItems.map((t) => ({
+          id: "",
+          recordID: "",
+          testType: t.testName,
+          resultValue: "",
+          resultText: "",
+          unit: t.unit,
+          referenceRange: t.referenceRange,
+          testDate: new Date().toISOString(),
+          performedBy: doctorName || "",
+        }))
+      );
     }
-  }, [record]);
+  }, [medicalRecord, testItems, doctorName]);
 
-  const handleInputChange = (field: keyof MedicalRecord, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleLabResultChange = (field: keyof LabResult, value: any) => {
-    setLabResult((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const addLabResult = () => {
-    const errorMsg = validateLabResult(labResult);
-
-    if (errorMsg) {
-      toast.error(errorMsg);
-      return;
-    }
-
-    if (!createdRecordId) {
-      toast.error("Chưa có recordId, hãy lưu Medical Record trước.");
-      return;
-    }
-
-    createLabResult(
-      {
-        recordId: createdRecordId, // <-- Đảm bảo luôn đúng
-        testType: labResult.testType!,
-        resultText: labResult.resultText || "",
-        resultValue: labResult.resultValue!,
-        unit: labResult.unit || "",
-        referenceRange: labResult.referenceRange || "",
-        testDate: new Date().toISOString(),
-        performedBy: doctorName || "",
-      },
-      {
-        onSuccess: () => {
-          // Reset form, reload labResults nếu cần
-          setLabResult({
-            testType: "",
-            resultText: "",
-            resultValue: "",
-            unit: "",
-            referenceRange: "",
-            testDate: new Date().toISOString().split("T")[0],
-            performedBy: "",
-            status: "normal",
-          });
-          setShowLabForm(false);
-          setEditingLabId(null);
-        },
-        onError: () => {},
-      }
+  const handleLabChange = (
+    idx: number,
+    field: keyof LabResult,
+    value: string
+  ) => {
+    setLabResults((prev) =>
+      prev.map((lab, i) => (i === idx ? { ...lab, [field]: value } : lab))
     );
   };
 
-  const editLabResult = (lab: LabResult) => {
-    setLabResult(lab);
-    setEditingLabId(lab.id);
-    setShowLabForm(true);
-  };
-
-  const deleteLabResult = (labId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      labResults: prev.labResults?.filter((lab) => lab.id !== labId) || [],
-    }));
-  };
-
-  const handleSave = () => {
-    if (!formData.diagnosis) return;
-
-    const errorMsg = validateMedicalRecord(formData);
-    if (errorMsg) {
-      toast.error(errorMsg);
-      return;
+  const saveRecord = () => {
+    if (!diagnosis.trim()) {
+      return toast.error("Diagnosis is required");
     }
+    const emptyTest = labResults.find((lab) => !lab.resultValue || lab.resultValue.trim() === "");
+    if (emptyTest) {
+      return toast.error("Bạn phải nhập kết quả cho tất cả các xét nghiệm!");
+    }
+    const err = validateMedicalRecord({ diagnosis, note: notes } as any);
+    if (err) return toast.error(err);
 
     createMedicalRecord(
-      {
-        appointmentId: appointmentId ?? record?.appointmentId,
-        diagnosis: formData.diagnosis,
-        note: formData.note || "",
-      },
+      { appointmentId, diagnosis, note: notes, labResults },
       {
         onSuccess: (data) => {
-          if (data?.recordId) {
-            setCreatedRecordId(data.recordId);
-          }
+          setCreatedRecordId(data.recordId);
+          toast.success("Medical record saved");
         },
-        onError: () => {},
+        onError: () => toast.error("Failed to save record"),
       }
     );
   };
+
+  // const submitLabResults = () => {
+  //   if (!createdRecordId) {
+  //     return toast.error("Please save record first");
+  //   }
+  //   let anyError = false;
+  //   labResults.forEach((lab) => {
+  //     const err = validateLabResult(lab);
+  //     if (err) {
+  //       toast.error(err);
+  //       anyError = true;
+  //       return;
+  //     }
+  //     createLabResult(
+  //       { ...lab, recordId: createdRecordId },
+  //       {
+  //         onSuccess: () => { },
+  //         onError: () => toast.error("Failed to save lab result"),
+  //       }
+  //     );
+  //   });
+  //   if (!anyError) toast.success("Lab results submitted");
+  // };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex gap-2">
+        <Button onClick={saveRecord} className="bg-primary">
+          Lưu kết quả xét nghiệm
         </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {record ? "Edit Medical Record" : "New Medical Record"}
-          </h1>
-        </div>
-        <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
-          <Save className="h-4 w-4 mr-2" />
-          Save Record
-        </Button>
+        {/* <Button onClick={submitLabResults} variant="outline">
+          Gửi kết quả xét nghiệm
+        </Button> */}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Medical Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Medical Record</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="diagnosis">Diagnosis</Label>
-                  <Textarea
-                    id="diagnosis"
-                    placeholder="Enter diagnosis..."
-                    value={formData.diagnosis || ""}
-                    onChange={(e) =>
-                      handleInputChange("diagnosis", e.target.value)
+      <Card>
+        <CardHeader>
+          <CardTitle>Hồ sơ bệnh án</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 mb-4">
+            <Label>Chẩn đoán</Label>
+            <Textarea
+              value={diagnosis}
+              onChange={(e) => setDiagnosis(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="grid gap-4 mb-4">
+            <Label>Ghi chú</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <span className="flex items-center gap-2">
+              <TestTube className="h-5 w-5" />
+              Kết quả xét nghiệm
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {labResults.map((lab, idx) => (
+            <div key={idx} className="mb-4 p-4 border rounded">
+              <div className="grid gap-4 mb-4">
+                <Label htmlFor="testType">Test Type</Label>
+                <Input
+                  value={lab.testType || ""}
+                  className="bg-gray-50"
+                  readOnly
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="grid gap-4 mb-4">
+                  <Label>Kết quả</Label>
+                  <Input
+                    value={lab.resultValue}
+                    onChange={(e) => handleLabChange(idx, "resultValue", e.target.value)}
+                    placeholder="e.g., 650, &lt;50"
+                    readOnly={
+                      !!(medicalRecord)
                     }
-                    rows={3}
+                    className={!!medicalRecord ? "bg-gray-50" : ""}
                   />
-                  {/* Inline error for diagnosis */}
-                  {formData.diagnosis !== undefined &&
-                    formData.diagnosis.trim().length > 0 &&
-                    formData.diagnosis.trim().length < 4 && (
-                      <div className="text-red-500 text-xs mt-1">
-                        Diagnosis must be at least 4 characters.
-                      </div>
-                    )}
-                  {formData.diagnosis && formData.diagnosis.length > 500 && (
-                    <div className="text-red-500 text-xs mt-1">
-                      Diagnosis must be under 500 characters.
-                    </div>
-                  )}
                 </div>
-                <div>
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="note"
-                    placeholder="Additional notes..."
-                    value={formData.note || ""}
-                    onChange={(e) => handleInputChange("note", e.target.value)}
-                    rows={3}
+                <div className="grid gap-4 mb-4">
+                  <Label>Đơn vị</Label>
+                  <Input
+                    value={lab.unit || ""}
+                    className="bg-gray-50"
+                    readOnly
                   />
-                  {/* Inline error for note */}
-                  {formData.note && formData.note.length > 1000 && (
-                    <div className="text-red-500 text-xs mt-1">
-                      Notes must be under 1000 characters.
-                    </div>
-                  )}
+                </div>
+                <div className="grid gap-4 mb-4">
+                  <Label>Tham chiếu</Label>
+                  <Input
+                    value={lab.referenceRange || ""}
+                    onChange={(e) => handleLabChange(idx, "referenceRange", e.target.value)}
+                    placeholder="e.g., 500-1200, &lt;50"
+                    className="bg-gray-50"
+                    readOnly
+                  />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="grid gap-4 mb-4">
+                <Label>Ghi chú</Label>
+                <Textarea
+                  value={lab.resultText}
+                  onChange={(e) => handleLabChange(idx, "resultText", e.target.value)}
+                  rows={2}
+                  placeholder="Additional interpretation or notes about the result..."
+                  readOnly={!!(medicalRecord)}
+                  className={!!medicalRecord ? "bg-gray-50" : ""}
+                />
+              </div>
 
-          {/* Lab Results Section */}
-          {createdRecordId ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <TestTube className="h-5 w-5" />
-                    Laboratory Results
-                  </CardTitle>
-                  <Button
-                    onClick={() => setShowLabForm(true)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Lab Result
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {showLabForm && (
-                  <Card className="mb-6">
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        {editingLabId ? "Edit Lab Result" : "Add Lab Result"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 gap-4">
-                        <div>
-                          <Label htmlFor="testType">Test Type</Label>
-                          <Select
-                            value={labResult.testType}
-                            onValueChange={(value) =>
-                              handleLabResultChange("testType", value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select test type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {hivTestTypes.map((test) => (
-                                <SelectItem key={test} value={test}>
-                                  {test}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
 
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="resultValue">Result Value</Label>
-                          <Input
-                            id="resultValue"
-                            placeholder="e.g., 650, &lt;50"
-                            value={labResult.resultValue}
-                            onChange={(e) =>
-                              handleLabResultChange(
-                                "resultValue",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="unit">Unit</Label>
-                          <Select
-                            value={labResult.unit}
-                            onValueChange={(value) =>
-                              handleLabResultChange("unit", value)
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {UNIT_OPTIONS.map((unit) => (
-                                <SelectItem key={unit} value={unit}>
-                                  {unit}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {labResult.unit === "Other" && (
-                            <Input
-                              className="mt-2"
-                              placeholder="Enter unit"
-                              value={labResult.unitOther || ""}
-                              onChange={(e) =>
-                                handleLabResultChange(
-                                  "unitOther",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          )}
-                        </div>
-
-                        <div>
-                          <Label htmlFor="referenceRange">
-                            Reference Range
-                          </Label>
-                          <Input
-                            id="referenceRange"
-                            placeholder="e.g., 500-1200, &lt;50"
-                            value={labResult.referenceRange}
-                            onChange={(e) =>
-                              handleLabResultChange(
-                                "referenceRange",
-                                e.target.value
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="resultText">Additional Notes</Label>
-                        <Textarea
-                          id="resultText"
-                          placeholder="Additional interpretation or notes about the result..."
-                          value={labResult.resultText}
-                          onChange={(e) =>
-                            handleLabResultChange("resultText", e.target.value)
-                          }
-                          rows={2}
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={addLabResult}
-                          className="bg-primary hover:bg-primary/90"
-                        >
-                          {editingLabId ? "Update Result" : "Add Result"}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowLabForm(false);
-                            setEditingLabId(null);
-                            setLabResult({
-                              testType: "",
-                              resultText: "",
-                              resultValue: "",
-                              unit: "",
-                              referenceRange: "",
-                              testDate: new Date().toISOString().split("T")[0],
-                              performedBy: "",
-                              status: "normal",
-                            });
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {formData.labResults && formData.labResults.length > 0 ? (
-                  <div className="border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Test Type</TableHead>
-                          <TableHead>Result</TableHead>
-                          <TableHead>Reference Range</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {formData.labResults.map((lab) => (
-                          <TableRow key={lab.id}>
-                            <TableCell className="font-medium">
-                              {lab.testType}
-                            </TableCell>
-                            <TableCell>
-                              {lab.resultValue} {lab.unit}
-                            </TableCell>
-                            <TableCell>{lab.referenceRange}</TableCell>
-                            <TableCell>
-                              {new Date(lab.testDate).toLocaleDateString()}
-                            </TableCell>
-
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => editLabResult(lab)}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => deleteLabResult(lab.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <TestTube className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No lab results added yet</p>
-                    <p className="text-sm">
-                      Click &quot;Add Lab Result&quot; to get started
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="text-center py-6 text-muted-foreground">
-              <TestTube className="h-8 w-8 mx-auto mb-3 opacity-50" />
-              <p>Save the medical record before adding laboratory results.</p>
             </div>
-          )}
-        </div>
-
-        {/* HIV-Specific Information Sidebar */}
-        <div className="space-y-6">
-          {/* Treatment Guidelines */}
-          <Card>
-            <CardHeader>
-              <CardTitle>HIV Treatment Guidelines</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Alert>
-                <Activity className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>CD4+ Count Monitoring:</strong>
-                  <br />
-                  &gt; 500: Every 6-12 months
-                  <br />
-                  200-500: Every 3-6 months
-                  <br />
-                  &lt; 200: Every 3 months
-                </AlertDescription>
-              </Alert>
-
-              <Alert>
-                <TestTube className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Viral Load Goals:</strong>
-                  <br />
-                  Target: Undetectable (&lt; 50 copies/mL)
-                  <br />
-                  Monitor every 3-6 months
-                  <br />
-                  Check 2-8 weeks after ART changes
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

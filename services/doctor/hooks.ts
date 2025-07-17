@@ -14,7 +14,11 @@ import {
 import { DoctorProfile, DoctorResponse } from "./types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { DoctorAppointment, LabResult } from "@/types";
+import {
+  CreateMedicalRecordInput,
+  DoctorAppointment,
+  LabResult,
+} from "@/types";
 
 export const useGetAppointmentsByDoctorId = (
   doctorID: string,
@@ -46,11 +50,9 @@ export function useCreateMedicalRecord() {
       appointmentId,
       diagnosis,
       note,
-    }: {
-      appointmentId: string;
-      diagnosis: string;
-      note: string;
-    }) => createMedicalRecord(appointmentId, { diagnosis, note }),
+      labResults,
+    }: CreateMedicalRecordInput) =>
+      createMedicalRecord(appointmentId, {  diagnosis, note,labResults }),
     onSuccess: () => {
       // Optional: invalidateQueries để reload medical records hoặc appointments nếu cần
       toast.success("Medical Record created!");
