@@ -2,18 +2,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TestTube } from "lucide-react";
-import { useCreateMedicalRecord, useMedicalRecordByAppointmentId } from "@/services/doctor/hooks";
+import {
+  useCreateMedicalRecord,
+  useMedicalRecordByAppointmentId,
+} from "@/services/doctor/hooks";
 import { toast } from "sonner";
 import { validateMedicalRecord } from "@/utils/validate";
 import { LabResult, MedicalRecordFormProps } from "@/types";
@@ -23,6 +21,7 @@ export default function MedicalRecordForm({
   record,
   doctorName,
   testItems,
+  onSuccess,
 }: MedicalRecordFormProps) {
   const [createdRecordId, setCreatedRecordId] = useState<string | null>(
     record?.recordId ?? null
@@ -30,11 +29,8 @@ export default function MedicalRecordForm({
   const { mutate: createMedicalRecord } = useCreateMedicalRecord();
   // const { mutate: createLabResult } = useCreateLabResult();
 
-  const {
-    data: medicalRecord,
-    isLoading: isMedicalRecordLoading,
-    error: medicalRecordError,
-  } = useMedicalRecordByAppointmentId(appointmentId);
+  const { data: medicalRecord } =
+    useMedicalRecordByAppointmentId(appointmentId);
   // Medical record
   const [diagnosis, setDiagnosis] = useState("");
   const [notes, setNotes] = useState("");
@@ -85,7 +81,9 @@ export default function MedicalRecordForm({
     if (!diagnosis.trim()) {
       return toast.error("Diagnosis is required");
     }
-    const emptyTest = labResults.find((lab) => !lab.resultValue || lab.resultValue.trim() === "");
+    const emptyTest = labResults.find(
+      (lab) => !lab.resultValue || lab.resultValue.trim() === ""
+    );
     if (emptyTest) {
       return toast.error("Bạn phải nhập kết quả cho tất cả các xét nghiệm!");
     }
@@ -98,6 +96,7 @@ export default function MedicalRecordForm({
         onSuccess: (data) => {
           setCreatedRecordId(data.recordId);
           toast.success("Medical record saved");
+          if (onSuccess) onSuccess(); // <--- gọi callback về cha
         },
         onError: () => toast.error("Failed to save record"),
       }
@@ -145,7 +144,7 @@ export default function MedicalRecordForm({
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 mb-4">
-            <Label>Chẩn đoán</Label>
+            <Label>Diagnose</Label>
             <Textarea
               value={diagnosis}
               onChange={(e) => setDiagnosis(e.target.value)}
@@ -153,7 +152,7 @@ export default function MedicalRecordForm({
             />
           </div>
           <div className="grid gap-4 mb-4">
-            <Label>Ghi chú</Label>
+            <Label>Note</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -188,11 +187,11 @@ export default function MedicalRecordForm({
                   <Label>Kết quả</Label>
                   <Input
                     value={lab.resultValue}
-                    onChange={(e) => handleLabChange(idx, "resultValue", e.target.value)}
-                    placeholder="e.g., 650, &lt;50"
-                    readOnly={
-                      !!(medicalRecord)
+                    onChange={(e) =>
+                      handleLabChange(idx, "resultValue", e.target.value)
                     }
+                    placeholder="e.g., 650, &lt;50"
+                    readOnly={!!medicalRecord}
                     className={!!medicalRecord ? "bg-gray-50" : ""}
                   />
                 </div>
@@ -208,7 +207,9 @@ export default function MedicalRecordForm({
                   <Label>Tham chiếu</Label>
                   <Input
                     value={lab.referenceRange || ""}
-                    onChange={(e) => handleLabChange(idx, "referenceRange", e.target.value)}
+                    onChange={(e) =>
+                      handleLabChange(idx, "referenceRange", e.target.value)
+                    }
                     placeholder="e.g., 500-1200, &lt;50"
                     className="bg-gray-50"
                     readOnly
@@ -219,15 +220,15 @@ export default function MedicalRecordForm({
                 <Label>Ghi chú</Label>
                 <Textarea
                   value={lab.resultText}
-                  onChange={(e) => handleLabChange(idx, "resultText", e.target.value)}
+                  onChange={(e) =>
+                    handleLabChange(idx, "resultText", e.target.value)
+                  }
                   rows={2}
                   placeholder="Additional interpretation or notes about the result..."
-                  readOnly={!!(medicalRecord)}
+                  readOnly={!!medicalRecord}
                   className={!!medicalRecord ? "bg-gray-50" : ""}
                 />
               </div>
-
-
             </div>
           ))}
         </CardContent>

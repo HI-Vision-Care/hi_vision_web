@@ -135,27 +135,26 @@ export default function DashboardOverview({
                   new Date(b.appointmentDate).getTime()
               ) // Sort tăng dần, muốn giảm thì đổi - thành +
               .map((appointment) => {
-                const apptDate = new Date(appointment.appointmentDate);
-                const hour = String(apptDate.getUTCHours()).padStart(2, "0");
-                const minute = String(apptDate.getUTCMinutes()).padStart(
-                  2,
-                  "0"
-                );
-                const second = String(apptDate.getUTCSeconds()).padStart(
-                  2,
-                  "0"
-                );
-                const timeUTC = `${hour}:${minute}:${second}`;
-                const day = apptDate.toISOString().slice(0, 10);
-
                 return (
                   <div
                     key={appointment.appointmentID}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="text-sm font-medium text-muted-foreground">
-                        {day} {timeUTC}
+                      <div className="flex flex-col items-center text-center min-w-[80px]">
+                        <div className="text-2xl font-bold text-primary">
+                          {new Date(appointment.appointmentDate).getDate()}
+                        </div>
+                        <div className="text-xs text-muted-foreground uppercase">
+                          {new Date(
+                            appointment.appointmentDate
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                          })}
+                        </div>
+                        <div className="text-sm font-medium">
+                          {appointment.slot}
+                        </div>
                       </div>
                       <div>
                         <div className="font-medium">
