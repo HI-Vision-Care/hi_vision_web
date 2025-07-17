@@ -15,6 +15,7 @@ import { useAccountId } from "@/hooks/useAccountId"
 import BlogPostPreview from "@/components/post/preview"
 import PostEditForm from "@/components/post/PostEditForm"
 import RecentPostList from "@/components/post/RecentPostList"
+import { toast } from "sonner"
 
 const defaultContent: ContentRequest = {
     header: "",
@@ -79,15 +80,15 @@ export default function BlogPostManagementPage() {
                 },
                 {
                     onSuccess: () => {
-                        setMsg("Blog post updated successfully!")
+                        toast.success("Blog post updated successfully!");
                         setPost({ title: "", banner: "", topic: "" })
                         setContents([{ ...defaultContent }])
-                        setActiveTab("edit")
+                        setActiveTab("recent")
                         setEditingPostId(null)
                         setLoading(false)
                     },
                     onError: () => {
-                        setMsg("Failed to update blog post!")
+                        toast.error("Failed to update blog post!");
                         setLoading(false)
                     },
                 },
@@ -101,14 +102,14 @@ export default function BlogPostManagementPage() {
                 },
                 {
                     onSuccess: () => {
-                        setMsg("Blog post published successfully!")
+                        toast.success("Blog post published successfully!");
                         setPost({ title: "", banner: "", topic: "" })
                         setContents([{ ...defaultContent }])
-                        setActiveTab("edit")
+                        setActiveTab("recent")
                         setLoading(false)
                     },
                     onError: () => {
-                        setMsg("Failed to publish blog post!")
+                        toast.error("Failed to publish blog post!");
                         setLoading(false)
                     },
                 },

@@ -12,11 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Clock, Users, AlertCircle, Plus, Calendar } from "lucide-react";
+import { Clock, Users, AlertCircle, Calendar } from "lucide-react";
 import Header from "@/components/admin/header";
 import { useRouter } from "next/navigation";
 import { useWorkShifts } from "@/services/workShift/hooks";
-import { WorkShift } from "@/services/workShift/types";
 
 export default function Shifts() {
   const [selectedMonth, setSelectedMonth] = useState("2025-07");
@@ -122,11 +121,6 @@ export default function Shifts() {
               </SelectContent>
             </Select>
           </div>
-
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Shift
-          </Button>
         </div>
 
         {/* Shift Stats */}

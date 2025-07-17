@@ -24,12 +24,8 @@ export interface BlogPostBasic {
   topic: string;
   banner: string;
   createAt: string;
-}
-
-export interface ContentRequest {
-  header: string;
-  body: string;
-  photo: string;
+  hide: boolean;
+  total:number;
 }
 
 export interface BlogPostDetail {
@@ -39,6 +35,7 @@ export interface BlogPostDetail {
   banner: string;
   topic: string;
   createdAt: string;
+  isHide: boolean;
   contents: ContentRequest[];
 }
 
@@ -48,4 +45,3 @@ export interface BlogPostRequest {
   banner: string;
   topic: string;
 }
-

@@ -8,12 +8,14 @@ import {
   deleteAccount,
   getPatientProfile,
   getDoctorProfile,
+  getStaffProfile,
 } from "./api";
 import {
   AccountUI,
   CreateAccountPayload,
   DoctorProfile,
   PatientProfile,
+  StaffProfile,
 } from "./types";
 import { toast } from "sonner";
 
@@ -92,16 +94,19 @@ export const useDeleteAccount = () => {
   });
 };
 
+type UserProfile = DoctorProfile | PatientProfile | StaffProfile | null;
+
 export function useGetUserProfile(
   accountId: string | null,
   role: string | null
 ) {
-  return useQuery<DoctorProfile | PatientProfile | null, Error>({
+  return useQuery<UserProfile, Error>({
     queryKey: ["user-profile", accountId, role],
     queryFn: async () => {
       if (!accountId || !role) return null;
       if (role === "DOCTOR") return await getDoctorProfile(accountId);
       if (role === "PATIENT") return await getPatientProfile(accountId);
+      if (role === "STAFF") return await getStaffProfile(accountId);
       // Nếu muốn cho ADMIN hoặc role khác thì thêm tại đây
       return null;
     },

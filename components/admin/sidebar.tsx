@@ -4,36 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Users,
-  UserCheck,
-  Clock,
-  Menu,
-  X,
-  Pill,
-  Calendar,
-  User2,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
-
-const adminNavigation = [
-  // { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Manage Accounts", href: "/admin/accounts", icon: User2 },
-  { name: "Manage Doctors", href: "/admin/doctors", icon: UserCheck },
-  { name: "All Patients", href: "/admin/patients", icon: Users },
-  { name: "ARV Regimens", href: "/admin/arv-regimens", icon: Pill },
-  { name: "Appointments", href: "/admin/appointments", icon: Calendar },
-  { name: "Consultants", href: "/admin/consultant", icon: Calendar },
-  { name: "Post-Management", href: "/admin/post-management", icon: LayoutDashboard },
-  // { name: "Schedule", href: "/admin/schedule", icon: Clock },
-  { name: "Shift Management", href: "/admin/shifts", icon: Clock },
-];
+import { adminNavigation, staffNavigation } from "@/constants";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  const userRole = Cookies.get("role");
+  const navigation = userRole === "STAFF" ? staffNavigation : adminNavigation;
 
   return (
     <>
@@ -77,7 +59,7 @@ const Sidebar = () => {
           </div>
 
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {adminNavigation.map((item) => {
+            {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link

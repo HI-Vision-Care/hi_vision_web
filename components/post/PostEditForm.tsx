@@ -56,7 +56,7 @@ const PostEditForm: React.FC<PostEditFormProps> = ({
                                 <FileText className="w-5 h-5 text-blue-600" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-semibold">{isEditing ? "Edit Blog Post" : "Basic Information"}</h3>
+                                <h3 className="text-xl font-semibold">{isEditing ? "Edit Blog Post" : "Create Blog Post"}</h3>
                                 <p className="text-sm text-gray-600 font-normal">
                                     {isEditing ? "Update your blog post details" : "Enter the main details for your blog post"}
                                 </p>
@@ -325,30 +325,7 @@ const PostEditForm: React.FC<PostEditFormProps> = ({
                             </Button>
                         </div>
 
-                        {msg && (
-                            <div className="mt-4">
-                                <Card
-                                    className={`border-l-4 ${msg.includes("successfully") || msg.includes("success")
-                                            ? "border-l-green-500 bg-green-50"
-                                            : "border-l-red-500 bg-red-50"
-                                        }`}
-                                >
-                                    <CardContent className="p-4">
-                                        <div
-                                            className={`flex items-center gap-3 text-sm font-medium ${msg.includes("successfully") || msg.includes("success") ? "text-green-800" : "text-red-800"
-                                                }`}
-                                        >
-                                            {msg.includes("successfully") || msg.includes("success") ? (
-                                                <CheckCircle className="w-5 h-5 text-green-600" />
-                                            ) : (
-                                                <AlertCircle className="w-5 h-5 text-red-600" />
-                                            )}
-                                            {msg}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        )}
+                     
                     </CardContent>
                 </Card>
             </form>

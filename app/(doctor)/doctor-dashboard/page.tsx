@@ -228,7 +228,7 @@ export default function DoctorDashboard() {
             (selectedMedication || isCreatingMedication) && (
               <MedicationForm
                 onBack={() => setCurrentView("appointments")}
-                initialPatientId={selectedPatientId || ""}
+                AppontmentId={selectedAppointment?.appointmentID || ""}
                 prescribedBy={prescribedBy}
               />
             )}

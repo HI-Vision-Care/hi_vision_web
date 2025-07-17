@@ -3,12 +3,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   AddArvToPresPayloadList,
   AddArvToPresResponse,
+  ArvPrescriptionListResponse,
   PrescriptionCreatePayload,
 } from "./types";
 import {
   addArvToPrescription,
   createPrescription,
   getArvPrescriptionsByPatientId,
+  getPreARVPrescription,
 } from "./api";
 import { toast } from "sonner";
 
@@ -16,12 +18,12 @@ import { toast } from "sonner";
 export function useCreatePrescription(onSuccess?: () => void) {
   return useMutation({
     mutationFn: ({
-      patientId,
+      AppointmentId,
       payload,
     }: {
-      patientId: string;
+      AppointmentId: string;
       payload: PrescriptionCreatePayload;
-    }) => createPrescription(patientId, payload),
+    }) => createPrescription(AppointmentId, payload),
 
     // ---- Thêm mặc định xử lý thành công và lỗi ở đây ----
     onSuccess: (data: any) => {
@@ -53,13 +55,21 @@ export function useAddArvToPrescription(options = {}) {
 }
 
 export function useArvPrescriptionsByPatientId(
-  patientId: string,
+  appointmentID: string,
   options = {}
 ) {
   return useQuery({
-    queryKey: ["arvPrescriptions", patientId],
-    queryFn: () => getArvPrescriptionsByPatientId(patientId),
-    enabled: !!patientId,
+    queryKey: ["arvPrescriptions", appointmentID],
+    queryFn: () => getArvPrescriptionsByPatientId(appointmentID),
+    enabled: !!appointmentID,
     ...options,
+  });
+}
+
+export function usePreARVPrescription(appointmentID: string) {
+  return useQuery<ArvPrescriptionListResponse>({
+    queryKey: ["pre-arv-prescription", appointmentID],
+    queryFn: () => getPreARVPrescription(appointmentID),
+    enabled: !!appointmentID,
   });
 }

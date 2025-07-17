@@ -12,11 +12,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Filter, Eye, Edit, Clock } from "lucide-react";
+import { Calendar, Filter, Edit } from "lucide-react";
 import { Appointment } from "@/services/appointment/types";
 import Sidebar from "@/components/admin/sidebar";
 import { Header } from "@/components/admin";
-import { useGetAllAppointments } from "@/services/appointment/hooks";
+import {
+  useCancelAppointmentByStaff,
+  useGetAllAppointments,
+  useUpdateAppointmentPaymentStatus,
+} from "@/services/appointment/hooks";
+import { AppointmentInvoiceModal } from "@/components/appoinment";
+import { useAccountId } from "@/hooks/useAccountId";
+import { useGetUserProfile } from "@/services/account/hook";
+import { StaffProfile } from "@/services/account/types";
+
+function getStatusBadge(status?: string) {
+  switch (status) {
+    case "SCHEDULED":
+      return (
+        <Badge className="bg-blue-100 text-blue-700 border-blue-400">
+          Scheduled
+        </Badge>
+      );
+    case "ONGOING":
+      return (
+        <Badge className="bg-yellow-100 text-yellow-700 border-yellow-400">
+          Ongoing
+        </Badge>
+      );
+    case "CANCELLED_BY_PATIENT":
+      return (
+        <Badge className="bg-orange-100 text-orange-700 border-orange-400">
+          Cancelled (by patient)
+        </Badge>
+      );
+    case "CANCELLED_BY_STAFF":
+      return (
+        <Badge className="bg-red-100 text-red-700 border-red-400">
+          Cancelled (by staff)
+        </Badge>
+      );
+    case "COMPLETED":
+      return (
+        <Badge className="bg-green-100 text-green-700 border-green-400">
+          Completed
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="bg-gray-200 text-gray-700 border-gray-400">
+          Unknown
+        </Badge>
+      );
+  }
+}
 
 export default function Appointments() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,6 +74,13 @@ export default function Appointments() {
   const [selectedAppt, setSelectedAppt] = useState<Appointment | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const { data: appointments = [] } = useGetAllAppointments();
+  const cancelAppointmentMutation = useCancelAppointmentByStaff();
+  const updatePaymentMutation = useUpdateAppointmentPaymentStatus();
+
+  const accountId = useAccountId();
+  const { data: profile } = useGetUserProfile(accountId, "STAFF");
+  const staffId = (profile as StaffProfile)?.staffId;
+  console.log(staffId);
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
@@ -98,6 +154,28 @@ export default function Appointments() {
     ];
   };
 
+  const handleCancelAppointment = (appointmentId: string) => {
+    cancelAppointmentMutation.mutate(appointmentId, {
+      onSuccess: () => {
+        setShowDetailModal(false); // Đóng modal khi hủy xong
+      },
+    });
+  };
+
+  const handleMarkAsPaid = (appointmentId: string) => {
+    updatePaymentMutation.mutate(
+      {
+        appointmentId,
+        staffId: staffId || "",
+      },
+      {
+        onSuccess: () => {
+          setShowDetailModal(false); // Đóng modal ngay khi thanh toán thành công
+        },
+      }
+    );
+  };
+
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">
       <Sidebar />
@@ -144,8 +222,8 @@ export default function Appointments() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="unpaid">Unpaid</SelectItem>
+                <SelectItem value="PAID">Paid</SelectItem>
+                <SelectItem value="UNPAID">Unpaid</SelectItem>
               </SelectContent>
             </Select>
 
@@ -177,11 +255,15 @@ export default function Appointments() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <div className="text-center">
+                        {/* Block ngày giờ khám */}
+                        <div className="text-center min-w-[52px]">
                           <div className="text-sm text-gray-500">
                             {new Date(
                               appointment.appointmentDate
-                            ).toLocaleDateString("en-US", { weekday: "short" })}
+                            ).toLocaleDateString("vi-VN", {
+                              weekday: "short",
+                              timeZone: "Asia/Ho_Chi_Minh",
+                            })}
                           </div>
                           <div className="text-lg font-bold">
                             {new Date(appointment.appointmentDate).getDate()}
@@ -189,34 +271,64 @@ export default function Appointments() {
                           <div className="text-sm font-medium">
                             {new Date(
                               appointment.appointmentDate
-                            ).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                            ).getUTCHours()}
+                            :
+                            {String(
+                              new Date(
+                                appointment.appointmentDate
+                              ).getUTCMinutes()
+                            ).padStart(2, "0")}
                           </div>
                         </div>
 
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-medium text-lg">
-                              Pid: {appointment.patient.patientID}
-                            </h3>
                             <Badge>
                               {appointment.isAnonymous ? "Anonymous" : "Normal"}
                             </Badge>
-                            <Badge>{appointment.status ?? "Null"}</Badge>
+                            <span>{getStatusBadge(appointment.status)}</span>
+                            <Badge
+                              className={
+                                appointment.paymentStatus === "PAID"
+                                  ? "bg-green-100 text-green-700 border-green-400"
+                                  : "bg-red-100 text-red-700 border-red-400"
+                              }
+                            >
+                              {appointment.paymentStatus === "PAID"
+                                ? "Paid"
+                                : appointment.paymentStatus === "UNPAID"
+                                ? "Unpaid"
+                                : "N/A"}
+                            </Badge>
                           </div>
 
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
-                            <div className="flex items-center space-x-1">
-                              <span>Did: {appointment.doctor.doctorID}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="h-4 w-4" />
-                              <span>
-                                {appointment.medicalService.serviceID}
-                              </span>
-                            </div>
+                          {/* Tên dịch vụ & giá */}
+                          <div className="flex items-center space-x-2">
+                            <span className="font-semibold text-blue-800">
+                              {appointment.medicalService.name}
+                            </span>
+                            <span className="text-xs font-semibold text-blue-700 bg-blue-50 rounded px-2 py-0.5">
+                              {appointment.medicalService.price.toLocaleString()}
+                              ₫
+                            </span>
+                          </div>
+
+                          {/* Bệnh nhân - Bác sĩ */}
+                          <div className="flex items-center space-x-3 text-gray-700 text-sm mt-0.5">
+                            <span>👤 {appointment.patient.name}</span>
+                            <span>🩺 {appointment.doctor.name}</span>
+                          </div>
+
+                          {/* Badge trạng thái & thanh toán */}
+                          <div className="flex items-center space-x-2 mt-1">
+                            {appointment.isAnonymous && (
+                              <Badge
+                                variant="outline"
+                                className="border-blue-400 text-blue-700"
+                              >
+                                Anonymous
+                              </Badge>
+                            )}
                           </div>
 
                           {appointment.note && (
@@ -233,9 +345,6 @@ export default function Appointments() {
                           size="sm"
                           onClick={() => openDetails(appointment)}
                         >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
                       </div>
@@ -247,61 +356,13 @@ export default function Appointments() {
           </Card>
 
           {/* Modal xem chi tiết */}
-          {showDetailModal && selectedAppt && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-              <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 animate-fade-in">
-                <h3 className="text-2xl font-semibold text-blue-700 border-b pb-2">
-                  Appointment Details
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm text-gray-700">
-                  <div>
-                    <span className="font-medium text-gray-500">
-                      Patient ID:
-                    </span>{" "}
-                    {selectedAppt.patient.patientID}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-500">
-                      Doctor ID:
-                    </span>{" "}
-                    {selectedAppt.doctor.doctorID}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-500">
-                      Service ID:
-                    </span>{" "}
-                    {selectedAppt.medicalService.serviceID}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-500">Time:</span>{" "}
-                    {new Date(selectedAppt.appointmentDate).toLocaleString()}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-500">
-                      Anonymous:
-                    </span>{" "}
-                    {selectedAppt.isAnonymous ? "Yes" : "No"}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-500">Note:</span>{" "}
-                    {selectedAppt.note || "No note"}
-                  </div>
-                  <div className="col-span-1 sm:col-span-2">
-                    <span className="font-medium text-gray-500">URL Link:</span>{" "}
-                    <span className="break-words text-blue-600">
-                      {selectedAppt.urlLink || "N/A"}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4"
-                  onClick={() => setShowDetailModal(false)}
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          )}
+          <AppointmentInvoiceModal
+            open={showDetailModal}
+            onClose={() => setShowDetailModal(false)}
+            appointment={selectedAppt}
+            onMarkAsPaid={handleMarkAsPaid}
+            onCancelAppointment={handleCancelAppointment}
+          />
         </div>
       </div>
     </div>

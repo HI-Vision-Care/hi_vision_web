@@ -6,6 +6,7 @@ import {
   CreateAccountPayload,
   DoctorProfile,
   PatientProfile,
+  StaffProfile,
 } from "./types";
 
 export async function getAllAccounts(): Promise<AccountUI[]> {
@@ -32,6 +33,15 @@ export async function getPatientProfile(
 ): Promise<PatientProfile> {
   const { data } = await axiosInstance.get<PatientProfile>(
     `/patient/profile/${accountId}`
+  );
+  return data;
+}
+
+export async function getStaffProfile(
+  accountId: string
+): Promise<StaffProfile> {
+  const { data } = await axiosInstance.get<PatientProfile>(
+    `/staff/profile/${accountId}`
   );
   return data;
 }

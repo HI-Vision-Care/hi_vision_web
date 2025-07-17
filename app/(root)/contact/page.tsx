@@ -128,7 +128,7 @@ export default function ContactUsPage() {
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Modern Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="backdrop-blur-sm bg-white/70 border-0 shadow-2xl shadow-blue-500/10">
+            <Card className="sticky top-6 backdrop-blur-sm bg-white/70 border-0 shadow-2xl shadow-blue-500/10">
               <CardHeader className="pb-8">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
@@ -261,7 +261,7 @@ export default function ContactUsPage() {
                             onChange={(e) =>
                               handleInputChange("phone", e.target.value)
                             }
-                            placeholder="+1 (555) 123-4567"
+                            placeholder=" 0123-456-7890"
                             className="h-12 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl"
                           />
                         </div>
@@ -446,7 +446,7 @@ export default function ContactUsPage() {
                     <p className="font-bold text-red-900 text-lg">
                       24/7 Crisis Hotline
                     </p>
-                    <p className="text-red-700 font-semibold">1-800-HIV-HELP</p>
+                    <p className="text-red-700 font-semibold">1900 633 123</p>
                   </div>
                 </div>
                 <div className="text-sm text-red-700 bg-white/40 p-3 rounded-lg">
@@ -475,10 +475,10 @@ export default function ContactUsPage() {
                     <div>
                       <p className="font-semibold text-gray-800">Main Office</p>
                       <p className="text-blue-600 font-semibold text-lg">
-                        (555) 123-4567
+                        1900 633 123
                       </p>
                       <p className="text-sm text-gray-600">
-                        Mon-Fri: 8:00 AM - 6:00 PM
+                        Mon - Sat: 8:00 AM - 5:00 PM
                       </p>
                     </div>
                   </div>
@@ -492,7 +492,7 @@ export default function ContactUsPage() {
                         Secure Email
                       </p>
                       <p className="text-indigo-600 font-semibold">
-                        care@hivhealth.org
+                        contact@hivisionclinic.vn
                       </p>
                       <p className="text-sm text-gray-600">
                         Response within 24 hours
@@ -509,11 +509,11 @@ export default function ContactUsPage() {
                         Our Location
                       </p>
                       <p className="text-gray-700 leading-relaxed">
-                        123 Healthcare Drive
+                        E2a-7, D1 Street,
                         <br />
-                        Medical District
+                        Saigon Hi-Tech Park,
                         <br />
-                        City, State 12345
+                        Thu Duc City, HCMC
                       </p>
                     </div>
                   </div>
@@ -558,13 +558,7 @@ export default function ContactUsPage() {
                       Monday - Friday
                     </span>
                     <span className="font-bold text-indigo-700">
-                      8:00 AM - 6:00 PM
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg bg-blue-50/50">
-                    <span className="text-gray-700 font-medium">Saturday</span>
-                    <span className="font-bold text-blue-700">
-                      9:00 AM - 2:00 PM
+                      8:00 AM - 5:00 PM
                     </span>
                   </div>
                   <div className="flex justify-between items-center p-3 rounded-lg bg-gray-50/50">
