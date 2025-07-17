@@ -52,12 +52,14 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [chatUsers, setChatUsers] = useState<ChatUser[]>([]);
   const staffAccountId = useAccountId();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messagesByPatient, setMessagesByPatient] = useState<Record<string, Message[]>>({});
   const [selectedPatient, setSelectedPatient] = useState<ChatUser | null>(null);
   const [currentMessage, setCurrentMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const stompClientRef = useRef<Client | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+  const messages = selectedPatient ? messagesByPatient[selectedPatient.accountID] || [] : [];
 
   useEffect(() => {
     if (!staffAccountId) return;
@@ -107,7 +109,7 @@ export default function ChatInterface({
     setSelectedPatient(newUser);
   }, [selectedPatientRequire]);
 
-  const [hasMounted, setHasMounted] = useState(false);
+
   useEffect(() => {
     setHasMounted(true);
   }, []);
@@ -153,7 +155,7 @@ export default function ChatInterface({
           console.log("[WebSocket] Received message:", message);
           // Nếu dùng Message interface ở FE:
           const msgFromServer = JSON.parse(message.body);
-
+          const patientId = msgFromServer.accountID;
           // Tạo message FE với field đúng kiểu
           const msg: Message = {
             id: Date.now().toString(), // Hoặc lấy id BE nếu có
@@ -164,9 +166,13 @@ export default function ChatInterface({
               ? new Date(msgFromServer.date)
               : new Date(),
             type: "text",
-            isOwn: msgFromServer.accountID === staffAccountId, // hoặc so sánh với user hiện tại
+            isOwn: patientId === staffAccountId,
           };
-          setMessages((prev) => [...prev, msg]);
+          setMessagesByPatient((prev) => ({
+            ...prev,
+            [patientId]: [...(prev[patientId] || []), msg],
+          }));
+
         } catch (e) {
           console.error("Invalid msg format", e);
         }
@@ -192,20 +198,34 @@ export default function ChatInterface({
     const payload = {
       senderName: "Tư vấn viên",
       accountID: staffAccountId,
-      message: currentMessage, // ĐÚNG FIELD CHO BE
-      status: "", // Nếu cần
+      message: currentMessage,
+      status: "",
       date: new Date().toISOString(),
     };
 
-    // Send via WebSocket using patientID
     stompClientRef.current.publish({
       destination: `/app/message/${selectedPatient.accountID}`,
       body: JSON.stringify(payload),
     });
 
+    // Update UI ngay lập tức
+    const newMsg: Message = {
+      id: Date.now().toString(),
+      accountID: staffAccountId || "",
+      senderName: "Tư vấn viên",
+      content: currentMessage,
+      timestamp: new Date(),
+      type: "text",
+      isOwn: true,
+    };
+
+    setMessagesByPatient((prev) => ({
+      ...prev,
+      [selectedPatient.accountID]: [...(prev[selectedPatient.accountID] || []), newMsg],
+    }));
+
     setCurrentMessage("");
 
-    // Update last message in chat list
     setChatUsers((prev) =>
       prev.map((user) =>
         user.accountID === selectedPatient.accountID
@@ -214,6 +234,43 @@ export default function ChatInterface({
       )
     );
   };
+
+
+  const sendEndConsultationMessage = () => {
+    if (!stompClientRef.current || !selectedPatient) return;
+
+    const payload = {
+      senderName: "Tư vấn viên",
+      accountID: staffAccountId,
+      message: "Tư vấn kết thúc",
+      status: "",
+      date: new Date().toISOString(),
+    };
+
+    stompClientRef.current.publish({
+      destination: `/app/message/${selectedPatient.accountID}`,
+      body: JSON.stringify(payload),
+    });
+
+    // Optionally: show message instantly on UI
+    setMessagesByPatient((prev) => ({
+      ...prev,
+      [selectedPatient.accountID]: [
+        ...(prev[selectedPatient.accountID] || []),
+        {
+          id: Date.now().toString(),
+          accountID: staffAccountId || "",
+          senderName: "Tư vấn viên",
+          content: "Tư vấn kết thúc",
+          timestamp: new Date(),
+          type: "text",
+          isOwn: true,
+        },
+      ],
+    }));
+  };
+
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -283,11 +340,10 @@ export default function ChatInterface({
                 setSelectedPatient(user);
                 onUserSelect?.(user);
               }}
-              className={`p-3 hover:bg-gray-800 cursor-pointer border-l-2 ${
-                selectedPatient?.accountID === user.accountID
-                  ? "bg-gray-800 border-blue-500"
-                  : "border-transparent"
-              }`}
+              className={`p-3 hover:bg-gray-800 cursor-pointer border-l-2 ${selectedPatient?.accountID === user.accountID
+                ? "bg-gray-800 border-blue-500"
+                : "border-transparent"
+                }`}
             >
               <div className="flex items-center space-x-3">
                 <div className="relative">
@@ -360,6 +416,7 @@ export default function ChatInterface({
                   onClick={async () => {
                     if (!selectedPatient || !staffAccountId) return;
                     try {
+                      sendEndConsultationMessage();
                       await completeConsultation(
                         staffAccountId,
                         selectedPatient.accountID
@@ -375,7 +432,11 @@ export default function ChatInterface({
 
                         return newList;
                       });
-                      setMessages([]);
+                      setMessagesByPatient((prev) => {
+                        const clone = { ...prev };
+                        if (selectedPatient) delete clone[selectedPatient.accountID];
+                        return clone;
+                      });
                       onConsultationComplete?.();
                       alert("Tư vấn đã kết thúc!");
                     } catch (err) {
@@ -393,22 +454,19 @@ export default function ChatInterface({
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${
-                    message.isOwn ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex ${message.isOwn ? "justify-end" : "justify-start"
+                    }`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      message.isOwn
-                        ? "bg-blue-600 text-white"
-                        : "bg-white text-gray-900 border"
-                    }`}
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.isOwn
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-900 border"
+                      }`}
                   >
                     <p className="text-sm">{message.content}</p>
                     <p
-                      className={`text-xs mt-1 ${
-                        message.isOwn ? "text-blue-100" : "text-gray-500"
-                      }`}
+                      className={`text-xs mt-1 ${message.isOwn ? "text-blue-100" : "text-gray-500"
+                        }`}
                     >
                       {hasMounted && formatTime(message.timestamp)}
                     </p>

@@ -12,7 +12,7 @@ export async function createPrescription(
   payload: PrescriptionCreatePayload
 ): Promise<PrescriptionResponse> {
   const { data } = await axiosInstance.post<PrescriptionResponse>(
-    `/prescription/create?AppointmentId=${AppointmentId}`,
+    `/prescription/create?appointmentId=${AppointmentId}`,
     payload
   );
   return data;
