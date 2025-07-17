@@ -19,13 +19,4 @@ export interface Appointment {
   createAt: string;
 }
 
-export interface LabResult {
-  recordId: string;
-  testType: string;
-  resultText: string;
-  resultValue: string;
-  unit: string;
-  referenceRange: string;
-  testDate: string; // ISO string
-  performedBy: string;
-}
+

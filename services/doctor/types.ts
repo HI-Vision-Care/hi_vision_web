@@ -1,3 +1,5 @@
+import { LabResult } from "@/types";
+
 export interface DoctorResponse {
   doctorID: string;
   name: string;
@@ -53,4 +55,5 @@ export interface MedicalRecordByAppointmentResponse {
   diagnosis: string;
   createDate: string;
   note: string;
+  labResults: LabResult[];
 }

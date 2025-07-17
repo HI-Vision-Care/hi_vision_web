@@ -18,7 +18,7 @@ import { useMemo, useState } from "react";
 
 export default function ServicesPage() {
   const { data: services, isLoading, error } = useGetAllMedicalServices();
-
+  console.log("Services data:", services);
   // State cho search & filter
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");

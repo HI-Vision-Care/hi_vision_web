@@ -2,23 +2,30 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useGetBlogPosts, useGetBlogPostDetail } from "@/services/Post/hooks"
+import {
+    useGetBlogPosts,
+    useGetBlogPostDetail,
+    useHideBlogPost,
+    useShowBlogPost,
+    useDeleteBlogPost,
+} from "@/services/Post/hooks"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Edit3, X, Calendar, User, Eye, Clock, BookOpen, AlertCircle, Loader2, FileText } from "lucide-react"
+import { Edit3, Calendar, User, Eye, Clock, BookOpen, AlertCircle, Loader2, FileText, EyeOff, X, Heart, Trash, Trash2 } from "lucide-react"
+import { useQueryClient } from "@tanstack/react-query"
 
 interface RecentPostListProps {
     onEdit: (postId: number) => void
 }
 
 const RecentPostList: React.FC<RecentPostListProps> = ({ onEdit }) => {
+    const queryClient = useQueryClient()
     const { data: posts, isLoading, isError } = useGetBlogPosts()
     const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
     const { data: detail, isLoading: detailLoading } = useGetBlogPostDetail(selectedPostId ?? "")
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("en-US", {
             year: "numeric",
@@ -26,7 +33,15 @@ const RecentPostList: React.FC<RecentPostListProps> = ({ onEdit }) => {
             day: "numeric",
         })
     }
+    const { mutateAsync: hidePost } = useHideBlogPost()
+    const { mutateAsync: showPost } = useShowBlogPost()
+    const { mutate: deleteBlogPost } = useDeleteBlogPost()
 
+    const handleDelete = (id: number) => {
+        if (confirm("Bạn có chắc muốn xóa bài viết này?")) {
+            deleteBlogPost(id)
+        }
+    }
     const calculateReadingTime = (contents: any[]) => {
         const wordsPerMinute = 200
         const totalWords = contents.reduce((total, content) => {
@@ -82,7 +97,9 @@ const RecentPostList: React.FC<RecentPostListProps> = ({ onEdit }) => {
                             <FileText className="w-8 h-8 text-gray-400" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No Blog Posts Yet</h3>
-                        <p className="text-gray-500 mb-4">You haven&apos;t created any blog posts yet. Start writing your first post!</p>
+                        <p className="text-gray-500 mb-4">
+                            You haven&apos;t created any blog posts yet. Start writing your first post!
+                        </p>
                         <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
                             <Edit3 className="w-4 h-4 mr-2" />
                             Create Your First Post
@@ -108,98 +125,135 @@ const RecentPostList: React.FC<RecentPostListProps> = ({ onEdit }) => {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {posts.map((post) => (
-                        <Card
-                            key={post.id}
-                            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-200 bg-white overflow-hidden p-0"
-                            onClick={() => setSelectedPostId(post.id)}
-                        >
-                            {/* Post Image */}
-                            <div className="relative aspect-video w-full bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                                <img
-                                    src={post.banner || "/placeholder.svg?height=200&width=350"}
-                                    alt={`Cover image for ${post.title}`}
-                                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105 m-0"
-                                    onError={(e) => {
-                                        ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=350"
-                                    }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                {/* Edit Button Overlay */}
-                                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {posts.map((post) => {
+                        const isHide = !!post.hide
+                        return (
+                            <Card
+                                key={post.id}
+                                className={`group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-blue-200 bg-white overflow-hidden p-0 relative ${post.hide ? "opacity-50 grayscale hover:opacity-80 hover:grayscale-0" : ""
+                                    }`}
+                                onClick={() => setSelectedPostId(post.id)}
+                            >
+                                {/* Redesigned Delete Button - Top Left Corner */}
+                                <div className="absolute top-3 left-3 z-20">
                                     <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+                                        size="icon"
+                                        variant="destructive"
+                                        className="w-7 h-7 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg border-2 border-white opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            onEdit(post.id)
+                                            handleDelete(post.id)
                                         }}
+                                        title="Delete post"
                                     >
-                                        <Edit3 className="w-3 h-3 mr-1" />
-                                        Edit
+                                        <Trash className="w-3 h-3" />
                                     </Button>
                                 </div>
-                            </div>
 
-                            <CardHeader className="pb-3">
-                                {/* Topic and Date */}
-                                <div className="flex items-center justify-between gap-2 mb-3">
-                                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs">
-                                        <BookOpen className="w-3 h-3 mr-1" />
-                                        {post.topic}
-                                    </Badge>
-                                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                                        <Calendar className="w-3 h-3" />
-                                        {formatDate(post.createAt)}
+                                {/* Post Image */}
+                                <div className="relative aspect-video w-full bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                                    <img
+                                        src={post.banner || "/placeholder.svg?height=200&width=350"}
+                                        alt={`Cover image for ${post.title}`}
+                                        className={`object-cover w-full h-full transition-all duration-500 group-hover:scale-105 m-0
+    ${isHide ? "opacity-50 grayscale" : "opacity-100 grayscale-0"}
+  `}
+                                        onError={(e) => {
+                                            ; (e.target as HTMLImageElement).src = "/placeholder.svg?height=200&width=350"
+                                        }}
+                                    />
+                                
+
+                                    {/* Edit Button Overlay */}
+                                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                onEdit(post.id)
+                                            }}
+                                        >
+                                            <Edit3 className="w-3 h-3 mr-1" />
+                                            Edit
+                                        </Button>
                                     </div>
                                 </div>
 
-                                {/* Title */}
-                                <CardTitle className="text-lg font-semibold leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">
-                                    {post.title}
-                                </CardTitle>
-                            </CardHeader>
+                                <CardHeader className="pb-3 min-h-[100px]">
+                                    {/* Topic and Date */}
+                                    <div className="flex items-center justify-between gap-2 mb-3">
+                                        <Badge
+                                            variant="secondary"
+                                            className={`text-xs ${isHide ? "bg-gray-200 text-gray-600" : "bg-blue-100 text-blue-800"}`}
+                                        >
+                                            <BookOpen className="w-3 h-3 mr-1" />
+                                            {post.topic}
+                                        </Badge>
+                                        <div className={`flex items-center gap-1 text-xs ${isHide ? "text-gray-400" : "text-gray-500"}`}>
+                                            <Calendar className="w-3 h-3" />
+                                            {formatDate(post.createAt)}
+                                        </div>
+                                    </div>
 
-                            <CardContent className="pt-0 mb-[10px]">
-                                {/* Author */}
-                                <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                                    <User className="w-4 h-4" />
-                                    <span>By {post.author}</span>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex items-center justify-between">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-0 h-auto"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            setSelectedPostId(post.id)
-                                        }}
+                                    {/* Title */}
+                                    <CardTitle
+                                        className={`text-lg font-semibold leading-tight line-clamp-2 transition-colors ${isHide ? "text-gray-500 group-hover:text-gray-600" : "group-hover:text-blue-600"
+                                            }`}
                                     >
-                                        <Eye className="w-4 h-4 mr-1" />
-                                        View Details
-                                    </Button>
+                                        {post.title}
+                                    </CardTitle>
+                                </CardHeader>
 
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="bg-transparent border-blue-200 text-blue-600 hover:bg-blue-50"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            onEdit(post.id)
-                                        }}
-                                    >
-                                        <Edit3 className="w-3 h-3 mr-1" />
-                                        Edit
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                <CardContent className="pt-0 mb-[10px]">
+                                    {/* Author */}
+                                    <div className={`flex items-center gap-2 text-sm mb-3 ${isHide ? "text-gray-400" : "text-gray-600"}`}>
+                                        <User className="w-4 h-4" />
+                                        <span>By {post.author}</span>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center justify-between">
+                                        <div
+                                            className={`flex items-center gap-1 px-2 py-2 rounded cursor-default select-none 
+                                                ${isHide
+                                                    ? "text-gray-400"
+                                                    : "text-red-600 "
+                                                }`}
+                                        >
+                                            <Heart className="w-4 h-4" fill={isHide ? "#d1d5db" : "#f43f5e"} strokeWidth={1.5} />
+                                            <span className="font-semibold">{post.total}</span>
+                                        </div>
+
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className={`bg-transparent ${isHide
+                                                ? "border-gray-300 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                : "border-blue-200 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                }`}
+                                            onClick={async (e) => {
+                                                e.stopPropagation()
+                                                // Gọi API hide/show tùy trạng thái
+                                                if (isHide) {
+                                                    // Gọi API hiện lại
+                                                    await showPost(post.id)
+                                                } else {
+                                                    // Gọi API ẩn bài viết
+                                                    await hidePost(post.id)
+                                                }
+                                                queryClient.invalidateQueries({ queryKey: ["blog-posts"] })
+                                            }}
+                                        >
+                                            <EyeOff className="w-4 h-4 mr-1" />
+                                            {isHide ? "Show Post" : "Hide Post"}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
                 </div>
             </div>
 
@@ -211,7 +265,6 @@ const RecentPostList: React.FC<RecentPostListProps> = ({ onEdit }) => {
                             <DialogTitle className="text-xl font-semibold pr-8">
                                 {detailLoading ? "Loading..." : detail?.title || "Blog Post Details"}
                             </DialogTitle>
-
                         </div>
                     </DialogHeader>
 

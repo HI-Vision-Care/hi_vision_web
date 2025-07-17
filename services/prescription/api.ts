@@ -8,11 +8,11 @@ import {
 } from "./types";
 
 export async function createPrescription(
-  patientId: string,
+  AppointmentId: string,
   payload: PrescriptionCreatePayload
 ): Promise<PrescriptionResponse> {
   const { data } = await axiosInstance.post<PrescriptionResponse>(
-    `/prescription/create?patientId=${patientId}`,
+    `/prescription/create?AppointmentId=${AppointmentId}`,
     payload
   );
   return data;
@@ -30,10 +30,10 @@ export async function addArvToPrescription(
 }
 
 export async function getArvPrescriptionsByPatientId(
-  patientId: string
+  appointmentID: string
 ): Promise<ArvPrescriptionListResponse> {
   const { data } = await axiosInstance.get<ArvPrescriptionListResponse>(
-    `/prescription/arv/${patientId}`
+    `/prescription/pre-arv/${appointmentID}`
   );
   return data;
 }

@@ -49,7 +49,11 @@ export const getAppointmentsByDoctorId = async (
 
 export async function createMedicalRecord(
   appointmentId: string,
-  data: { diagnosis: string; note: string }
+  data: {
+    diagnosis: string;
+    note: string;
+    labResults: LabResult[];
+  }
 ) {
   const response = await axiosInstance.post(
     `/doctor/create-medical-record/${appointmentId}`,

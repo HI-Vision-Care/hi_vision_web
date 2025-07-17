@@ -61,7 +61,7 @@ export interface Appointment {
     medNo: string;
     medDate: string;
     medFac: string;
-    underlyingDiseases: Array;
+    underlyingDiseases: string[];
   };
   doctor: {
     doctorID: string;
@@ -86,20 +86,21 @@ export interface Appointment {
     price: number;
     img: string;
     type: string;
-    specialty: string;
+    specialty: string | null;
     isActive: boolean;
     isRequireDoctor: boolean;
     isOnline: boolean;
     createAt: string;
+    testItems: TestItem[];
   };
   appointmentDate: string;
   isAnonymous: boolean;
   note?: string;
   createAt: string;
   status: string;
-  urlLink?: string;
+  urlLink?: string | null;
   paymentStatus?: string | null;
-  isRecordCreated: string;
+  isRecordCreated: boolean;
   isPrescriptionCreated: boolean;
 }
 
@@ -108,6 +109,13 @@ export type AppointmentStatus =
   | "ONGOING"
   | "COMPLETED"
   | "CANCELLED";
+
+export interface TestItem {
+  testName: string;
+  testDescription: string;
+  unit: string;
+  referenceRange: string;
+}
 
 export interface DoctorAppointment {
   appointmentID: string;
@@ -128,7 +136,7 @@ export interface DoctorAppointment {
     medNo: string;
     medDate: string;
     medFac: string;
-    underlyingDiseases: string;
+    underlyingDiseases: string[];
   };
   doctor: {
     doctorID: string;
@@ -153,18 +161,19 @@ export interface DoctorAppointment {
     price: number;
     img: string;
     type: string;
-    specialty: string;
+    specialty: string | null;
     isActive: boolean;
     isRequireDoctor: boolean;
     isOnline: boolean;
     createAt: string;
+    testItems: TestItem[];
   };
   appointmentDate: string;
   status: string;
   isAnonymous: boolean;
-  urlLink: string;
-  note: string;
-  paymentStatus: string | null;
+  urlLink?: string | null;
+  note?: string;
+  paymentStatus?: string | null;
   createAt: string;
   isRecordCreated: boolean;
   isPrescriptionCreated: boolean;
@@ -190,7 +199,7 @@ export interface AppointmentDetailProps {
       medNo: string;
       medDate: string;
       medFac: string;
-      underlyingDiseases: Array;
+      underlyingDiseases: string[];
     };
     doctor: {
       doctorID: string;
@@ -215,20 +224,21 @@ export interface AppointmentDetailProps {
       price: number;
       img: string;
       type: string;
-      specialty: string;
+      specialty: string | null;
       isActive: boolean;
       isRequireDoctor: boolean;
       isOnline: boolean;
       createAt: string;
+      testItems: TestItem[];
     };
     appointmentDate: string;
     isAnonymous: boolean;
     note?: string;
     createAt: string;
     status: string;
-    urlLink?: string;
+    urlLink?: string | null;
     paymentStatus?: string | null;
-    isRecordCreated: string;
+    isRecordCreated: boolean;
     isPrescriptionCreated: boolean;
   };
   onStatusUpdate?: (appointmentId: string, newStatus: string) => void;
@@ -252,7 +262,13 @@ export interface LabResult {
   referenceRange: string;
   testDate: string;
   performedBy: string;
-  status: "normal" | "abnormal" | "critical";
+}
+
+export interface CreateMedicalRecordInput {
+  appointmentId: string;
+  diagnosis: string;
+  note: string;
+  labResults: LabResult[];
 }
 
 export interface MedicalRecord {
@@ -272,8 +288,8 @@ export interface MedicalRecord {
 export interface MedicalRecordFormProps {
   appointmentId: string;
   record: MedicalRecord | null;
-  onBack: () => void;
   doctorName?: string;
+  testItems: TestItem[];
 }
 
 // Trong file types.ts hoặc đầu file page.tsx
