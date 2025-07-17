@@ -236,7 +236,7 @@ export interface AppointmentDetailProps {
     note?: string;
     createAt: string;
     status: string;
-    urlLink?: string | null;
+    urlLink?: string;
     paymentStatus?: string | null;
     isRecordCreated: boolean;
     isPrescriptionCreated: boolean;
@@ -290,6 +290,8 @@ export interface MedicalRecordFormProps {
   record: MedicalRecord | null;
   doctorName?: string;
   testItems: TestItem[];
+  nBack?: () => void;
+  onSuccess?: () => void; // <--- thêm dòng này!
 }
 
 // Trong file types.ts hoặc đầu file page.tsx

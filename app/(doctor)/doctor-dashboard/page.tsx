@@ -195,8 +195,15 @@ export default function DoctorDashboard() {
               record={null}
               onBack={() => setCurrentView("appointments")}
               doctorName={profile?.name || ""}
+              onSuccess={() => {
+                // Khi tạo thành công record, quay lại detail và refetch appointment (nếu có hook)
+                setCurrentView("appointments");
+                // Nếu bạn dùng SWR/react-query/fetch lại appointment detail ở AppointmentDetail
+                // thì nó sẽ update isRecordCreated => UI hiện ngay prescription
+              }}
             />
           )}
+
           {currentView === "schedule" &&
             !selectedWorkShift &&
             !isCreatingShift && (
