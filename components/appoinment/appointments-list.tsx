@@ -59,14 +59,6 @@ export default function AppointmentsList({
   }, [appointments, searchTerm, statusFilter]);
 
   // Hàm format giờ VN
-  function formatTimeUTC(isoString?: string) {
-    if (!isoString) return "--:--";
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return "--:--";
-    const hour = String(date.getUTCHours()).padStart(2, "0");
-    const minute = String(date.getUTCMinutes()).padStart(2, "0");
-    return `${hour}:${minute}`;
-  }
 
   if (isProfileLoading || isAppointmentsLoading) {
     return <div>Loading data...</div>;
@@ -135,7 +127,7 @@ export default function AppointmentsList({
                       )}
                     </div>
                     <div className="text-sm font-medium">
-                      {formatTimeUTC(appointment.appointmentDate)}
+                      {appointment.slot}
                     </div>
                   </div>
 

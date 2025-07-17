@@ -169,6 +169,7 @@ export interface DoctorAppointment {
     testItems: TestItem[];
   };
   appointmentDate: string;
+  slot: string;
   status: string;
   isAnonymous: boolean;
   urlLink?: string | null;
@@ -231,12 +232,13 @@ export interface AppointmentDetailProps {
       createAt: string;
       testItems: TestItem[];
     };
-    appointmentDate: string;
+    appointmentDate: Date;
     isAnonymous: boolean;
     note?: string;
     createAt: string;
     status: string;
     urlLink?: string;
+    slot?: string;
     paymentStatus?: string | null;
     isRecordCreated: boolean;
     isPrescriptionCreated: boolean;

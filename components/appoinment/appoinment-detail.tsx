@@ -29,20 +29,7 @@ import { useArvPrescriptionsByPatientId } from "@/services/prescription/hooks";
 import { useState } from "react";
 import UnderlyingDiseasesModal from "./UnderlyingDiseasesModal";
 import MedicalRecordForm from "./medical-record-form";
-
-function formatAppointmentTimeUTC(dateStr: string) {
-  const date = new Date(dateStr);
-  const day = date.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-  const hour = String(date.getUTCHours()).padStart(2, "0");
-  const minute = String(date.getUTCMinutes()).padStart(2, "0");
-  return `${day} at ${hour}:${minute}`;
-}
+import { formatVietnameseDate } from "@/utils/format";
 
 export default function AppointmentDetail({
   appointment,
@@ -64,8 +51,6 @@ export default function AppointmentDetail({
 
   const isAnonymous = appointment.isAnonymous;
 
-  console.log("arvPrescriptions", arvPrescriptions);
-
   return (
     <div className="space-y-6">
       {/* Header - OPTIMAL PLACEMENT #1: Primary Action Area */}
@@ -78,7 +63,8 @@ export default function AppointmentDetail({
             Appointment Details
           </h1>
           <p className="text-muted-foreground">
-            {formatAppointmentTimeUTC(appointment.appointmentDate)}
+            {formatVietnameseDate(appointment.appointmentDate)}{" "}
+            {appointment.slot}
           </p>
         </div>
         <Badge
