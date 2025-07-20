@@ -85,7 +85,7 @@ export default function MedicalRecordForm({
       (lab) => !lab.resultValue || lab.resultValue.trim() === ""
     );
     if (emptyTest) {
-      return toast.error("Bạn phải nhập kết quả cho tất cả các xét nghiệm!");
+      return toast.error("You must enter results for all tests!");
     }
     const err = validateMedicalRecord({ diagnosis, note: notes } as any);
     if (err) return toast.error(err);
@@ -95,7 +95,6 @@ export default function MedicalRecordForm({
       {
         onSuccess: (data) => {
           setCreatedRecordId(data.recordId);
-          toast.success("Medical record saved");
           if (onSuccess) onSuccess(); // <--- gọi callback về cha
         },
         onError: () => toast.error("Failed to save record"),
@@ -131,7 +130,7 @@ export default function MedicalRecordForm({
       {/* Header */}
       <div className="flex gap-2">
         <Button onClick={saveRecord} className="bg-primary">
-          Lưu kết quả xét nghiệm
+          Save test results
         </Button>
         {/* <Button onClick={submitLabResults} variant="outline">
           Gửi kết quả xét nghiệm
@@ -140,7 +139,7 @@ export default function MedicalRecordForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Hồ sơ bệnh án</CardTitle>
+          <CardTitle>Medical records</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 mb-4">
@@ -167,7 +166,7 @@ export default function MedicalRecordForm({
           <CardTitle>
             <span className="flex items-center gap-2">
               <TestTube className="h-5 w-5" />
-              Kết quả xét nghiệm
+              Test results
             </span>
           </CardTitle>
         </CardHeader>
@@ -184,7 +183,7 @@ export default function MedicalRecordForm({
               </div>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="grid gap-4 mb-4">
-                  <Label>Kết quả</Label>
+                  <Label>Results</Label>
                   <Input
                     value={lab.resultValue}
                     onChange={(e) =>
@@ -196,7 +195,7 @@ export default function MedicalRecordForm({
                   />
                 </div>
                 <div className="grid gap-4 mb-4">
-                  <Label>Đơn vị</Label>
+                  <Label>Unit</Label>
                   <Input
                     value={lab.unit || ""}
                     className="bg-gray-50"
@@ -204,7 +203,7 @@ export default function MedicalRecordForm({
                   />
                 </div>
                 <div className="grid gap-4 mb-4">
-                  <Label>Tham chiếu</Label>
+                  <Label>Reference Range</Label>
                   <Input
                     value={lab.referenceRange || ""}
                     onChange={(e) =>
@@ -217,7 +216,7 @@ export default function MedicalRecordForm({
                 </div>
               </div>
               <div className="grid gap-4 mb-4">
-                <Label>Ghi chú</Label>
+                <Label>Note</Label>
                 <Textarea
                   value={lab.resultText}
                   onChange={(e) =>
