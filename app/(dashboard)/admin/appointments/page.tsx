@@ -176,6 +176,8 @@ export default function Appointments() {
     );
   };
 
+  console.log(appointments);
+
   return (
     <div className="bg-gradient-to-tr from-blue-100 via-slate-50 to-indigo-100 min-h-screen">
       <Sidebar />
@@ -256,28 +258,19 @@ export default function Appointments() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         {/* Block ngày giờ khám */}
-                        <div className="text-center min-w-[52px]">
-                          <div className="text-sm text-gray-500">
-                            {new Date(
-                              appointment.appointmentDate
-                            ).toLocaleDateString("vi-VN", {
-                              weekday: "short",
-                              timeZone: "Asia/Ho_Chi_Minh",
-                            })}
-                          </div>
-                          <div className="text-lg font-bold">
+                        <div className="flex flex-col items-center text-center min-w-[80px]">
+                          <div className="text-2xl font-bold text-primary">
                             {new Date(appointment.appointmentDate).getDate()}
                           </div>
-                          <div className="text-sm font-medium">
+                          <div className="text-xs text-muted-foreground uppercase">
                             {new Date(
                               appointment.appointmentDate
-                            ).getUTCHours()}
-                            :
-                            {String(
-                              new Date(
-                                appointment.appointmentDate
-                              ).getUTCMinutes()
-                            ).padStart(2, "0")}
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                            })}
+                          </div>
+                          <div className="text-sm font-medium">
+                            {appointment.slot}
                           </div>
                         </div>
 

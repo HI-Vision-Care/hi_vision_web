@@ -63,8 +63,7 @@ export interface Appointment {
   note?: string;
   urlLink?: string;
   status: string;
+  slot: string;
   paymentStatus?: string | null;
   createAt: string;
 }
-
-
