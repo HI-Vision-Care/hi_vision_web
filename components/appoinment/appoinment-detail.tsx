@@ -50,6 +50,7 @@ export default function AppointmentDetail({
   const underlyingDiseases = appointment.patient?.underlyingDiseases || [];
 
   const isAnonymous = appointment.isAnonymous;
+  console.log(appointment);
 
   return (
     <div className="space-y-6">
@@ -76,7 +77,7 @@ export default function AppointmentDetail({
           {appointment.status}
         </Badge>
 
-        {appointment.status === "ONGOING" && !appointment.isRecordCreated && (
+        {/* {appointment.status === "ONGOING" && !appointment.isRecordCreated && (
           <Button
             variant="outline"
             className="bg-primary text-white hover:bg-primary/80"
@@ -89,7 +90,7 @@ export default function AppointmentDetail({
           >
             New Record
           </Button>
-        )}
+        )} */}
         {appointment.status === "ONGOING" &&
           !appointment.isPrescriptionCreated &&
           appointment.isRecordCreated && (
@@ -194,6 +195,12 @@ export default function AppointmentDetail({
                       confirmAppointment(appointment.appointmentID)
                     }
                     className="bg-yellow-200 text-black hover:bg-yellow-400"
+                    disabled={appointment.paymentStatus === "UNPAID"}
+                    title={
+                      appointment.paymentStatus === "UNPAID"
+                        ? "Patient has not paid yet."
+                        : ""
+                    }
                   >
                     Start Examination
                   </Button>
