@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Brain, X, Sparkles } from "lucide-react";
 import { useGetUserProfile } from "@/services/account/hook";
 import { useAccountId } from "@/hooks/useAccountId";
+import { useRouter } from "next/navigation";
 
 export type Message = {
   sender: "user" | "bot";
@@ -45,8 +46,25 @@ function calculateAge(dob: string) {
   return age;
 }
 
+const SERVICE_LIST_KEYWORDS = [
+  "xem dịch vụ",
+  "danh sách dịch vụ",
+  "liệt kê dịch vụ",
+  "các dịch vụ",
+  "những dịch vụ nào",
+  "list dịch vụ",
+  "show dịch vụ",
+  "dịch vụ nào",
+];
+function isServiceListIntent(text: string) {
+  const lower = text.toLowerCase();
+  return SERVICE_LIST_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
 export default function ModernChatWidget() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [showServiceButton, setShowServiceButton] = useState(false);
   const [prompt, setPrompt] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -70,8 +88,21 @@ export default function ModernChatWidget() {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = async (messageText?: string) => {
+    setShowServiceButton(false);
     const textToSend = messageText || prompt.trim();
     if (!textToSend) return;
+
+    if (isServiceListIntent(textToSend)) {
+      const userMessage: Message = { sender: "user", text: textToSend };
+      setMessages((prev) => [
+        ...prev,
+        userMessage,
+        { sender: "bot", text: "show_service_button" },
+      ]);
+      setShowServiceButton(true);
+      setPrompt("");
+      return;
+    }
 
     const userMessage: Message = { sender: "user", text: textToSend };
     const newMessages = [...messages, userMessage];
@@ -218,17 +249,41 @@ export default function ModernChatWidget() {
                       msg.sender === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <div
-                      className={`max-w-[80%] p-3 rounded-2xl ${
-                        msg.sender === "user"
-                          ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                          : "bg-white border border-gray-200 text-gray-800 shadow-sm"
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                    </div>
+                    {/* Nếu là bubble đặc biệt thì render cả text + button */}
+                    {msg.sender === "bot" &&
+                    msg.text === "show_service_button" ? (
+                      <div className="max-w-[80%] p-3 rounded-2xl bg-white border border-gray-200 text-gray-800 shadow-sm flex flex-col gap-2">
+                        <p className="text-sm whitespace-pre-wrap">
+                          Bạn muốn xem các dịch vụ của HI-Vision? Bấm vào nút
+                          bên dưới để truy cập trang dịch vụ!
+                        </p>
+                        <Button
+                          onClick={() => {
+                            router.push("/services");
+                            setIsOpen(false);
+                            setShowServiceButton(false);
+                          }}
+                          className="w-fit bg-gradient-to-r from-blue-500 to-purple-600 text-white px-5 py-2 rounded-lg font-semibold shadow hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+                        >
+                          Xem các dịch vụ
+                        </Button>
+                      </div>
+                    ) : (
+                      <div
+                        className={`max-w-[80%] p-3 rounded-2xl ${
+                          msg.sender === "user"
+                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                            : "bg-white border border-gray-200 text-gray-800 shadow-sm"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">
+                          {msg.text}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
+
                 {loading && (
                   <div className="flex justify-start">
                     <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm">
