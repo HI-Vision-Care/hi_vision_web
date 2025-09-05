@@ -30,13 +30,9 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLogin, useRegister } from "@/services/auth/hooks";
+import { useGoogleLogin, useLogin, useRegister } from "@/services/auth/hooks";
 import Cookies from "js-cookie";
-import {
-  GoogleLogin,
-  CredentialResponse,
-  useGoogleLogin,
-} from "@react-oauth/google";
+import { useGoogleLogin as useGoogleOAuth } from "@react-oauth/google";
 
 export type FormType = "sign-in" | "sign-up";
 
@@ -157,116 +153,48 @@ const AuthForm = ({ type }: { type: FormType }) => {
   };
 
   // đặt trong AuthForm, ngay sau các hook như useRouter / useState ...
-  const API_BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
-  async function handleGoogleLogin(res: CredentialResponse) {
-    try {
-      const idToken = res.credential;
-      if (!idToken) {
-        toast.error("Google login failed: missing credential.");
+  const googleLoginMutation = useGoogleLogin();
+
+  const googleOAuth = useGoogleOAuth({
+    flow: "implicit",
+    scope: "openid email profile",
+    onSuccess: async (tokenResponse) => {
+      const accessToken = tokenResponse.access_token;
+      if (!accessToken) {
+        toast.error("Google login failed: missing access token.");
         return;
       }
 
-      const response = await fetch(`${API_BASE}/auth/google/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // để nhận cookie HttpOnly nếu BE set
-        body: JSON.stringify({ id_token: idToken }),
-      });
+      googleLoginMutation.mutate(
+        { accessToken },
+        {
+          onSuccess: (res) => {
+            const token = res.data.accessToken;
+            const role = res.data.role;
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error || "Google sign-in failed.");
-      }
+            if (token) Cookies.set("token", token, { expires: 7 });
+            if (role) Cookies.set("role", role, { expires: 7 });
 
-      // BE có thể trả user/token/role hoặc chỉ set cookie
-      const data = await response.json().catch(() => ({} as any));
-
-      // Ưu tiên dùng token/role nếu BE trả về (giữ nguyên logic app bạn)
-      const token = data?.token;
-      const role = data?.role;
-
-      if (token && role) {
-        Cookies.set("token", token, { expires: 7 });
-        Cookies.set("role", role, { expires: 7 });
-        toast.success("Signed in with Google.");
-        switch (role) {
-          case "ADMIN":
-            router.push("/admin/accounts");
-            return;
-          case "STAFF":
-            router.push("/admin/appointments");
-            return;
-          case "DOCTOR":
-            router.push("/doctor-dashboard");
-            return;
-          default:
-            router.push("/");
-            return;
+            toast.success("Signed in with Google.");
+            switch (role) {
+              case "ADMIN":
+                router.push("/admin/accounts");
+                break;
+              case "STAFF":
+                router.push("/admin/appointments");
+                break;
+              case "DOCTOR":
+                router.push("/doctor-dashboard");
+                break;
+              default:
+                router.push("/");
+            }
+          },
+          onError: (err) =>
+            toast.error(err.message || "Google sign-in failed."),
         }
-      }
-
-      // Fallback: nếu BE dùng cookie HttpOnly và không trả role,
-      // bạn có thể gọi 1 endpoint /auth/me để lấy profile/role rồi điều hướng.
-      // Ở đây, nếu không có role thì về trang chủ:
-      toast.success("Signed in with Google.");
-      router.push("/");
-    } catch (e: any) {
-      toast.error(e?.message || "Google sign-in failed.");
-    }
-  }
-
-  const googleLogin = useGoogleLogin({
-    flow: "implicit",
-    scope: "openid email profile", // để BE có thể lấy email/profile nếu cần
-    onSuccess: async (tokenResponse) => {
-      try {
-        const accessToken = tokenResponse.access_token;
-        if (!accessToken) {
-          toast.error("Google login failed: missing access token.");
-          return;
-        }
-
-        const res = await fetch(`${API_BASE}/auth/google/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include", // nếu BE còn set cookie HttpOnly
-          body: JSON.stringify({ accessToken }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err?.message || "Google sign-in failed.");
-        }
-
-        const data = await res.json();
-
-        // Tuỳ BE của bạn: ví dụ swagger đang show { code, message, data: { authenticated, accessToken } }
-        const beToken = data?.data?.accessToken || data?.token;
-        const role = data?.data?.role || data?.role;
-
-        if (beToken) Cookies.set("token", beToken, { expires: 7 });
-        if (role) Cookies.set("role", role, { expires: 7 });
-
-        toast.success("Signed in with Google.");
-
-        // Điều hướng theo role nếu có, nếu không thì về trang chủ
-        switch (role) {
-          case "ADMIN":
-            router.push("/admin/accounts");
-            break;
-          case "STAFF":
-            router.push("/admin/appointments");
-            break;
-          case "DOCTOR":
-            router.push("/doctor-dashboard");
-            break;
-          default:
-            router.push("/");
-        }
-      } catch (e: any) {
-        toast.error(e?.message || "Google sign-in failed.");
-      }
+      );
     },
     onError: () => toast.error("Google sign-in failed."),
   });
@@ -447,7 +375,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
                 <button
                   type="button"
-                  onClick={() => googleLogin()}
+                  onClick={() => googleOAuth()}
                   className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-medium py-3 rounded-lg transition-all duration-300 shadow-sm flex items-center justify-center gap-2"
                 >
                   <GoogleMark />

@@ -1,5 +1,7 @@
 import axiosInstance from "@/config/axios";
 import type {
+  GoogleLoginRequest,
+  GoogleLoginResponse,
   LoginPayload,
   LoginResponse,
   RegisterPayload,
@@ -25,3 +27,15 @@ export async function register(
   );
   return data;
 }
+
+// api.ts
+
+export const googleLoginApi = async (
+  data: GoogleLoginRequest
+): Promise<GoogleLoginResponse> => {
+  const res = await axiosInstance.post<GoogleLoginResponse>(
+    "/auth/google/login",
+    data
+  );
+  return res.data;
+};
