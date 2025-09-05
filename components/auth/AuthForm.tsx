@@ -20,7 +20,6 @@ import {
   Phone,
 } from "lucide-react";
 import { useState } from "react";
-
 import {
   Form,
   FormField,
@@ -33,6 +32,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin, useRegister } from "@/services/auth/hooks";
 import Cookies from "js-cookie";
+import {
+  GoogleLogin,
+  CredentialResponse,
+  useGoogleLogin,
+} from "@react-oauth/google";
 
 export type FormType = "sign-in" | "sign-up";
 
@@ -52,6 +56,27 @@ const authFormSchema = (type: FormType) =>
             .max(15, "Phone number must be no more than 15 digits")
         : z.string().optional(),
   });
+
+const GoogleMark = () => (
+  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+    <path
+      fill="#FFC107"
+      d="M43.611 20.083H42V20H24v8h11.303C33.826 32.676 29.322 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.641 6.053 29.59 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"
+    ></path>
+    <path
+      fill="#FF3D00"
+      d="M6.306 14.691l6.571 4.818C14.63 16.045 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.641 6.053 29.59 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+    ></path>
+    <path
+      fill="#4CAF50"
+      d="M24 44c5.258 0 10.053-2.007 13.66-5.279l-6.3-5.317C29.322 36 24 36 24 36c-5.303 0-9.794-3.303-11.289-7.917l-6.54 5.035C9.466 39.556 16.14 44 24 44z"
+    ></path>
+    <path
+      fill="#1976D2"
+      d="M43.611 20.083H42V20H24v8h11.303c-1.087 3.176-3.61 5.693-6.943 6.917l6.3 5.317C36.211 41.088 44 36 44 24c0-1.341-.138-2.651-.389-3.917z"
+    ></path>
+  </svg>
+);
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
@@ -130,6 +155,121 @@ const AuthForm = ({ type }: { type: FormType }) => {
       );
     }
   };
+
+  // đặt trong AuthForm, ngay sau các hook như useRouter / useState ...
+  const API_BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+
+  async function handleGoogleLogin(res: CredentialResponse) {
+    try {
+      const idToken = res.credential;
+      if (!idToken) {
+        toast.error("Google login failed: missing credential.");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/auth/google/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // để nhận cookie HttpOnly nếu BE set
+        body: JSON.stringify({ id_token: idToken }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error || "Google sign-in failed.");
+      }
+
+      // BE có thể trả user/token/role hoặc chỉ set cookie
+      const data = await response.json().catch(() => ({} as any));
+
+      // Ưu tiên dùng token/role nếu BE trả về (giữ nguyên logic app bạn)
+      const token = data?.token;
+      const role = data?.role;
+
+      if (token && role) {
+        Cookies.set("token", token, { expires: 7 });
+        Cookies.set("role", role, { expires: 7 });
+        toast.success("Signed in with Google.");
+        switch (role) {
+          case "ADMIN":
+            router.push("/admin/accounts");
+            return;
+          case "STAFF":
+            router.push("/admin/appointments");
+            return;
+          case "DOCTOR":
+            router.push("/doctor-dashboard");
+            return;
+          default:
+            router.push("/");
+            return;
+        }
+      }
+
+      // Fallback: nếu BE dùng cookie HttpOnly và không trả role,
+      // bạn có thể gọi 1 endpoint /auth/me để lấy profile/role rồi điều hướng.
+      // Ở đây, nếu không có role thì về trang chủ:
+      toast.success("Signed in with Google.");
+      router.push("/");
+    } catch (e: any) {
+      toast.error(e?.message || "Google sign-in failed.");
+    }
+  }
+
+  const googleLogin = useGoogleLogin({
+    flow: "implicit",
+    scope: "openid email profile", // để BE có thể lấy email/profile nếu cần
+    onSuccess: async (tokenResponse) => {
+      try {
+        const accessToken = tokenResponse.access_token;
+        if (!accessToken) {
+          toast.error("Google login failed: missing access token.");
+          return;
+        }
+
+        const res = await fetch(`${API_BASE}/auth/google/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include", // nếu BE còn set cookie HttpOnly
+          body: JSON.stringify({ accessToken }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.message || "Google sign-in failed.");
+        }
+
+        const data = await res.json();
+
+        // Tuỳ BE của bạn: ví dụ swagger đang show { code, message, data: { authenticated, accessToken } }
+        const beToken = data?.data?.accessToken || data?.token;
+        const role = data?.data?.role || data?.role;
+
+        if (beToken) Cookies.set("token", beToken, { expires: 7 });
+        if (role) Cookies.set("role", role, { expires: 7 });
+
+        toast.success("Signed in with Google.");
+
+        // Điều hướng theo role nếu có, nếu không thì về trang chủ
+        switch (role) {
+          case "ADMIN":
+            router.push("/admin/accounts");
+            break;
+          case "STAFF":
+            router.push("/admin/appointments");
+            break;
+          case "DOCTOR":
+            router.push("/doctor-dashboard");
+            break;
+          default:
+            router.push("/");
+        }
+      } catch (e: any) {
+        toast.error(e?.message || "Google sign-in failed.");
+      }
+    },
+    onError: () => toast.error("Google sign-in failed."),
+  });
 
   return (
     <div className="min-h-[calc(100vh-120px)] flex items-center justify-center py-12">
@@ -299,6 +439,20 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     </div>
                   )}
                 </Button>
+                <div className="my-6 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs text-slate-500">OR</span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => googleLogin()}
+                  className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-medium py-3 rounded-lg transition-all duration-300 shadow-sm flex items-center justify-center gap-2"
+                >
+                  <GoogleMark />
+                  <span>Continue with Google</span>
+                </button>
               </form>
             </Form>
 

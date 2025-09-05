@@ -60,3 +60,20 @@ export interface DoctorProfile {
   gender: string;
   avatar: string;
 }
+
+// services/auth/types.ts (bổ sung)
+export type GoogleLoginPayload = {
+  accessToken: string; // access token nhận từ Google SDK
+};
+
+export type GoogleLoginResponseData = {
+  authenticated: boolean;
+  accessToken: string; // JWT của BE trả về (dùng cho Authorization)
+};
+
+// Nếu muốn giữ đúng wrapper của BE:
+export type ApiResponse<T> = {
+  code: number;
+  message: string;
+  data: T;
+};

@@ -3,8 +3,11 @@
 import axiosInstance from "@/config/axios";
 import {
   AccountUI,
+  ApiResponse,
   CreateAccountPayload,
   DoctorProfile,
+  GoogleLoginPayload,
+  GoogleLoginResponseData,
   PatientProfile,
   StaffProfile,
 } from "./types";
@@ -51,4 +54,13 @@ export async function getDoctorProfile(
 ): Promise<DoctorProfile> {
   const { data } = await axiosInstance.get(`/doctor/profile/${accountId}`);
   return data;
+}
+
+export async function googleLogin(
+  payload: GoogleLoginPayload
+): Promise<GoogleLoginResponseData> {
+  const { data } = await axiosInstance.post<
+    ApiResponse<GoogleLoginResponseData>
+  >("/auth/google/login", payload);
+  return data.data; // trả về { authenticated, accessToken }
 }

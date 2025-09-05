@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // hooks.ts
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import {
   getAllAccounts,
   updateAccount,
@@ -9,11 +10,13 @@ import {
   getPatientProfile,
   getDoctorProfile,
   getStaffProfile,
+  googleLogin,
 } from "./api";
 import {
   AccountUI,
   CreateAccountPayload,
   DoctorProfile,
+  GoogleLoginResponseData,
   PatientProfile,
   StaffProfile,
 } from "./types";
@@ -112,4 +115,61 @@ export function useGetUserProfile(
     },
     enabled: !!accountId && !!role,
   });
+}
+
+export const TOKEN_KEY = "auth_token"; // trùng với axios interceptor của bạn
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
+
+function loadGsiScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.google?.accounts) return resolve();
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Failed to load Google script"));
+    document.head.appendChild(s);
+  });
+}
+
+// --- add ---
+export function useGoogleLoginWeb() {
+  const tokenClientRef = useRef<any>(null);
+
+  const mutation = useMutation<GoogleLoginResponseData, Error, string>({
+    mutationFn: (accessToken) => googleLogin({ accessToken }),
+    onSuccess: (res) => {
+      if (res?.accessToken) {
+        localStorage.setItem(TOKEN_KEY, res.accessToken);
+      }
+    },
+  });
+
+  useEffect(() => {
+    (async () => {
+      await loadGsiScript();
+      tokenClientRef.current = window.google!.accounts.oauth2.initTokenClient({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+        scope: "openid email profile",
+        callback: (resp: { access_token?: string; error?: string }) => {
+          if (resp?.access_token) mutation.mutate(resp.access_token);
+        },
+      });
+    })();
+  }, []);
+
+  const loginWithGoogle = () => tokenClientRef.current?.requestAccessToken();
+
+  return {
+    loginWithGoogle,
+    isLoading: mutation.isPending,
+    data: mutation.data,
+    error: mutation.error,
+  };
 }
