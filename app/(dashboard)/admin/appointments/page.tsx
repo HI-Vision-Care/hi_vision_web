@@ -80,7 +80,6 @@ export default function Appointments() {
   const accountId = useAccountId();
   const { data: profile } = useGetUserProfile(accountId, "STAFF");
   const staffId = (profile as StaffProfile)?.staffId;
-  console.log(staffId);
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =

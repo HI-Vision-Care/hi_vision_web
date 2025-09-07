@@ -17,6 +17,7 @@ import {
   User2,
   Pill,
   LayoutDashboard,
+  BanknoteArrowDown,
 } from "lucide-react";
 
 //navigation sidebar doctor-dashboard
@@ -65,6 +66,7 @@ export const staffNavigation = [
     icon: LayoutDashboard,
   },
   { name: "Shift Management", href: "/admin/shifts", icon: Clock },
+  { name: "With Draw", href: "/admin/withdraws", icon: BanknoteArrowDown },
 ];
 
 //Routes
