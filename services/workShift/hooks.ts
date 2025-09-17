@@ -5,8 +5,9 @@ import {
   getWorkShiftsByDoctorId,
   getWorkShiftsOfWeek,
   registerWorkShifts,
+  updateWorkShift,
 } from "./api";
-import { WorkShiftRegistrationList } from "./types";
+import { WorkShiftRegistrationList, WorkShiftUpdatePayload } from "./types";
 
 // Hook lấy danh sách WorkShifts
 export function useWorkShifts(options = {}) {
@@ -48,6 +49,36 @@ export function useWorkShiftsByDoctorId(doctorId: string, options = {}) {
     queryKey: ["workShifts", "doctor", doctorId],
     queryFn: () => getWorkShiftsByDoctorId(doctorId),
     enabled: !!doctorId,
+    ...options,
+  });
+}
+
+// Cập nhật work shift theo wsID
+export function useUpdateWorkShift(options = {}) {
+  return useMutation({
+    mutationFn: ({
+      wsID,
+      payload,
+    }: {
+      wsID: number | string;
+      payload: WorkShiftUpdatePayload;
+    }) => updateWorkShift(wsID, payload),
+    ...options,
+  });
+}
+
+// (tuỳ chọn) Nếu bạn hay đổi mỗi status:
+export function useUpdateWorkShiftStatus(options = {}) {
+  return useMutation({
+    mutationFn: ({
+      wsID,
+      status,
+      note,
+    }: {
+      wsID: number | string;
+      status: string;
+      note?: string | null;
+    }) => updateWorkShift(wsID, { status, note }),
     ...options,
   });
 }

@@ -15,9 +15,9 @@ import {
   Home,
   Calendar,
   User2,
-  Pill,
   LayoutDashboard,
   BanknoteArrowDown,
+  PackageSearch,
 } from "lucide-react";
 
 //navigation sidebar doctor-dashboard
@@ -42,13 +42,16 @@ export const navigation = [
 //Admin Sidebar
 
 export const adminNavigation = [
-  // { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Manage Accounts", href: "/admin/accounts", icon: User2 },
   { name: "Manage Doctors", href: "/admin/doctors", icon: UserCheck },
   { name: "All Patients", href: "/admin/patients", icon: Users },
-  { name: "ARV Regimens", href: "/admin/arv-regimens", icon: Pill },
   { name: "Appointments", href: "/admin/appointments", icon: Calendar },
   { name: "Consultants", href: "/admin/consultant", icon: Calendar },
+  {
+    name: "Product Management",
+    href: "/admin/product-management",
+    icon: PackageSearch,
+  },
   {
     name: "Post-Management",
     href: "/admin/post-management",
@@ -64,6 +67,11 @@ export const staffNavigation = [
     name: "Post-Management",
     href: "/admin/post-management",
     icon: LayoutDashboard,
+  },
+  {
+    name: "Product Management",
+    href: "/admin/product-management",
+    icon: PackageSearch,
   },
   { name: "Shift Management", href: "/admin/shifts", icon: Clock },
   { name: "With Draw", href: "/admin/withdraws", icon: BanknoteArrowDown },

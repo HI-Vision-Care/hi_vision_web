@@ -211,6 +211,7 @@ export default function DoctorDashboard() {
                 workShifts={workShifts}
                 onShiftSelect={handleWorkShiftSelect}
                 onCreateNew={handleCreateNewShift}
+                doctorId={doctorId}
               />
             )}
           {currentView === "schedule" &&
@@ -220,6 +221,7 @@ export default function DoctorDashboard() {
                 onSave={handleSaveWorkShift}
                 onDelete={handleDeleteWorkShift}
                 onBack={handleBackToSchedule}
+                doctorId={doctorId || ""}
               />
             )}
           {/* {currentView === "medications" &&

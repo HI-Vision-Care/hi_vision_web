@@ -44,38 +44,42 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Updated color palette for medical theme with blue primary colors */
+  --background: oklch(1 0 0); /* #ffffff - Clean white background */
+  --foreground: oklch(0.556 0 0); /* #4b5563 - Professional gray text */
+  --card: oklch(0.985 0 0); /* #f9fafb - Light gray for cards */
+  --card-foreground: oklch(0.439 0 0); /* #374151 - Darker text for cards */
+  --popover: oklch(1 0 0); /* #ffffff - White popover background */
+  --popover-foreground: oklch(0.556 0 0); /* #4b5563 - Gray popover text */
+  --primary: oklch(0.569 0.175 252.417); /* #2563eb - Medical blue primary */
+  --primary-foreground: oklch(1 0 0); /* #ffffff - White text on primary */
+  --secondary: oklch(0.708 0.118 252.417); /* #60a5fa - Light blue accent */
+  --secondary-foreground: oklch(1 0 0); /* #ffffff - White text on secondary */
+  --muted: oklch(0.97 0.02 252.417); /* #f0f4ff - Very light blue for muted */
+  --muted-foreground: oklch(0.439 0 0); /* #374151 - Dark text for muted */
+  --accent: oklch(0.708 0.118 252.417); /* #60a5fa - Blue accent */
+  --accent-foreground: oklch(1 0 0); /* #ffffff - White text on accent */
+  --destructive: oklch(0.577 0.245 27.325); /* #dc2626 - Red for errors */
+  --destructive-foreground: oklch(
+    1 0 0
+  ); /* #ffffff - White text on destructive */
+  --border: oklch(0.922 0 0); /* #e5e7eb - Light gray borders */
+  --input: oklch(1 0 0); /* #ffffff - White input background */
+  --ring: oklch(0.708 0.118 252.417); /* #60a5fa - Blue focus ring */
   --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-2: oklch(0.6 0.118 252.417);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.5rem; /* Slightly smaller radius for medical feel */
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.439 0 0);
+  --sidebar-primary: oklch(0.922 0 0);
+  --sidebar-primary-foreground: oklch(0.556 0 0);
+  --sidebar-accent: oklch(0.708 0.118 252.417);
+  --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.708 0.118 252.417);
 }
 
 .dark {
