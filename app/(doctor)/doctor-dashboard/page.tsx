@@ -222,6 +222,7 @@ export default function DoctorDashboard() {
                 onDelete={handleDeleteWorkShift}
                 onBack={handleBackToSchedule}
                 doctorId={doctorId || ""}
+                doctorName={profile?.name || ""}
               />
             )}
           {/* {currentView === "medications" &&

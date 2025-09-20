@@ -64,7 +64,7 @@
     1 0 0
   ); /* #ffffff - White text on destructive */
   --border: oklch(0.922 0 0); /* #e5e7eb - Light gray borders */
-  --input: oklch(1 0 0); /* #ffffff - White input background */
+  --input: oklch(0.85 0 0); /* #ffffff - White input background */
   --ring: oklch(0.708 0.118 252.417); /* #60a5fa - Blue focus ring */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 252.417);

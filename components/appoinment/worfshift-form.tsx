@@ -37,6 +37,7 @@ interface WorkShiftFormProps {
   onDelete: (shiftId: string) => void;
   onBack: () => void;
   doctorId: string;
+  doctorName?: string;
 }
 
 export default function WorkShiftForm({
@@ -45,6 +46,7 @@ export default function WorkShiftForm({
   onDelete,
   onBack,
   doctorId,
+  doctorName,
 }: WorkShiftFormProps) {
   type AppointmentConflict = {
     id: string;
@@ -65,6 +67,8 @@ export default function WorkShiftForm({
     appointments: [],
     overlappingShifts: [],
   });
+
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { mutate: registerShifts, isPending: isRegistering } =
     useRegisterWorkShifts({
@@ -95,8 +99,8 @@ export default function WorkShiftForm({
   };
 
   const [formData, setFormData] = useState<Partial<WorkShift>>({
-    doctorId: "dr1",
-    doctorName: "Dr. Sarah Wilson",
+    doctorId: doctorId,
+    doctorName: doctorName,
     date: new Date().toISOString().split("T")[0],
     startTime: "09:00",
     endTime: "17:00",
@@ -128,6 +132,16 @@ export default function WorkShiftForm({
     // eslint-disable-next-line
   }, [shift]);
 
+  // Keep doctor info in-sync from props
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      doctorId,
+      doctorName,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctorId, doctorName]);
+
   useEffect(() => {
     checkConflicts();
   }, [formData.date, formData.startTime, formData.endTime]);
@@ -155,13 +169,35 @@ export default function WorkShiftForm({
     if (h >= 12 && h < 18) slot = "Afternoon";
     if (h >= 18) slot = "Evening";
 
+    // basic validation
+    if (!date || !startTime || !endTime) {
+      setFormError("Please fill in date, start and end time.");
+      return;
+    }
+
+    // Prevent creating a shift in the past (creation only)
+    if (!shift?.id) {
+      const now = new Date();
+      const start = new Date(fullStart);
+      if (isNaN(start.getTime())) {
+        setFormError("Invalid start time.");
+        return;
+      }
+      if (start < now) {
+        setFormError("You cannot create a shift in the past.");
+        return;
+      }
+    }
+
+    setFormError(null);
+
     if (!shift?.id) {
       // ----- NEW SHIFT -> REGISTER -----
       if (doctorId) {
         const payload = [
           {
             slot,
-            date,
+            date: date as string,
             startTime: fullStart,
             endTime: fullEnd,
             note: formData.note ?? "",
@@ -290,6 +326,12 @@ export default function WorkShiftForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {formError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="date">Date</Label>
@@ -297,29 +339,32 @@ export default function WorkShiftForm({
                     id="date"
                     type="date"
                     value={formData.date}
+                    min={!shift?.id ? new Date().toISOString().split("T")[0] : undefined}
                     onChange={(e) => handleInputChange("date", e.target.value)}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Scheduled">Scheduled</SelectItem>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {shift?.id && (
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        handleInputChange("status", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-4">
