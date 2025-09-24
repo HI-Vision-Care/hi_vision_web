@@ -82,13 +82,13 @@ export const desktopNav = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about-us" },
   { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
+  { label: "Blog", href: "/blog" },
 ];
 
 export const mobileNav = [
   { label: "About", href: "/about-us" },
   { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
+  { label: "Blog", href: "/blog" },
 ];
 
 // Dummy data

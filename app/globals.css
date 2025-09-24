@@ -144,6 +144,6 @@
 
   .swiper-button-next::after,
   .swiper-button-prev::after {
-    font-size: 14px !important; /* Thu nhỏ icon */
+    font-size: 14px !important;
   }
 }

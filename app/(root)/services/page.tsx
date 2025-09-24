@@ -31,9 +31,7 @@ export default function ServicesPage() {
     return services.filter((service) => {
       // --- Filter theo loại dịch vụ ---
       const matchType =
-        type === "all" ||
-        service.type?.toLowerCase() === type ||
-        service.type?.toLowerCase().includes(type);
+        type === "all" || service.type === type || service.type?.includes(type);
 
       // --- Filter theo trạng thái (online/in-person/active) ---
       let matchAvailability = true;
@@ -90,11 +88,8 @@ export default function ServicesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="testing">Testing</SelectItem>
-                  <SelectItem value="consultation">Consultation</SelectItem>
-                  <SelectItem value="treatment">Treatment</SelectItem>
-                  <SelectItem value="prevention">Prevention</SelectItem>
-                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="Test">Test</SelectItem>
+                  <SelectItem value="HIV,Test">HIV,Test</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -105,7 +100,6 @@ export default function ServicesPage() {
                 <SelectContent>
                   <SelectItem value="all">All Services</SelectItem>
                   <SelectItem value="online">Online Available</SelectItem>
-                  <SelectItem value="in-person">In-Person Only</SelectItem>
                   <SelectItem value="active">Active Only</SelectItem>
                 </SelectContent>
               </Select>
