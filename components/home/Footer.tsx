@@ -145,10 +145,10 @@ const Footer = () => {
                 Duc City, HCMC
               </li>
               <li className="flex items-center gap-2">
-                <Mail size={16} /> contact@hivisionclinic.vn
+                <Mail size={16} /> support@hi-vision.io
               </li>
               <li className="flex items-center gap-2">
-                <Phone size={16} /> 1900 633 123
+                <Phone size={16} /> (+84) 792 191 402
               </li>
               <li className="flex items-center gap-2">
                 <Clock size={16} /> Mon - Sat: 8:00 AM - 5:00 PM

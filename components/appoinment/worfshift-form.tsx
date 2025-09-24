@@ -26,12 +26,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WorkShift } from "@/services/workShift/types";
+import {
+  useRegisterWorkShifts,
+  useUpdateWorkShift,
+} from "@/services/workShift/hooks";
 
 interface WorkShiftFormProps {
   shift: WorkShift | null;
   onSave: (shift: WorkShift) => void;
   onDelete: (shiftId: string) => void;
   onBack: () => void;
+  doctorId: string;
+  doctorName?: string;
 }
 
 export default function WorkShiftForm({
@@ -39,6 +45,8 @@ export default function WorkShiftForm({
   onSave,
   onDelete,
   onBack,
+  doctorId,
+  doctorName,
 }: WorkShiftFormProps) {
   type AppointmentConflict = {
     id: string;
@@ -59,7 +67,17 @@ export default function WorkShiftForm({
     appointments: [],
     overlappingShifts: [],
   });
-  console.log(shift);
+
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const { mutate: registerShifts, isPending: isRegistering } =
+    useRegisterWorkShifts({
+      onSuccess: () => onBack(),
+    });
+  const { mutate: updateShift, isPending: isUpdating } = useUpdateWorkShift({
+    onSuccess: () => onBack(),
+  });
+  const isSaving = isRegistering || isUpdating;
 
   const toDateInputValue = (iso: string) => {
     if (!iso) return "";
@@ -81,8 +99,8 @@ export default function WorkShiftForm({
   };
 
   const [formData, setFormData] = useState<Partial<WorkShift>>({
-    doctorId: "dr1",
-    doctorName: "Dr. Sarah Wilson",
+    doctorId: doctorId,
+    doctorName: doctorName,
     date: new Date().toISOString().split("T")[0],
     startTime: "09:00",
     endTime: "17:00",
@@ -114,6 +132,16 @@ export default function WorkShiftForm({
     // eslint-disable-next-line
   }, [shift]);
 
+  // Keep doctor info in-sync from props
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      doctorId,
+      doctorName,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctorId, doctorName]);
+
   useEffect(() => {
     checkConflicts();
   }, [formData.date, formData.startTime, formData.endTime]);
@@ -126,15 +154,73 @@ export default function WorkShiftForm({
     }));
   };
 
+  // Sửa handleSave:
   const handleSave = () => {
-    // Nếu cần gửi về "2025-07-14T13:00:00"
-    const date = formData.date; // "2025-07-14"
-    const startTime = formData.startTime; // "13:00"
-    const endTime = formData.endTime; // "17:00"
-    // Convert thành "2025-07-14T13:00:00"
+    const date = formData.date; // "yyyy-MM-dd"
+    const startTime = formData.startTime; // "HH:mm"
+    const endTime = formData.endTime; // "HH:mm"
+
     const fullStart = date && startTime ? `${date}T${startTime}:00` : "";
     const fullEnd = date && endTime ? `${date}T${endTime}:00` : "";
 
+    // Suy luận slot đơn giản theo giờ bắt đầu
+    let slot = "Morning";
+    const h = startTime ? parseInt(startTime.split(":")[0], 10) : 8;
+    if (h >= 12 && h < 18) slot = "Afternoon";
+    if (h >= 18) slot = "Evening";
+
+    // basic validation
+    if (!date || !startTime || !endTime) {
+      setFormError("Please fill in date, start and end time.");
+      return;
+    }
+
+    // Prevent creating a shift in the past (creation only)
+    if (!shift?.id) {
+      const now = new Date();
+      const start = new Date(fullStart);
+      if (isNaN(start.getTime())) {
+        setFormError("Invalid start time.");
+        return;
+      }
+      if (start < now) {
+        setFormError("You cannot create a shift in the past.");
+        return;
+      }
+    }
+
+    setFormError(null);
+
+    if (!shift?.id) {
+      // ----- NEW SHIFT -> REGISTER -----
+      if (doctorId) {
+        const payload = [
+          {
+            slot,
+            date: date as string,
+            startTime: fullStart,
+            endTime: fullEnd,
+            note: formData.note ?? "",
+          },
+        ];
+        registerShifts({ doctorID: doctorId, payload });
+      }
+    } else {
+      // ----- EDIT SHIFT -> UPDATE -----
+      updateShift({
+        wsID: shift.id,
+        payload: {
+          slot,
+          date,
+          startTime: fullStart,
+          endTime: fullEnd,
+          status: formData.status, // giữ status người dùng chọn
+          note: formData.note ?? null,
+        },
+      });
+    }
+
+    // (tuỳ chọn) giữ lại onSave local nếu bạn vẫn muốn cập nhật UI tạm thời:
     const shiftToSave: WorkShift = {
       ...formData,
       startTime: fullStart,
@@ -199,9 +285,10 @@ export default function WorkShiftForm({
           </h1>
           <p className="text-muted-foreground">
             {shift
-              ? `Last updated: ${new Date(
-                  shift.updatedAt ?? ""
-                ).toLocaleString()}`
+              ? `Last updated: ${new Date(shift.updatedAt ?? "").toLocaleString(
+                  "vi-VN",
+                  { hour12: false }
+                )}`
               : "Schedule a new work shift"}
           </p>
         </div>
@@ -218,10 +305,11 @@ export default function WorkShiftForm({
           )}
           <Button
             onClick={handleSave}
+            disabled={isSaving}
             className="bg-primary hover:bg-primary/90"
           >
             <Save className="h-4 w-4 mr-2" />
-            Save Shift
+            {isSaving ? "Đang lưu..." : "Save Shift"}
           </Button>
         </div>
       </div>
@@ -238,6 +326,12 @@ export default function WorkShiftForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {formError && (
+                <Alert variant="destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="date">Date</Label>
@@ -245,29 +339,32 @@ export default function WorkShiftForm({
                     id="date"
                     type="date"
                     value={formData.date}
+                    min={!shift?.id ? new Date().toISOString().split("T")[0] : undefined}
                     onChange={(e) => handleInputChange("date", e.target.value)}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      handleInputChange("status", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Available">Available</SelectItem>
-                      <SelectItem value="Scheduled">Scheduled</SelectItem>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                      <SelectItem value="Cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {shift?.id && (
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        handleInputChange("status", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Scheduled">Scheduled</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Completed">Completed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -377,7 +474,7 @@ export default function WorkShiftForm({
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3 text-muted-foreground" />
                     <span className="text-sm">
-                      {new Date(formData.date).toLocaleDateString()}
+                      {new Date(formData.date!).toLocaleDateString("vi-VN")}
                     </span>
                   </div>
                 </div>

@@ -19,7 +19,7 @@ export interface Doctor {
 
 export interface WorkShift {
   id?: number;
-  doctor?: Doctor; 
+  doctor?: Doctor;
   slot?: string;
   date?: string;
   startTime?: string;
@@ -43,3 +43,12 @@ export interface WorkShiftRegistrationPayload {
 }
 
 export type WorkShiftRegistrationList = WorkShiftRegistrationPayload[];
+
+export interface WorkShiftUpdatePayload {
+  slot?: string;
+  date?: string; // "yyyy-MM-dd" hoặc ISO, theo backend bạn trả
+  startTime?: string; // ISO datetime "yyyy-MM-ddTHH:mm:ss"
+  endTime?: string; // ISO datetime
+  status?: string;
+  note?: string | null;
+}

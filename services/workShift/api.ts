@@ -1,5 +1,9 @@
 import axiosInstance from "@/config/axios";
-import { WorkShift, WorkShiftRegistrationList } from "./types";
+import {
+  WorkShift,
+  WorkShiftRegistrationList,
+  WorkShiftUpdatePayload,
+} from "./types";
 
 export async function getWorkShifts(): Promise<WorkShift[]> {
   const { data } = await axiosInstance.get<WorkShift[]>("/work-shift");
@@ -34,6 +38,17 @@ export async function getWorkShiftsByDoctorId(
 ): Promise<WorkShift[]> {
   const { data } = await axiosInstance.get<WorkShift[]>(
     `/work-shift/doctor/${doctorId}`
+  );
+  return data;
+}
+
+export async function updateWorkShift(
+  wsID: number | string,
+  payload: WorkShiftUpdatePayload
+): Promise<WorkShift> {
+  const { data } = await axiosInstance.patch<WorkShift>(
+    `/work-shift/${wsID}`,
+    payload
   );
   return data;
 }
