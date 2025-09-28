@@ -13,9 +13,10 @@ import {
   PlusIcon,
   SearchIcon,
   UploadIcon,
+  Package,
 } from "lucide-react";
 
-const ProductsHeader = () => {
+const ProductsHeader = ({ isAdmin }: { isAdmin: boolean }) => {
   return (
     <div className="space-y-4">
       {/* Header with title and action buttons */}
@@ -25,7 +26,9 @@ const ProductsHeader = () => {
             Medical Products
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage your medical supplies and equipment inventory
+            {isAdmin
+              ? "Manage your medical supplies and equipment inventory"
+              : "Manage warehouse inventory and stock levels"}
           </p>
         </div>
 
@@ -38,10 +41,18 @@ const ProductsHeader = () => {
             <DownloadIcon className="h-4 w-4" />
             Export
           </Button>
-          <Button size="sm" className="gap-2 bg-blue-400 hover:bg-blue-600">
-            <PlusIcon className="h-4 w-4" />
-            Add Product
-          </Button>
+
+          {isAdmin ? (
+            <Button size="sm" className="gap-2 bg-blue-400 hover:bg-blue-600">
+              <PlusIcon className="h-4 w-4" />
+              Add Product
+            </Button>
+          ) : (
+            <Button size="sm" className="gap-2 bg-green-500 hover:bg-green-600">
+              <Package className="h-4 w-4" />
+              Manage Inventory
+            </Button>
+          )}
         </div>
       </div>
 

@@ -19,3 +19,7 @@ export function useAccountId() {
     return null;
   }
 }
+
+export function useUserRole() {
+  return Cookies.get("role") || null;
+}

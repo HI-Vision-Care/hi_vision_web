@@ -19,7 +19,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDownIcon, MoreHorizontalIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  MoreHorizontalIcon,
+  Package,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { useProducts } from "@/services/product/hooks";
 import { Product } from "@/services/product/types";
 
@@ -44,7 +50,7 @@ function getActiveBadge(isActive: boolean) {
   );
 }
 
-export function ProductsTable() {
+export function ProductsTable({ isAdmin }: { isAdmin: boolean }) {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const { data: products, isLoading, error } = useProducts(true);
 
@@ -100,7 +106,9 @@ export function ProductsTable() {
                 Status
                 <ChevronDownIcon className="ml-1 h-4 w-4 inline" />
               </TableHead>
-              <TableHead className="font-semibold">Action</TableHead>
+              <TableHead className="font-semibold">
+                {isAdmin ? "Actions" : "Inventory"}
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -168,21 +176,38 @@ export function ProductsTable() {
                 </TableCell>
 
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontalIcon className="h-4 w-4" />
+                  {isAdmin ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontalIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem>Edit Product</DropdownMenuItem>
+                        <DropdownMenuItem>Update Stock</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Minus className="h-3 w-3" />
+                        Remove
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Product</DropdownMenuItem>
-                      <DropdownMenuItem>Update Stock</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Plus className="h-3 w-3" />
+                        Add
+                      </Button>
+                      <Button size="sm" className="gap-1">
+                        <Package className="h-3 w-3" />
+                        Stock
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

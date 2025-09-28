@@ -30,6 +30,8 @@ import {
 import { useAccountId } from "@/hooks/useAccountId";
 import { useGetUserProfile } from "@/services/account/hook";
 import { StaffProfile } from "@/services/account/types";
+import EmptyWithdrawState from "@/components/withdraw/EmptyWithdrawState";
+import WithdrawalSkeleton from "@/components/withdraw/WithdrawalSkeleton";
 
 // ====================== Utils ======================
 const getStatusColor = (status: string) => {
@@ -54,8 +56,8 @@ const formatAmount = (amount: number) =>
 const WithdrawalList = () => {
   // 🟢 gọi API thật
   const { data, isLoading, isError, error } = useAllWithdraw(true);
-  const { mutate: approve, isLoading: approving } = useApproveWithdraw();
-  const { mutate: reject, isLoading: rejecting } = useRejectWithdraw();
+  const { mutate: approve, isPending: approving } = useApproveWithdraw();
+  const { mutate: reject, isPending: rejecting } = useRejectWithdraw();
 
   // Lấy staffId từ hồ sơ
   const accountId = useAccountId();
@@ -77,13 +79,7 @@ const WithdrawalList = () => {
 
   // ====== Loading & Error state ======
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 max-w-6xl">
-        <p className="text-muted-foreground">
-          Đang tải danh sách yêu cầu rút tiền…
-        </p>
-      </div>
-    );
+    return <WithdrawalSkeleton />;
   }
 
   if (isError) {
@@ -94,6 +90,11 @@ const WithdrawalList = () => {
         </p>
       </div>
     );
+  }
+
+  // Empty state when no withdrawals
+  if (withdrawals.length === 0) {
+    return <EmptyWithdrawState />;
   }
 
   return (
