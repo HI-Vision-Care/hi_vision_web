@@ -1,7 +1,6 @@
 // app/services/ServiceCard.tsx
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,14 +12,11 @@ import {
   Heart,
   Stethoscope,
   TestTube,
-  Pill,
-  Users,
   Video,
   MapPin,
   CheckCircle,
   XCircle,
   Monitor,
-  User,
 } from "lucide-react";
 import { formatVND } from "@/utils/formatVND";
 import { MedicalService } from "@/services/medical-services/types";
@@ -30,16 +26,8 @@ const getServiceTypeIcon = (type: string) => {
   switch (type) {
     case "Testing":
       return TestTube;
-    case "Consultation":
+    case "HIV,Test":
       return Stethoscope;
-    case "Treatment":
-      return Pill;
-    case "Prevention":
-      return Heart;
-    case "Support":
-      return Users;
-    case "Counseling":
-      return User;
     default:
       return Heart;
   }
@@ -49,16 +37,8 @@ const getServiceTypeColor = (type: string) => {
   switch (type) {
     case "Test":
       return "bg-blue-100 text-blue-800";
-    case "Consultation":
+    case "HIV,Test":
       return "bg-green-100 text-green-800";
-    case "Treatment":
-      return "bg-purple-100 text-purple-800";
-    case "Prevention":
-      return "bg-orange-100 text-orange-800";
-    case "Support":
-      return "bg-pink-100 text-pink-800";
-    case "Counseling":
-      return "bg-indigo-100 text-indigo-800";
     default:
       return "bg-gray-100 text-gray-800";
   }

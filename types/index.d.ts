@@ -326,3 +326,27 @@ export type MedicalRecordWithLabResultsProps = {
   medicalRecord: MedicalRecordByAppointmentResponse;
   appointment: Appointment;
 };
+
+export interface SectionItem {
+  id: string;
+  title: string;
+  description?: string;
+  content?: string;
+  icon?: React.ReactNode;
+  href?: string;
+}
+
+export interface SectionGroup {
+  id: string;
+  title: string;
+  subtitle?: string;
+  items: SectionItem[];
+  layout?: "horizontal" | "vertical" | "grid";
+  className?: string;
+}
+
+export interface SectionsInterfaceProps {
+  sections: SectionGroup[];
+  className?: string;
+  showNavigation?: boolean;
+}

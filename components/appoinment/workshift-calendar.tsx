@@ -27,12 +27,17 @@ interface WorkShiftCalendarProps {
   workShifts: WorkShift[];
   onShiftSelect: (shift: WorkShift) => void;
   onCreateNew: () => void;
+  doctorId: string;
 }
 
 function formatTime(iso: string) {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 export default function WorkShiftCalendar({
@@ -155,21 +160,6 @@ export default function WorkShiftCalendar({
     return false;
   };
 
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // Calculate statistics
@@ -283,7 +273,10 @@ export default function WorkShiftCalendar({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              {monthNames[currentMonth]} {currentYear}
+              {new Intl.DateTimeFormat("vi-VN", {
+                month: "long",
+                year: "numeric",
+              }).format(currentDate)}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button

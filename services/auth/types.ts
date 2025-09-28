@@ -60,5 +60,16 @@ export interface WorkShift {
   note: string;
 }
 
+export interface GoogleLoginRequest {
+  accessToken: string;
+}
 
-
+export interface GoogleLoginResponse {
+  code: number;
+  message: string;
+  data: {
+    authenticated: boolean;
+    accessToken: string;
+    role?: string; // nếu backend trả về
+  };
+}

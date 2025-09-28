@@ -1,7 +1,9 @@
 // services/auth/hooks.ts
 import { useMutation } from "@tanstack/react-query";
-import { login, register } from "./api";
+import { googleLoginApi, login, register } from "./api";
 import type {
+  GoogleLoginRequest,
+  GoogleLoginResponse,
   LoginPayload,
   LoginResponse,
   RegisterPayload,
@@ -26,3 +28,8 @@ export function useRegister() {
     },
   });
 }
+
+export const useGoogleLogin = () =>
+  useMutation<GoogleLoginResponse, Error, GoogleLoginRequest>({
+    mutationFn: googleLoginApi,
+  });

@@ -9,11 +9,21 @@ const nextConfig: NextConfig = {
         hostname: "i.pinimg.com",
         port: "",
       },
+      { protocol: "https", hostname: "images.unsplash.com", port: "" },
       {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
         port: "",
       },
+      { protocol: "https", hostname: "cdn2.fptshop.com.vn", port: "" },
+      { protocol: "https", hostname: "i.pinimg.com", port: "" },
+      { protocol: "https", hostname: "cevn.com.vn", port: "" },
+      {
+        protocol: "https",
+        hostname: "psyme.org",
+        port: "",
+      },
+      { protocol: "https", hostname: "advertisingvietnam.com", port: "" },
     ],
   },
   eslint: {
