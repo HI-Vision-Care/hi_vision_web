@@ -14,7 +14,7 @@ const monaSans = Mona_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Hi - Vision",
+  title: "Hi-Vision",
   description: "HIV Treatment and Medical Services System",
 };
 

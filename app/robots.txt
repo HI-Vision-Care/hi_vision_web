@@ -1,0 +1,17 @@
+// app/robots.ts
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  const base = "https://hivision.vercel.app/";
+
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",         // cho phép crawl toàn bộ site
+      },
+    ],
+    sitemap: `${base}/sitemap.xml`,
+    host: base,
+  };
+}
