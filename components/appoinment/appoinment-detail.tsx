@@ -211,7 +211,7 @@ export default function AppointmentDetail({
                     onClick={() =>
                       completeAppointment(appointment.appointmentID)
                     }
-                    className="bg-green-300 hover:bg-green-400"
+                    className="bg-green-500 hover:bg-green-700"
                   >
                     Complete Appointment
                   </Button>
