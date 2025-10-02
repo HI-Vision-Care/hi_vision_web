@@ -68,6 +68,7 @@ export default function ModernChatWidget() {
   const [prompt, setPrompt] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const EVENT_NAME = "hi-vision-open-chat";
 
   const accountId = useAccountId(); // lấy id & role
   const userRole = Cookies.get("role");
@@ -167,6 +168,33 @@ export default function ModernChatWidget() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Listen for external requests to open chat and send a message
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const ce = e as CustomEvent<{ message?: string }>;
+        const text = ce?.detail?.message ?? "";
+        if (typeof text === "string" && text.trim()) {
+          setIsOpen(true);
+          // slight delay ensures modal state updates feel smooth
+          setTimeout(() => {
+            sendMessage(text);
+          }, 0);
+        }
+      } catch {
+        // no-op
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener(EVENT_NAME, handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener(EVENT_NAME, handler as EventListener);
+      }
+    };
+  }, [sendMessage]);
 
   return (
     <>
