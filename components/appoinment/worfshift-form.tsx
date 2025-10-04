@@ -34,7 +34,6 @@ import {
 interface WorkShiftFormProps {
   shift: WorkShift | null;
   onSave: (shift: WorkShift) => void;
-  onDelete: (shiftId: string) => void;
   onBack: () => void;
   doctorId: string;
   doctorName?: string;
@@ -43,7 +42,6 @@ interface WorkShiftFormProps {
 export default function WorkShiftForm({
   shift,
   onSave,
-  onDelete,
   onBack,
   doctorId,
   doctorName,
@@ -230,13 +228,6 @@ export default function WorkShiftForm({
     onSave(shiftToSave);
   };
 
-  const handleDelete = () => {
-    if (shift?.id) {
-      onDelete(String(shift.id));
-      onBack();
-    }
-  };
-
   const getShiftTypeColor = (status: string) => {
     switch (status) {
       case "Available":
@@ -293,16 +284,6 @@ export default function WorkShiftForm({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {shift && (
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              className="text-red-600 hover:text-red-700 bg-transparent"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </Button>
-          )}
           <Button
             onClick={handleSave}
             disabled={isSaving}
@@ -339,30 +320,29 @@ export default function WorkShiftForm({
                     id="date"
                     type="date"
                     value={formData.date}
-                    min={!shift?.id ? new Date().toISOString().split("T")[0] : undefined}
+                    min={
+                      !shift?.id
+                        ? new Date().toISOString().split("T")[0]
+                        : undefined
+                    }
                     onChange={(e) => handleInputChange("date", e.target.value)}
                   />
                 </div>
                 {shift?.id && (
                   <div>
                     <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={formData.status}
-                      onValueChange={(value) =>
-                        handleInputChange("status", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="Scheduled">Scheduled</SelectItem>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="Cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center h-10 px-3 border rounded-md bg-muted">
+                      <Badge
+                        className={getShiftTypeColor(
+                          formData.status || "Available"
+                        )}
+                      >
+                        {formData.status}
+                      </Badge>
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        (Read-only)
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

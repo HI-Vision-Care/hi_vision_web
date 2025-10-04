@@ -219,7 +219,6 @@ export default function DoctorDashboard() {
               <WorkshiftForm
                 shift={selectedWorkShift}
                 onSave={handleSaveWorkShift}
-                onDelete={handleDeleteWorkShift}
                 onBack={handleBackToSchedule}
                 doctorId={doctorId || ""}
                 doctorName={profile?.name || ""}

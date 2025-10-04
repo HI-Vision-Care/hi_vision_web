@@ -23,12 +23,11 @@ export default function VideoModal() {
       <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-2xl shadow-2xl">
         <div className="relative w-full aspect-video bg-black">
           <iframe
-            className="absolute inset-0 w-full h-full rounded-2xl"
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-            title="Patient Journey Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/oMFsBnHi1B0?si=ascIxiTjlAlK5E2L"
+            title="YouTube video player"
+          ></iframe>
         </div>
       </DialogContent>
     </Dialog>

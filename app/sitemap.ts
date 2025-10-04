@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://hivision.vercel.app/";
+  const base = "https://hi-vision.io";
 
   // Các trang tĩnh chính
   const staticPages = ["/", "/about-us", "/services", "/blog"];
